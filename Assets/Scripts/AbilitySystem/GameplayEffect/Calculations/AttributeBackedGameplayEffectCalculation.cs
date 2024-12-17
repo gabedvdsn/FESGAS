@@ -35,7 +35,7 @@ namespace FESGameplayAbilitySystem
             }
         }
         
-        public override float Evaluate(AbilitySystemComponent target, AbilitySystemComponent source, GameplayEffectSpec spec)
+        public override float Evaluate(GameplayEffectSpec spec)
         {
             if (CaptureWhen == ECaptureAttributeWhen.OnCreation)
             {

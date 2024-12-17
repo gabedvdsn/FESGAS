@@ -9,6 +9,13 @@ namespace FESGameplayAbilitySystem
     public abstract class AbstractGameplayEffectCalculationScriptableObject : ScriptableObject
     {
         public abstract void Initialize(GameplayEffectSpec spec);
-        public abstract float Evaluate(AbilitySystemComponent target, AbilitySystemComponent source, GameplayEffectSpec gameplayEffect);
+        public abstract float Evaluate(GameplayEffectSpec spec);
+    }
+    
+    public enum CalculationOperation
+    {
+        Add,
+        Multiply,
+        Override
     }
 }

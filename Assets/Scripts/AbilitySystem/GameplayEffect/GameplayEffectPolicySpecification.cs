@@ -31,13 +31,13 @@ namespace FESGameplayAbilitySystem
                 switch (DurationCalculationPolicy)
                 {
                     case GameplayEffectDurationCalculationPolicy.MagnitudeIsMultiplicative:
-                        spec.TotalDuration = Duration * DurationCalculation.Evaluate(spec.Target, spec.Source, spec);
+                        spec.TotalDuration = Duration * DurationCalculation.Evaluate(spec);
                         break;
                     case GameplayEffectDurationCalculationPolicy.MagnitudeIsAdditive:
-                        spec.TotalDuration = Duration + DurationCalculation.Evaluate(spec.Target, spec.Source, spec);
+                        spec.TotalDuration = Duration + DurationCalculation.Evaluate(spec);
                         break;
                     case GameplayEffectDurationCalculationPolicy.MagnitudeIsDuration:
-                        spec.TotalDuration = DurationCalculation.Evaluate(spec.Target, spec.Source, spec);
+                        spec.TotalDuration = DurationCalculation.Evaluate(spec);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -52,13 +52,13 @@ namespace FESGameplayAbilitySystem
             switch (PeriodCalculationPolicy)
             {
                 case GameplayEffectPeriodCalculationPolicy.MagnitudeIsTicks:
-                    spec.PeriodDuration = spec.TotalDuration / PeriodCalculation.Evaluate(spec.Target, spec.Source, spec);
+                    spec.PeriodDuration = spec.TotalDuration / PeriodCalculation.Evaluate(spec);
                     break;
                 case GameplayEffectPeriodCalculationPolicy.MagnitudeIsPeriod:
-                    spec.PeriodDuration = PeriodCalculation.Evaluate(spec.Target, spec.Source, spec);
+                    spec.PeriodDuration = PeriodCalculation.Evaluate(spec);
                     break;
                 case GameplayEffectPeriodCalculationPolicy.MagnitudeIsPeriodRatio:
-                    spec.PeriodDuration = spec.TotalDuration * PeriodCalculation.Evaluate(spec.Target, spec.Source, spec);
+                    spec.PeriodDuration = spec.TotalDuration * PeriodCalculation.Evaluate(spec);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
