@@ -9,13 +9,14 @@ namespace FESGameplayAbilitySystem
     public class GameplayEffectImpactSpecification
     {
         public AttributeScriptableObject AttributeTarget;
+        public EffectImpactTargetCalculation ValueTarget;
         public CalculationOperation ImpactOperation;
         
         [Space]
         
         public float Magnitude;
         public AbstractGameplayEffectCalculationScriptableObject MagnitudeCalculation;
-        public EffectImpactMagnitudeCalculation MagnitudeOperation;
+        public MagnitudeOperation MagnitudeOperation;
 
         public void ApplyImpactSpecifications(GameplayEffectSpec spec)
         {
@@ -28,20 +29,27 @@ namespace FESGameplayAbilitySystem
             
             return MagnitudeOperation switch
             {
-                EffectImpactMagnitudeCalculation.Add => Magnitude + calculatedMagnitude,
-                EffectImpactMagnitudeCalculation.Multiply => Magnitude * calculatedMagnitude,
-                EffectImpactMagnitudeCalculation.OverrideCalculation => calculatedMagnitude,
-                EffectImpactMagnitudeCalculation.OverrideMagnitude => Magnitude,
+                MagnitudeOperation.Add => Magnitude + calculatedMagnitude,
+                MagnitudeOperation.Multiply => Magnitude * calculatedMagnitude,
+                MagnitudeOperation.UseMagnitude => Magnitude,
+                MagnitudeOperation.UseCalculation => calculatedMagnitude,
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
     }
 
-    public enum EffectImpactMagnitudeCalculation
+    public enum MagnitudeOperation
     {
-        Add,
         Multiply,
-        OverrideCalculation,
-        OverrideMagnitude
+        Add,
+        UseMagnitude,
+        UseCalculation
+    }
+
+    public enum EffectImpactTargetCalculation
+    {
+        Current,
+        Base,
+        CurrentAndBase
     }
 }

@@ -35,13 +35,13 @@ namespace FESGameplayAbilitySystem
 
     public struct ModifiedAttributeValue
     {
-        public AttributeSystemComponent Source;
+        public GameplayEffectSpec Spec;
         public float DeltaCurrentValue;
         public float DeltaBaseValue;
 
-        public ModifiedAttributeValue(AttributeSystemComponent source, float deltaCurrentValue, float deltaBaseValue)
+        public ModifiedAttributeValue(GameplayEffectSpec spec, float deltaCurrentValue, float deltaBaseValue)
         {
-            Source = source;
+            Spec = spec;
             DeltaCurrentValue = deltaCurrentValue;
             DeltaBaseValue = deltaBaseValue;
         }
@@ -49,7 +49,7 @@ namespace FESGameplayAbilitySystem
         public ModifiedAttributeValue Combine(ModifiedAttributeValue other)
         {
             return new ModifiedAttributeValue(
-                Source, 
+                Spec, 
                 DeltaCurrentValue + other.DeltaCurrentValue, 
                 DeltaBaseValue + other.DeltaBaseValue);
         }

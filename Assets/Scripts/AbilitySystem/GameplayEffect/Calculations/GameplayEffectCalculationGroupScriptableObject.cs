@@ -9,14 +9,7 @@ namespace FESGameplayAbilitySystem
     public class GameplayEffectCalculationGroupScriptableObject : AbstractGameplayEffectCalculationScriptableObject
     {
         public List<GameplayEffectCalculationGroupMember> Calculations;
-
-        public void InitializeCalculations(GameplayEffectSpec spec)
-        {
-            foreach (GameplayEffectCalculationGroupMember member in Calculations)
-            {
-                member.Calculation.Initialize(spec);
-            }
-        }
+        
         public override void Initialize(GameplayEffectSpec spec)
         {
             foreach (GameplayEffectCalculationGroupMember member in Calculations)

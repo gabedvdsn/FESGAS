@@ -1,30 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    [Serializable]
-    public class GameplayEffectRequirements
+    [CreateAssetMenu(menuName = "FESGAS/Requirements")]
+    public class GameplayEffectRequirements : ScriptableObject
     {
         public AvoidRequireTagGroup ApplicationRequirements;  // These tags are required to apply the effect
         public AvoidRequireTagGroup OngoingRequirements;  // These tags are required to keep the effect ongoing
-        public AvoidRequireTagGroup RemovalRequirements;  // These tags are required to purge the effect
+        public AvoidRequireTagGroup RemovalRequirements;  // These tags are required to remove the effect
 
-        public bool ValidateApplicationRequirements(List<GameplayTagScriptableObject> appliedTags)
+        public bool CheckApplicationRequirements(List<GameplayTagScriptableObject> appliedTags)
         {
-            return ApplicationRequirements.Validate(appliedTags);
+            return !ApplicationRequirements.AvoidTags.Any(appliedTags.Contains) && ApplicationRequirements.RequireTags.All(appliedTags.Contains);
         }
 
-        public bool ValidateOngoingRequirements(List<GameplayTagScriptableObject> appliedTags)
+        public bool CheckOngoingRequirements(List<GameplayTagScriptableObject> appliedTags)
         {
-            return OngoingRequirements.Validate(appliedTags);
+            if (OngoingRequirements.AvoidTags.Length == 0)
+            {
+                return OngoingRequirements.RequireTags.Length == 0 || OngoingRequirements.RequireTags.All(appliedTags.Contains);
+            }
+
+            return !OngoingRequirements.AvoidTags.Any(appliedTags.Contains) &&
+                   (OngoingRequirements.RequireTags.Length == 0 || OngoingRequirements.RequireTags.All(appliedTags.Contains));
         }
         
-        public bool ValidateRemovalRequirements(List<GameplayTagScriptableObject> appliedTags)
+        public bool CheckRemovalRequirements(List<GameplayTagScriptableObject> appliedTags)
         {
-            return RemovalRequirements.Validate(appliedTags);
+            return RemovalRequirements.AvoidTags.Any(appliedTags.Contains) 
+                   || RemovalRequirements.RequireTags.Length != 0 && RemovalRequirements.RequireTags.All(appliedTags.Contains);
         }
     }
 }

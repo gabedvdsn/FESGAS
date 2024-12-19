@@ -2,7 +2,7 @@
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(menuName = "FESGAS/Gameplay Effect Calculation/Level", fileName = "New Simple Gameplay Effect Calculation")]
+    [CreateAssetMenu(menuName = "FESGAS/Gameplay Effect Calculation/Simple", fileName = "New Simple Gameplay Effect Calculation")]
     public class SimpleGameplayEffectCalculationScriptableObject : AbstractGameplayEffectCalculationScriptableObject
     {
         public AnimationCurve Scaling;

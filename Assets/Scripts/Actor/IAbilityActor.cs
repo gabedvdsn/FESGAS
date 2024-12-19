@@ -6,5 +6,5 @@ using UnityEngine;
 public interface IAbilityActor
 {
     public void GatherAbilitySystemComponent();
-    public AbilitySystemComponent GetAbilitySystemComponent();
+    public GASComponent GetAbilitySystemComponent();
 }
