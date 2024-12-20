@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2d34fc1f98f8a0b4c9b37da3e706e0e1, type: 3}
-  m_Name: DamagePerSecondGameplayEffect
+  m_Name: HealthPerSecondGameplayEffect
   m_EditorClassIdentifier: 
   Identifier: {fileID: 11400000, guid: c2817ede8dc9ad14f82108e2f028d579, type: 2}
   GrantedTags:
@@ -19,16 +19,16 @@ MonoBehaviour:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     ValueTarget: 0
     ImpactOperation: 0
-    Magnitude: -12
+    Magnitude: 2
     MagnitudeCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     MagnitudeOperation: 0
   DurationSpecification:
     DurationPolicy: 2
-    TickOnApplication: 0
-    Duration: 6
+    TickOnApplication: 1
+    Duration: 4
     DurationCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     DurationCalculationPolicy: 0
-    Ticks: 3
+    Ticks: 8
     TickCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     TickCalculationPolicy: 0
     Rounding: 0

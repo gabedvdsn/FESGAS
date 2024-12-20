@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using FESGameplayAbilitySystem;
 using UnityEngine;
 
-public interface IAbilityActor
+public interface IGameplayAbilitySystemActor
 {
     public void GatherAbilitySystemComponent();
     public GASComponent GetAbilitySystemComponent();
