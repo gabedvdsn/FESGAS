@@ -10,5 +10,10 @@
             TotalDuration = totalDuration;
             DurationRemaining = durationRemaining;
         }
+
+        public override string ToString()
+        {
+            return $"{DurationRemaining}/{TotalDuration}";
+        }
     }
 }

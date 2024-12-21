@@ -9,9 +9,11 @@ namespace FESGameplayAbilitySystem
     public class GASComponent : MonoBehaviour
     {
         [HideInInspector] public AttributeSystemComponent AttributeSystem;
+        [HideInInspector] public AbilitySystemComponent AbilitySystem;
         public GASComponentData Data;
 
         public List<GameplayEffectScriptableObject> Effects;
+        public List<AbilityScriptableObject> Abilities;
 
         private List<GameplayEffectShelfContainer> EffectShelf;
         private List<GameplayEffectShelfContainer> FinishedEffects;
@@ -20,9 +22,21 @@ namespace FESGameplayAbilitySystem
         private void Awake()
         {
             AttributeSystem = GetComponent<AttributeSystemComponent>();
+            AbilitySystem = GetComponent<AbilitySystemComponent>();
 
             EffectShelf = new List<GameplayEffectShelfContainer>();
             FinishedEffects = new List<GameplayEffectShelfContainer>();
+
+            
+        }
+
+        private void Start()
+        {
+            foreach (AbilityScriptableObject ability in Abilities)
+            {
+                Debug.Log($"Learning ability: {ability.Definition.Name}");
+                AbilitySystem.GiveAbility(ability, 1, out _);
+            }
         }
 
         private void Update()
@@ -37,20 +51,14 @@ namespace FESGameplayAbilitySystem
                 GameplayEffectSpec spec = GenerateEffectSpec(this, Effects[1], 1);
                 ApplyGameplayEffect(spec);
             }
-            if (Input.GetKeyDown(KeyCode.Alpha3))
+
+            if (Input.GetKeyDown(KeyCode.Q))
             {
-                GameplayEffectSpec spec = GenerateEffectSpec(this, Effects[2], 1);
-                ApplyGameplayEffect(spec);
+                AbilitySystem.ActivateAbility(0, this);
             }
-            if (Input.GetKeyDown(KeyCode.Alpha4))
+            if (Input.GetKeyDown(KeyCode.W))
             {
-                GameplayEffectSpec spec = GenerateEffectSpec(this, Effects[3], 1);
-                ApplyGameplayEffect(spec);
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha5))
-            {
-                GameplayEffectSpec spec = GenerateEffectSpec(this, Effects[4], 1);
-                ApplyGameplayEffect(spec);
+                AbilitySystem.ActivateAbility(1, this);
             }
             
             TickEffectShelf();
@@ -89,6 +97,12 @@ namespace FESGameplayAbilitySystem
             HandleGameplayEffects();
 
             return true;
+        }
+
+        public bool ApplyGameplayEffect(AbilitySpec ability, GameplayEffectScriptableObject GameplayEffect)
+        {
+            GameplayEffectSpec spec = GenerateEffectSpec(ability.Owner, GameplayEffect, ability.Level);
+            return ApplyGameplayEffect(spec);
         }
 
         private void ApplyDurationalGameplayEffect(GameplayEffectSpec spec)
@@ -252,7 +266,7 @@ namespace FESGameplayAbilitySystem
         
         #region Effect Helpers
 
-        public GameplayEffectDuration GetLongestDurationFor(List<GameplayTagScriptableObject> lookForTags)
+        public GameplayEffectDuration GetLongestDurationFor(GameplayTagScriptableObject[] lookForTags)
         {
             float longestDuration = float.MinValue;
             float longestRemaining = float.MinValue;
@@ -260,19 +274,15 @@ namespace FESGameplayAbilitySystem
             {
                 foreach (GameplayTagScriptableObject specTag in container.Spec.Base.GrantedTags)
                 {
-                    if (lookForTags.Contains(specTag))
+                    if (!lookForTags.Contains(specTag)) continue;
+                    if (container.Spec.Base.DurationSpecification.DurationPolicy == GameplayEffectDurationPolicy.Infinite)
                     {
-                        if (container.Spec.Base.DurationSpecification.DurationPolicy == GameplayEffectDurationPolicy.Infinite)
-                        {
-                            return new GameplayEffectDuration(float.MaxValue, float.MaxValue);
-                        }
-
-                        if (container.TotalDuration > longestDuration)
-                        {
-                            longestDuration = container.TotalDuration;
-                            longestRemaining = container.DurationRemaining;
-                        }
+                        return new GameplayEffectDuration(float.MaxValue, float.MaxValue);
                     }
+
+                    if (!(container.TotalDuration > longestDuration)) continue;
+                    longestDuration = container.TotalDuration;
+                    longestRemaining = container.DurationRemaining;
                 }
             }
 

@@ -85,12 +85,18 @@ namespace FESGameplayAbilitySystem
 
         public bool TryGetAttributeValue(AttributeScriptableObject attribute, out AttributeValue attributeValue)
         {
-            return AttributeCache.TryGetValue(attribute, out attributeValue);
+            if (attribute) return AttributeCache.TryGetValue(attribute, out attributeValue);
+            
+            attributeValue = default;
+            return false;
         }
 
         public bool TryGetModifiedAttributeValue(AttributeScriptableObject attribute, out ModifiedAttributeValue modifiedAttributeValue)
         {
-            return ModifiedAttributeCache.TryGetValue(attribute, out modifiedAttributeValue);
+            if (attribute) return ModifiedAttributeCache.TryGetValue(attribute, out modifiedAttributeValue);
+
+            modifiedAttributeValue = default;
+            return false;
         }
     }
 }

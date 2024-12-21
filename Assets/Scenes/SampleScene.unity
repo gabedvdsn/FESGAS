@@ -396,15 +396,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AttributeSystem: {fileID: 0}
+  AbilitySystem: {fileID: 0}
   Data:
     Level: 1
     distinctName: Player
   Effects:
-  - {fileID: 11400000, guid: fbf26727e551226469246a74e6a37e0c, type: 2}
+  - {fileID: 11400000, guid: 656aa55d5e4e0d54ebcee8e92f10fe0a, type: 2}
   - {fileID: 11400000, guid: b344676500263fb428ee5da2cfd01585, type: 2}
-  - {fileID: 11400000, guid: 76b09b17886c7134c96b6f8813153110, type: 2}
-  - {fileID: 11400000, guid: 70d8f3adc312dcd44a31983e1a231ae1, type: 2}
-  - {fileID: 11400000, guid: 290bbf37c4659634993f1bff095e010f, type: 2}
+  Abilities:
+  - {fileID: 11400000, guid: 47b57156e71186b4ba912ed652ef7ce1, type: 2}
 --- !u!114 &98846734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -417,6 +417,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e550daa92bf44990a7067042bece1c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MaxAbilities: 5
 --- !u!1 &286495016
 GameObject:
   m_ObjectHideFlags: 0
