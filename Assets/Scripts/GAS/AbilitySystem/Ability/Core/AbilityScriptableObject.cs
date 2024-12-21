@@ -37,8 +37,7 @@ namespace FESGameplayAbilitySystem
         public GASComponent Owner;
         public AbilityScriptableObject Base;
         public int Level;
-            
-            
+        
         public AbilitySpec(GASComponent owner, AbilityScriptableObject ability, int level)
         {
             Owner = owner;
@@ -46,6 +45,16 @@ namespace FESGameplayAbilitySystem
             Level = level;
                 
             // Proxy = Base.Proxy.
+        }
+
+        public void ApplyUsageEffects()
+        {
+            if (!Base.Cooldown || !(Base.Cooldown.GrantedTags.Length > 0)) return;
+            if (!Base.Cost || !Base.Cost.ImpactSpecification.AttributeTarget) return;
+
+            // Apply cost and cooldown effects
+            Owner.ApplyGameplayEffect(Owner.GenerateEffectSpec(Owner, Base.Cooldown, Level));
+            Owner.ApplyGameplayEffect(Owner.GenerateEffectSpec(Owner, Base.Cost, Level));
         }
             
         public bool ValidateActivationRequirements()

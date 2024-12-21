@@ -6,16 +6,16 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractAbilityProxyTaskScriptableObject : ScriptableObject
     {
-        public virtual async UniTask Activate(AbilitySpec spec, Vector3 position, CancellationToken token)
-        {
-            await UniTask.CompletedTask;
-        }
+        public virtual UniTask Prepare(AbilitySpec spec, Vector3 position, CancellationToken token) => UniTask.CompletedTask;
+        
+        public virtual UniTask Prepare(AbilitySpec spec, GASComponent target, CancellationToken token) => UniTask.CompletedTask;
+        
+        public abstract UniTask Activate(AbilitySpec spec, Vector3 position, CancellationToken token);
 
-        public virtual async UniTask Activate(AbilitySpec spec, GASComponent target, CancellationToken token)
-        {
-            {
-                await UniTask.CompletedTask;
-            }
-        }
+        public abstract UniTask Activate(AbilitySpec spec, GASComponent target, CancellationToken token);
+
+        public virtual UniTask Clean(AbilitySpec spec, Vector3 position, CancellationToken token) => UniTask.CompletedTask;
+        
+        public virtual UniTask Clean(AbilitySpec spec, GASComponent target, CancellationToken token) => UniTask.CompletedTask;
     }
 }

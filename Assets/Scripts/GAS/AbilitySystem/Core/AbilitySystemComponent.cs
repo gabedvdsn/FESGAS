@@ -104,28 +104,42 @@ namespace FESGameplayAbilitySystem
         {
             if (!CanActivateAbility(index)) return false;
             AbilitySpecContainer container = AbilityCache[index];
-
+            
+            container.Spec.ApplyUsageEffects();
             container.ActivateAbility(position);
+            
             return true;
         }
         
         public bool ActivateAbility(int index, GASComponent target)
         {
-            /*Debug.Log(AbilityCache.TryGetValue(index, out AbilitySpecContainer _container));
-            Debug.Log(_container.Spec.ValidateActivationRequirements());
-            Debug.Log(!(_container.Spec.GetCooldown().DurationRemaining > 0f));
-            Debug.Log(_container.Spec.CanCoverCost());
-            Debug.Log(_container.Spec.Base.Tags.ValidateSourceRequirements(_container.Spec.Owner));
-            */
-            
             if (!CanActivateAbility(index, target)) return false;
 
             AbilitySpecContainer container = AbilityCache[index];
-            Debug.Log("Activating ability");
+
+            container.Spec.ApplyUsageEffects();
             container.ActivateAbility(target);
+            
             return true;
         }
+
+        private void ClearAbilityCache()
+        {
+            foreach (int index in AbilityCache.Keys)
+            {
+                AbilityCache[index].CleanToken();
+            }
+
+            AbilityCache.Clear();
+        }
         
+        #endregion
+        
+        #region Unity
+        private void OnDestroy()
+        {
+            ClearAbilityCache();
+        }
         #endregion
         
         private class AbilitySpecContainer
@@ -134,7 +148,7 @@ namespace FESGameplayAbilitySystem
             public bool IsActive;
             
             public AbilityProxy Proxy;
-            private CancellationToken token;
+            private CancellationTokenSource cst;
 
             public AbilitySpecContainer(AbilitySpec spec)
             {
@@ -142,33 +156,53 @@ namespace FESGameplayAbilitySystem
                 IsActive = false;
 
                 Proxy = Spec.Base.Proxy.GenerateProxy();
-                token = Spec.Owner.GetCancellationTokenOnDestroy();
+                ResetToken();
 
                 Debug.Log($"CREATED ABILITY: {Spec.Base.Definition.Name} with proxy: {Proxy}");
             }
 
             public void ActivateAbility(Vector3 position)
             {
+                ResetToken();
                 AwaitAbility(position).Forget();
             }
 
             private async UniTaskVoid AwaitAbility(Vector3 position)
             {
                 IsActive = true;
-                await Proxy.Activate(Spec, position, token);
+                await Proxy.Activate(Spec, position, cst.Token);
                 IsActive = false;
             }
             
             public void ActivateAbility(GASComponent target)
             {
+                ResetToken();
                 AwaitAbility(target).Forget();
             }
 
             private async UniTaskVoid AwaitAbility(GASComponent target)
             {
                 IsActive = true;
-                await Proxy.Activate(Spec, target, token);
+                await Proxy.Activate(Spec, target, cst.Token);
                 IsActive = false;
+            }
+
+            public void InterruptAbility()
+            {
+                if (!IsActive) return;
+                cst?.Cancel();
+            }
+
+            public void CleanToken()
+            {
+                InterruptAbility();
+                cst?.Dispose();
+            }
+
+            public void ResetToken()
+            {
+                CleanToken();
+                cst = new CancellationTokenSource();
             }
         }
     }

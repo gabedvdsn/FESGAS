@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -54,21 +55,32 @@ namespace FESGameplayAbilitySystem
 
         private async UniTask ActivateStage(AbilityProxyStage stage, AbilitySpec spec, Vector3 position, CancellationToken token)
         {
-            List<UniTask> tasks = Enumerable.Select(stage.Tasks, task => task.Activate(spec, position, token)).ToList();
-            foreach (AbstractAbilityProxyTaskScriptableObject task in stage.Tasks) tasks.Add(task.Activate(spec, position, token));
-
-            switch (stage.TaskPolicy)
+            // Prepare all tasks
+            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(spec, position, token)));
+            
+            using (var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                case AbilityProxyTaskPolicy.Any:
-                    await UniTask.WhenAny(tasks);
-                    break;
-                case AbilityProxyTaskPolicy.All:
-                    await UniTask.WhenAll(tasks);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                CancellationToken stageToken = stageCts.Token;
+                
+                List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(spec, position, stageToken)).ToList();
+                
+                switch (stage.TaskPolicy)
+                {
+                    case AbilityProxyTaskPolicy.Any:
+                        await UniTask.WhenAny(tasks);
+                        stageCts.Cancel();
+                        break;
+                    case AbilityProxyTaskPolicy.All:
+                        await UniTask.WhenAll(tasks);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
-
+            
+            // Clean all tasks
+            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(spec, position, token)));
+            
             ActivateNextStage(spec, position, token).Forget();
         }
         
@@ -80,20 +92,32 @@ namespace FESGameplayAbilitySystem
 
         private async UniTask ActivateStage(AbilityProxyStage stage, AbilitySpec spec, GASComponent target, CancellationToken token)
         {
-            List<UniTask> tasks = Enumerable.Select(stage.Tasks, task => task.Activate(spec, target, token)).ToList();
-
-            switch (stage.TaskPolicy)
+            // Prepare all tasks
+            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(spec, target, token)));
+            
+            using (var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                case AbilityProxyTaskPolicy.Any:
-                    await UniTask.WhenAny(tasks);
-                    break;
-                case AbilityProxyTaskPolicy.All:
-                    await UniTask.WhenAll(tasks);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                CancellationToken stageToken = stageCts.Token;
+                
+                List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(spec, target, stageToken)).ToList();
+                
+                switch (stage.TaskPolicy)
+                {
+                    case AbilityProxyTaskPolicy.Any:
+                        await UniTask.WhenAny(tasks);
+                        stageCts.Cancel();
+                        break;
+                    case AbilityProxyTaskPolicy.All:
+                        await UniTask.WhenAll(tasks);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
-
+            
+            // Clean all tasks
+            await UniTask.WhenAll(stage.Tasks.Select(task => task.Clean(spec, target, token)));
+            
             ActivateNextStage(spec, target, token).Forget();
         }
 
@@ -103,10 +127,10 @@ namespace FESGameplayAbilitySystem
             int stageIndex = 0;
             foreach (AbilityProxyStage stage in Specification.Stages)
             {
-                s += $"\n\t[ {stageIndex} ] STAGE -> {stage.TaskPolicy}";
+                s += $"\n\t[ {stageIndex++} ] STAGE -> {stage.TaskPolicy}";
                 foreach (AbstractAbilityProxyTaskScriptableObject task in stage.Tasks)
                 {
-                    s += $"\n\t{task.name}";
+                    s += $"\n\t\t{task.name}";
                 }
             }
 
