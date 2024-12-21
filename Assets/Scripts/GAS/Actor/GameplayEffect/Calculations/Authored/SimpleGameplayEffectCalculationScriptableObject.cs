@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         
         public override float Evaluate(GameplayEffectSpec spec)
         {
-            return Scaling.Evaluate(spec.Level);
+            return Scaling.Evaluate(spec.RelativeLevel);
         }
     }
 }

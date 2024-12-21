@@ -36,7 +36,7 @@ namespace FESGameplayAbilitySystem
         public void Update()
         {
             if (!initialized) return;
-            if (Container.DurationRemaining <= 0f)
+            if (Container.DurationRemaining <= 0f || !Container.Valid)
             {
                 initialized = false;
                 EffectDebugManager.Instance.BackCommunicate(this);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -45,6 +46,11 @@ namespace FESGameplayAbilitySystem
         {
             SliderManager.Instance.ToggleSlider(false);
             return base.Clean(spec, target, token);
+        }
+
+        private void OnValidate()
+        {
+            ReadOnlyDescription = "Holds a channeling state for the assigned duration, and updates the Slider value while doing so";
         }
     }
 }

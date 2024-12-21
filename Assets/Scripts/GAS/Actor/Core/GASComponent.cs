@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AYellowpaper.SerializedCollections;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
@@ -12,8 +14,8 @@ namespace FESGameplayAbilitySystem
         [HideInInspector] public AbilitySystemComponent AbilitySystem;
         public GASComponentData Data;
 
-        public List<GameplayEffectScriptableObject> Effects;
-        public List<AbilityScriptableObject> Abilities;
+        public SerializedDictionary<KeyCode, AbilityScriptableObject> StartingAbilityMapping;
+        private Dictionary<KeyCode, int> AbilityMap; 
 
         private List<GameplayEffectShelfContainer> EffectShelf;
         private List<GameplayEffectShelfContainer> FinishedEffects;
@@ -32,37 +34,38 @@ namespace FESGameplayAbilitySystem
 
         private void Start()
         {
-            foreach (AbilityScriptableObject ability in Abilities)
-            {
-                Debug.Log($"Learning ability: {ability.Definition.Name}");
-                AbilitySystem.GiveAbility(ability, 1, out _);
-            }
+            InitializeAbilities();
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                GameplayEffectSpec spec = GenerateEffectSpec(this, Effects[0], 1);
-                ApplyGameplayEffect(spec);
-            }
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                GameplayEffectSpec spec = GenerateEffectSpec(this, Effects[1], 1);
-                ApplyGameplayEffect(spec);
-            }
-
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                AbilitySystem.ActivateAbility(0, this);
-            }
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                AbilitySystem.ActivateAbility(1, this);
-            }
+            HandleInput();
             
             TickEffectShelf();
             if (needsCleaning) ClearFinishedEffects();
+        }
+
+        private void InitializeAbilities()
+        {
+            AbilityMap = new Dictionary<KeyCode, int>();
+            foreach (KeyCode key in StartingAbilityMapping.Keys)
+            {
+                if (StartingAbilityMapping[key] is null)
+                {
+                    AbilityMap[key] = -1;
+                    continue;
+                }
+                AbilitySystem.GiveAbility(StartingAbilityMapping[key], 1, out int abilityIndex);
+                AbilityMap[key] = abilityIndex;
+            }
+        }
+
+        private void HandleInput()
+        {
+            foreach (KeyCode keyCode in AbilityMap.Keys)
+            {
+                if (Input.GetKeyDown(keyCode)) AbilitySystem.ActivateAbility(AbilityMap[keyCode], this);
+            }
         }
         
         #region Effect Handling
@@ -72,13 +75,19 @@ namespace FESGameplayAbilitySystem
             return GameplayEffect.Generate(Source, this, Level);
         }
 
+        public GameplayEffectSpec GenerateEffectSpec(AbilitySpec ability, GameplayEffectScriptableObject GameplayEffect)
+        {
+            return GameplayEffect.Generate(ability, this);
+        }
+
         public bool ApplyGameplayEffect(GameplayEffectSpec spec)
         {
             if (spec is null) return false;
             
-            Debug.Log($"Applying gameplay effect: {spec.Base.name}");
             
             if (!ValidateEffectApplicationRequirements(spec)) return false;
+            
+            Debug.Log($"Applying gameplay effect: {spec.Base.name} ({spec.Level}) for {spec.Base.ImpactSpecification.GetMagnitude(spec)} {spec.Base.ImpactSpecification.AttributeTarget.Name} ({spec.Base.DurationSpecification.DurationPolicy})");
             
             switch (spec.Base.DurationSpecification.DurationPolicy)
             {
@@ -101,8 +110,19 @@ namespace FESGameplayAbilitySystem
 
         public bool ApplyGameplayEffect(AbilitySpec ability, GameplayEffectScriptableObject GameplayEffect)
         {
-            GameplayEffectSpec spec = GenerateEffectSpec(ability.Owner, GameplayEffect, ability.Level);
+            GameplayEffectSpec spec = GenerateEffectSpec(ability, GameplayEffect);
             return ApplyGameplayEffect(spec);
+        }
+
+        public void RemoveGameplayEffect(GameplayEffectScriptableObject GameplayEffect)
+        {
+            Debug.Log($"Removing {GameplayEffect.Identifier.Name}");
+            List<GameplayEffectShelfContainer> toRemove = EffectShelf.Where(container => container.Spec.Base == GameplayEffect).ToList();
+            foreach (GameplayEffectShelfContainer container in toRemove)
+            {
+                container.Valid = false;
+                EffectShelf.Remove(container);
+            }
         }
 
         private void ApplyDurationalGameplayEffect(GameplayEffectSpec spec)

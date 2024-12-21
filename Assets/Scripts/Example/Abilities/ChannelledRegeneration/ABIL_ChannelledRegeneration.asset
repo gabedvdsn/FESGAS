@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a42dbe2415465689d11a1e8ae1fdbc, type: 3}
+  m_Name: ABIL_ChannelledRegeneration
+  m_EditorClassIdentifier: 
+  Definition:
+    Name: Channelled Regeneration
+    Description: While channeling, regenerate health
+    UnlearnedIcon: {fileID: 0}
+    NormalIcon: {fileID: 0}
+    QueuedIcon: {fileID: 0}
+    OnCooldownIcon: {fileID: 0}
+  Tags:
+    AssetTag: {fileID: 11400000, guid: da36635318074a546bb86cf66fe390d0, type: 2}
+    PassivelyGrantedTags: []
+    ActiveGrantedTags: []
+    SourceRequirements:
+      AvoidTags: []
+      RequireTags: []
+    TargetRequirements:
+      AvoidTags: []
+      RequireTags: []
+  Proxy:
+    Stages:
+    - TaskPolicy: 1
+      Tasks:
+      - {fileID: 11400000, guid: dc61091082c79ed4fa78eaee16916c93, type: 2}
+      - {fileID: 11400000, guid: ee26d3f3fc2c11a488ecdb8d30c0cbcd, type: 2}
+  StartingLevel: 1
+  MaxLevel: 4
+  Cost: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
+  Cooldown: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}

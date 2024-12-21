@@ -37,12 +37,21 @@ namespace FESGameplayAbilitySystem
             return spec;
         }
 
+        public GameplayEffectSpec Generate(AbilitySpec ability, GASComponent target)
+        {
+            GameplayEffectSpec spec = new GameplayEffectSpec(this, ability, target);
+            ImpactSpecification.ApplyImpactSpecifications(spec);
+
+            return spec;
+        }
+
     }
 
     public class GameplayEffectSpec
     {
         public GameplayEffectScriptableObject Base;
         public float Level;
+        public float RelativeLevel;
         
         public GASComponent Source;
         public GASComponent Target;
@@ -54,7 +63,21 @@ namespace FESGameplayAbilitySystem
             Base = gameplayEffect;
             Source = source;
             Target = target;
+            
             Level = level;
+            RelativeLevel = level - 1;
+
+            SourceCapturedAttributes = new Dictionary<AbstractGameplayEffectCalculationScriptableObject, AttributeValue?>();
+        }
+
+        public GameplayEffectSpec(GameplayEffectScriptableObject GameplayEffect, AbilitySpec ability, GASComponent target)
+        {
+            Base = GameplayEffect;
+            Source = ability.Owner;
+            Target = target;
+
+            Level = ability.Level;
+            RelativeLevel = ability.RelativeLevel;
 
             SourceCapturedAttributes = new Dictionary<AbstractGameplayEffectCalculationScriptableObject, AttributeValue?>();
         }
@@ -134,6 +157,7 @@ namespace FESGameplayAbilitySystem
     {
         public GameplayEffectSpec Spec;
         public bool Ongoing;
+        public bool Valid;
         
         public float TotalDuration;
         public float DurationRemaining;
@@ -145,6 +169,7 @@ namespace FESGameplayAbilitySystem
         {
             Spec = spec;
             Ongoing = ongoing;
+            Valid = true;
             
             Spec.Base.DurationSpecification.ApplyDurationSpecifications(this);
         }

@@ -37,14 +37,13 @@ namespace FESGameplayAbilitySystem
         public GASComponent Owner;
         public AbilityScriptableObject Base;
         public int Level;
+        public float RelativeLevel => (Level - 1) / (float)(Base.MaxLevel - 1);
         
         public AbilitySpec(GASComponent owner, AbilityScriptableObject ability, int level)
         {
             Owner = owner;
             Base = ability;
             Level = level;
-                
-            // Proxy = Base.Proxy.
         }
 
         public void ApplyUsageEffects()

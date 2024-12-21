@@ -6,6 +6,8 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractAbilityProxyTaskScriptableObject : ScriptableObject
     {
+        [HideInInspector] public string ReadOnlyDescription = "This is an Ability Proxy Task";
+        
         public virtual UniTask Prepare(AbilitySpec spec, Vector3 position, CancellationToken token) => UniTask.CompletedTask;
         
         public virtual UniTask Prepare(AbilitySpec spec, GASComponent target, CancellationToken token) => UniTask.CompletedTask;

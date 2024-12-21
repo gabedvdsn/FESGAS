@@ -23,6 +23,19 @@ namespace FESGameplayAbilitySystem
             System = GetComponent<GASComponent>();
             AbilityCache = new Dictionary<int, AbilitySpecContainer>();
         }
+
+        public void SetAbilitiesLevel(int level)
+        {
+            foreach (AbilitySpecContainer container in AbilityCache.Values)
+            {
+                container.Spec.Level = Mathf.Min(level, container.Spec.Base.MaxLevel);
+            }
+        }
+
+        public int GetMaxAbilityLevel()
+        {
+            return AbilityCache.Values.Max(container => container.Spec.Base.MaxLevel);
+        }
         
         #region Ability Managing
 
