@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6639d7de9a784afa92ac7a2f5cd803c4, type: 3}
-  m_Name: PT_Apply_InstantDamage
+  m_Script: {fileID: 11500000, guid: e8cbc0daff594b4281ba5acce6334eff, type: 3}
+  m_Name: PT_ApplyEffects_InstantDamage
   m_EditorClassIdentifier: 
   ReadOnlyDescription: This is an Ability Proxy Task
   Effects:
   - {fileID: 11400000, guid: 03c6c0b96652d924ea51bc024ed39274, type: 2}
-  BetweenEffectPauseMilliseconds: 0
+  BetweenApplicationDelayMilliseconds: 0

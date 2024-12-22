@@ -108,32 +108,15 @@ namespace FESGameplayAbilitySystem
             return AbilityCache.TryGetValue(index, out AbilitySpecContainer container) && container.Spec.ValidateActivationRequirements();
         }
 
-        public bool CanActivateAbility(int index, GASComponent target)
+        public bool ActivateAbilityAtIndex(int abilityIndex)
         {
-            return AbilityCache.TryGetValue(index, out AbilitySpecContainer container) && container.Spec.ValidateActivationRequirements(target);
-        }
-        
-        public bool ActivateAbility(int index, Vector3 position)
-        {
-            if (!CanActivateAbility(index)) return false;
-            AbilitySpecContainer container = AbilityCache[index];
-            
-            container.Spec.ApplyUsageEffects();
-            container.ActivateAbility(position);
-            
-            return true;
-        }
-        
-        public bool ActivateAbility(int index, GASComponent target)
-        {
-            if (!CanActivateAbility(index, target)) return false;
-
-            AbilitySpecContainer container = AbilityCache[index];
+            if (!CanActivateAbility(abilityIndex)) return false;
+            AbilitySpecContainer container = AbilityCache[abilityIndex];
 
             container.Spec.ApplyUsageEffects();
-            container.ActivateAbility(target);
-            
-            return true;
+            return container.Spec.Base.Proxy.Instructions.UseImplicitData 
+                ? container.ActivateAbility(AbilityProxyData.GenerateFrom(container.Spec, System, ESourceTarget.Target)) 
+                : container.ActivateAbility();;
         }
 
         private void ClearAbilityCache()
@@ -148,11 +131,13 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
-        #region Unity
+        #region Native
+        
         private void OnDestroy()
         {
             ClearAbilityCache();
         }
+        
         #endregion
         
         private class AbilitySpecContainer
@@ -173,30 +158,19 @@ namespace FESGameplayAbilitySystem
 
                 Debug.Log($"CREATED ABILITY: {Spec.Base.Definition.Name} with proxy: {Proxy}");
             }
-
-            public void ActivateAbility(Vector3 position)
-            {
-                ResetToken();
-                AwaitAbility(position).Forget();
-            }
-
-            private async UniTaskVoid AwaitAbility(Vector3 position)
-            {
-                IsActive = true;
-                await Proxy.Activate(Spec, position, cst.Token);
-                IsActive = false;
-            }
             
-            public void ActivateAbility(GASComponent target)
+            public bool ActivateAbility(AbilityProxyData implicitData = null)
             {
                 ResetToken();
-                AwaitAbility(target).Forget();
+                AwaitAbility(implicitData).Forget();
+
+                return true;
             }
 
-            private async UniTaskVoid AwaitAbility(GASComponent target)
+            private async UniTaskVoid AwaitAbility(AbilityProxyData implicitData = null)
             {
                 IsActive = true;
-                await Proxy.Activate(Spec, target, cst.Token);
+                await Proxy.Activate(Spec, cst.Token, implicitData);
                 IsActive = false;
             }
 

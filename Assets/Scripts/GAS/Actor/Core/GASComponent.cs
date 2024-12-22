@@ -64,7 +64,7 @@ namespace FESGameplayAbilitySystem
         {
             foreach (KeyCode keyCode in AbilityMap.Keys)
             {
-                if (Input.GetKeyDown(keyCode)) AbilitySystem.ActivateAbility(AbilityMap[keyCode], this);
+                if (Input.GetKeyDown(keyCode)) AbilitySystem.ActivateAbilityAtIndex(AbilityMap[keyCode]);
             }
         }
         

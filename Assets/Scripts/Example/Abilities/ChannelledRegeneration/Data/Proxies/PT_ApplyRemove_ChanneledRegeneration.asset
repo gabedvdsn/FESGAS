@@ -9,10 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad7cf6aa30469f742830786cba903b1f, type: 3}
-  m_Name: PT_ApplyRemove_ChannelledRegeneration
+  m_Script: {fileID: 11500000, guid: 5517b990ab1b4b93a2d0c8ac1bed8f91, type: 3}
+  m_Name: PT_ApplyRemove_ChanneledRegeneration
   m_EditorClassIdentifier: 
-  ReadOnlyDescription: Apply the effects once during Prepare() and remove them during
-    Clean()
+  ReadOnlyDescription: This is an Ability Proxy Task
   Effects:
   - {fileID: 11400000, guid: 7336d5dc3eebf6c4dbfa08cf70e1f0c9, type: 2}

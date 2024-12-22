@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5a42dbe2415465689d11a1e8ae1fdbc, type: 3}
-  m_Name: ABIL_InstantDamage
+  m_Name: ABIL_ChanneledBigDamage
   m_EditorClassIdentifier: 
   Definition:
-    Name: Instant Damage
-    Description: Immediately take damage
+    Name: Big Damage!
+    Description: Channel and then take a huge amount of damage!
     UnlearnedIcon: {fileID: 0}
     NormalIcon: {fileID: 0}
     QueuedIcon: {fileID: 0}
     OnCooldownIcon: {fileID: 0}
   Tags:
-    AssetTag: {fileID: 11400000, guid: 662020c5bc519b8478df2b6190178956, type: 2}
+    AssetTag: {fileID: 11400000, guid: 2f7ceda08a5c82b44a7c9be005000c05, type: 2}
     PassivelyGrantedTags: []
     ActiveGrantedTags: []
     SourceRequirements:
@@ -36,8 +36,11 @@ MonoBehaviour:
     Stages:
     - TaskPolicy: 0
       Tasks:
-      - {fileID: 11400000, guid: 3a265e219ac188f48b031d2f413cf011, type: 2}
+      - {fileID: 11400000, guid: b34dbe0dfa63e8c48a37310ad171489a, type: 2}
+    - TaskPolicy: 0
+      Tasks:
+      - {fileID: 11400000, guid: 239cad218e7fd8b43bc12a144c35a61a, type: 2}
   StartingLevel: 1
   MaxLevel: 4
-  Cost: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
-  Cooldown: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
+  Cost: {fileID: 0}
+  Cooldown: {fileID: 0}

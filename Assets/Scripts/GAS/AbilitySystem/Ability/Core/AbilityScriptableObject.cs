@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(menuName = "FESGAS/Ability/Ability", fileName = "New Ability")]
+    [CreateAssetMenu(menuName = "FESGAS/Ability/Ability", fileName = "ABIL_")]
     public class AbilityScriptableObject : ScriptableObject
     {
         [Header("Ability")]

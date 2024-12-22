@@ -12,7 +12,7 @@ namespace FESGameplayAbilitySystem
         [Space]
         
         public AttributeScriptableObject CaptureAttribute;
-        public ECaptureAttributeFrom CaptureFrom;
+        public ESourceTarget CaptureFrom;
         public ECaptureAttributeWhen CaptureWhen;
         
         public override void Initialize(GameplayEffectSpec spec)
@@ -21,11 +21,11 @@ namespace FESGameplayAbilitySystem
             {
                 switch (CaptureFrom)
                 {
-                    case ECaptureAttributeFrom.Source:
+                    case ESourceTarget.Source:
                         if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue sourceAttributeValue)) break;
                         spec.SourceCapturedAttributes[this] = sourceAttributeValue;
                         break;
-                    case ECaptureAttributeFrom.Target:
+                    case ESourceTarget.Target:
                         if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue targetAttributeValue)) break;
                         spec.SourceCapturedAttributes[this] = targetAttributeValue;
                         break;
@@ -47,7 +47,7 @@ namespace FESGameplayAbilitySystem
                 };
             }
 
-            if (CaptureFrom == ECaptureAttributeFrom.Source)
+            if (CaptureFrom == ESourceTarget.Source)
             {
                 if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue attributeValue)) return 0f;
                 return ScalingPolicy switch
@@ -78,10 +78,10 @@ namespace FESGameplayAbilitySystem
         EvaluateBaseValue
     }
     
-    public enum ECaptureAttributeFrom
+    public enum ESourceTarget
     {
-        Source,
-        Target
+        Target,
+        Source
     }
 
     public enum ECaptureAttributeWhen

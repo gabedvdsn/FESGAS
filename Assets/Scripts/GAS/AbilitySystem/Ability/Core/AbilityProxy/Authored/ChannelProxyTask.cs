@@ -7,50 +7,37 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "New Channel Proxy Task", menuName = "FESGAS/Ability/Task/Channel")]
+    [CreateAssetMenu(fileName = "PT_Channel_", menuName = "FESGAS/Ability/Task/Channel")]
     public class ChannelProxyTask : AbstractAbilityProxyTaskScriptableObject
     {
         public float ChannelDuration;
         
-        public override UniTask Prepare(AbilitySpec spec, GASComponent target, CancellationToken token)
+        public override UniTask Prepare(AbilityProxyData data, CancellationToken token)
         {
             SliderManager.Instance.ToggleSlider(true);
-            return base.Prepare(spec, target, token);
+            return base.Prepare(data, token);
         }
 
-        public override async UniTask Activate(AbilitySpec spec, Vector3 position, CancellationToken token)
-        {
-            float elapsedDuration = 0f;
-            while (elapsedDuration < ChannelDuration)
-            {
-                elapsedDuration += Time.deltaTime;
-                SliderManager.Instance.SetValue(elapsedDuration / ChannelDuration);
-
-                await UniTask.NextFrame(token);
-            }
-        }
-        
-        public override async UniTask Activate(AbilitySpec spec, GASComponent target, CancellationToken token)
-        {
-            float elapsedDuration = 0f;
-            while (elapsedDuration < ChannelDuration)
-            {
-                elapsedDuration += Time.deltaTime;
-                SliderManager.Instance.SetValue(elapsedDuration / ChannelDuration);
-
-                await UniTask.NextFrame(token);
-            }
-        }
-
-        public override UniTask Clean(AbilitySpec spec, GASComponent target, CancellationToken token)
+        public override UniTask Clean(AbilityProxyData data, CancellationToken token)
         {
             SliderManager.Instance.ToggleSlider(false);
-            return base.Clean(spec, target, token);
+            return base.Clean(data, token);
         }
 
         private void OnValidate()
         {
             ReadOnlyDescription = "Holds a channeling state for the assigned duration, and updates the Slider value while doing so";
+        }
+        public override async UniTask Activate(AbilityProxyData data, CancellationToken token)
+        {
+            float elapsedDuration = 0f;
+            while (elapsedDuration < ChannelDuration)
+            {
+                elapsedDuration += Time.deltaTime;
+                SliderManager.Instance.SetValue(elapsedDuration / ChannelDuration);
+
+                await UniTask.NextFrame(token);
+            }
         }
     }
 }

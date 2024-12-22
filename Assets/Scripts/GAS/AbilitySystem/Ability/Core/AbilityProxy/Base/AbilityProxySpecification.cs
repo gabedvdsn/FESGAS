@@ -11,6 +11,7 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public class AbilityProxySpecification
     {
+        public ImplicitProxyDataInstructions Instructions;
         public List<AbilityProxyStage> Stages;
 
         public AbilityProxy GenerateProxy()
@@ -22,7 +23,7 @@ namespace FESGameplayAbilitySystem
     public class AbilityProxy
     {
         private int StageIndex;
-        private AbilityProxySpecification Specification;
+        private readonly AbilityProxySpecification Specification;
         
         public AbilityProxy(AbilityProxySpecification specification)
         {
@@ -34,35 +35,33 @@ namespace FESGameplayAbilitySystem
         {
             StageIndex = -1;
         }
+
+        public async UniTask Activate(AbilitySpec spec, CancellationToken token, AbilityProxyData implicitData = null)
+        {
+            Reset();
+            
+            AbilityProxyData data = new AbilityProxyData(spec);
+            if (implicitData is not null) data.CompileWith(implicitData);
+            
+            await ActivateNextStage(data, token);
+        }
         
-        public async UniTask Activate(AbilitySpec spec, Vector3 position, CancellationToken token)
-        {
-            Reset();
-            await ActivateNextStage(spec, position, token);
-        }
-
-        public async UniTask Activate(AbilitySpec spec, GASComponent target, CancellationToken token)
-        {
-            Reset();
-            await ActivateNextStage(spec, target, token);
-        }
-
-        private async UniTask ActivateNextStage(AbilitySpec spec, Vector3 position, CancellationToken token)
+        private async UniTask ActivateNextStage(AbilityProxyData data, CancellationToken token)
         {
             StageIndex += 1;
-            if (StageIndex < Specification.Stages.Count) await ActivateStage(Specification.Stages[StageIndex], spec, position, token);
+            if (StageIndex < Specification.Stages.Count) await ActivateStage(Specification.Stages[StageIndex], data, token);
         }
 
-        private async UniTask ActivateStage(AbilityProxyStage stage, AbilitySpec spec, Vector3 position, CancellationToken token)
+        private async UniTask ActivateStage(AbilityProxyStage stage, AbilityProxyData data, CancellationToken token)
         {
             // Prepare all tasks
-            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(spec, position, token)));
+            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(data, token)));
             
             using (var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
                 CancellationToken stageToken = stageCts.Token;
                 
-                List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(spec, position, stageToken)).ToList();
+                List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(data, stageToken)).ToList();
                 
                 switch (stage.TaskPolicy)
                 {
@@ -79,46 +78,9 @@ namespace FESGameplayAbilitySystem
             }
             
             // Clean all tasks
-            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(spec, position, token)));
+            await UniTask.WhenAll(stage.Tasks.Select(task => task.Clean(data, token)));
             
-            ActivateNextStage(spec, position, token).Forget();
-        }
-        
-        private async UniTask ActivateNextStage(AbilitySpec spec, GASComponent target, CancellationToken token)
-        {
-            StageIndex += 1;
-            if (StageIndex < Specification.Stages.Count) await ActivateStage(Specification.Stages[StageIndex], spec, target, token);
-        }
-
-        private async UniTask ActivateStage(AbilityProxyStage stage, AbilitySpec spec, GASComponent target, CancellationToken token)
-        {
-            // Prepare all tasks
-            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(spec, target, token)));
-            
-            using (var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            {
-                CancellationToken stageToken = stageCts.Token;
-                
-                List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(spec, target, stageToken)).ToList();
-                
-                switch (stage.TaskPolicy)
-                {
-                    case AbilityProxyTaskPolicy.Any:
-                        await UniTask.WhenAny(tasks);
-                        stageCts.Cancel();
-                        break;
-                    case AbilityProxyTaskPolicy.All:
-                        await UniTask.WhenAll(tasks);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            
-            // Clean all tasks
-            await UniTask.WhenAll(stage.Tasks.Select(task => task.Clean(spec, target, token)));
-            
-            ActivateNextStage(spec, target, token).Forget();
+            ActivateNextStage(data, token).Forget();
         }
 
         public override string ToString()
@@ -149,5 +111,12 @@ namespace FESGameplayAbilitySystem
     {
         Any,
         All
+    }
+
+    [Serializable]
+    public class ImplicitProxyDataInstructions
+    {
+        public bool UseImplicitData = true;
+        public ESourceTarget OwnerAs = ESourceTarget.Target;
     }
 }

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8cbc0daff594b4281ba5acce6334eff, type: 3}
+  m_Name: PT_ApplyEffects_ChanneledBigDamage
+  m_EditorClassIdentifier: 
+  ReadOnlyDescription: This is an Ability Proxy Task
+  Effects:
+  - {fileID: 11400000, guid: 5c2fa76607e93e4438a9e7af6bc8d703, type: 2}
+  - {fileID: 11400000, guid: b1ed4b9b237d0f04ba23b347b971e8a4, type: 2}
+  BetweenApplicationDelayMilliseconds: 0

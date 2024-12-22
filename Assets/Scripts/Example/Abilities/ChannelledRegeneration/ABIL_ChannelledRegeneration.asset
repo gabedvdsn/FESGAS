@@ -30,11 +30,14 @@ MonoBehaviour:
       AvoidTags: []
       RequireTags: []
   Proxy:
+    Instructions:
+      UseImplicitData: 1
+      OwnerAs: 0
     Stages:
     - TaskPolicy: 1
       Tasks:
       - {fileID: 11400000, guid: dc61091082c79ed4fa78eaee16916c93, type: 2}
-      - {fileID: 11400000, guid: ee26d3f3fc2c11a488ecdb8d30c0cbcd, type: 2}
+      - {fileID: 11400000, guid: 4d6e4bfc7db9d544090fca5b709a4c37, type: 2}
   StartingLevel: 1
   MaxLevel: 4
   Cost: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
