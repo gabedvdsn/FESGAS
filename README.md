@@ -25,7 +25,7 @@ FESGAS is a modular, composition-inspired, and extensible ability-handling syste
 - Optimized for large pools of actors in real-time gameplay
 - Close monitoring and control over every stage of system interaction
 
-3. ## Features
+## 3. Features
 This framework is inspired by @sjai013 [Unity Gameplay Ability System](https://github.com/sjai013/unity-gameplay-ability-system), which was itself inspired by Unreal Engine's [GAS](https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-ability-system-for-unreal-engine). My initial experience working with GAS came with @sjai013's system, but I found that it didn't meet all the needs of my projects; I wanted a framework that was just as modular, with less redundancy, and greater control over an ability's behavior.
 
 - Ability System
