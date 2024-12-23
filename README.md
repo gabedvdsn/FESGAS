@@ -3,8 +3,8 @@
 # Unity Gameplay Ability System Framework (FESGAS)
 ![Static Badge](https://img.shields.io/badge/UnityVersion-2022.3.37f1-brightgreen)
 
-## 1. Table of Contents
-- [Introduction](#2.-introduction)
+1. ## Table of Contents
+- [Introduction](##introduction)
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Architecture Overview](#architecture-overview)
@@ -16,7 +16,7 @@
 - [License](#license)
 - [Acknowledgements](#acknoledgements)
 
-## 2. Introduction
+2. ## Introduction
 FESGAS is a modular, composition-inspired, and extensible ability-handling system that supports a built-in attribute system. This framework provides the material necessary to build complex abilities and gameplay effects, as well as monitor and manage interactions between systems.
 
 **Goals:**
@@ -25,7 +25,7 @@ FESGAS is a modular, composition-inspired, and extensible ability-handling syste
 - Optimized for large pools of actors in real-time gameplay
 - Close monitoring and control over every stage of system interaction
 
-## 3. Features
+3. ## Features
 This framework is inspired by @sjai013 [Unity Gameplay Ability System](https://github.com/sjai013/unity-gameplay-ability-system), which was itself inspired by Unreal Engine's [GAS](https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-ability-system-for-unreal-engine). My initial experience working with GAS came with @sjai013's system, but I found that it didn't meet all the needs of my projects; I wanted a framework that was just as modular, with less redundancy, and greater control over an ability's behavior.
 
 - Ability System
@@ -43,9 +43,10 @@ This framework is inspired by @sjai013 [Unity Gameplay Ability System](https://g
     - Efficient handling of impacted attributes
     - Pre and post-attribute impact monitoring and management
 
-## 4. Getting Started
+4. ## Getting Started
 
 **4.1 Prerequisites**
+
 - Unity Version 2022.3.37f1
 - Dependencies
     - `SerializedDictionary` from [@AYellowPaper]() on the [Unity Asset Store](https://assetstore.unity.com/packages/tools/utilities/serialized-dictionary-243052)
@@ -68,7 +69,7 @@ This framework is inspired by @sjai013 [Unity Gameplay Ability System](https://g
 - Create `MagnitudeModifier` datas by right-clicking, then navigating to `FESGAS/Magnitude Modifier/...`
 - Create `Attribute` datas by right-clicking, then navigating to `FESGAS/Attribute`
 
-## 5. Architecture Overview
+5. ## Architecture Overview
 ASDASD
 
 ## What Is It
