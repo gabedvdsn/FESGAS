@@ -105,7 +105,9 @@ The unique behavior of an `Ability` is encapsulated in an `AbilityProxySpecifica
 ## 7. Ability Examples
 
 ### Purifying Flames (Oracle, Dota 2)
-At level 1, when cast on a target, this ability immediately deals 90 damage, and then heals the target for 150 health over 10 seconds.
+At level 1, when cast on a target, this ability immediately deals 90 damage and then heals the target for 150 health over 10 seconds.
+
+**Step 1: Create Gameplay Effects**
 
 1. Instant Damage
 This effect will immediately deal 50 damage to the target.
@@ -126,7 +128,7 @@ This effect will heal the target by 10 every .5 seconds for 3 seconds, healing f
     - **Attribute Target:** `Attribute.Health`
     - **Value Target:** Current
     - **Impact Operation:** Add
-    - **Magnitude:** 7.5
+    - **Magnitude:** 15
     - **Magnitude Calculation:** `MagnitudeModifier.Constant`
     - **Magnitude Calculation Operation:** Multiply
 - **Duration Specification**
@@ -135,14 +137,24 @@ This effect will heal the target by 10 every .5 seconds for 3 seconds, healing f
     - **Duration:** 10
     - **Duration Calculation:** `MagnitudeModifier.Constant`
     - **Duration Calculation Operation:** Multiply
-    - **Ticks:** 20
+    - **Ticks:** 10
     - **Tick Calculation:** `MagnitudeModifier.Constant`
     - **Tick Calculation Operation:** Multiply
     - ...
 
-#### Ability Examples
-1. Purifying Flames (Oracle, Dota 2)
-This effect first deals
+**Step 2: Create Proxy Task Subclass**
+1. Create `AbstractAbilityProxyTask.ApplyEffectProxyTask` as a subclass of `AbstractAbilityProxyTask`
+   a. This task will take in a `GameplayEffectScriptableObject`\
+   b. Within the `ApplyEffectProxyTask.Activate(...)` method, 
+
+
+1. Fill in identifying information, `Tag` validation requirements, etc...
+2. Create the `AbilityProxySpecification`
+   a. **Use Implicit Data:** true (When the `Ability` is activated in the `AbilitySystemComponent` script, it will capture the associated `GASComponent` within a `ProxyDataPacket` object)\
+   b. **Owner As:** Target (The captured `GASComponent` will be captured as a `Target`)\
+   c. Add an `AbilityProxyStage`
+       i. **Task Policy:** Any
+       ii. 
 
 
 After an activation request is validated and relayed to the `AbilitySystemComponent`, the
