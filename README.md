@@ -3,20 +3,20 @@
 # Unity Gameplay Ability System Framework (FESGAS)
 ![Static Badge](https://img.shields.io/badge/UnityVersion-2022.3.37f1-brightgreen)
 
-1. ## Table of Contents
-- [Introduction](##introduction)
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Architecture Overview](#architecture-overview)
-- [API Documentation](#api-documentation)
-- [Examples](#examples)
-- [Customization](#customization)
-- [Best Practices](#best-practices)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknoledgements)
+## 1. Table of Contents
+- [Introduction](##2-introduction)
+- [Features](#3-features)
+- [Getting Started](#4-getting-started)
+- [Architecture Overview](#5-architecture-overview)
+- [API Documentation](#6-api-documentation)
+- [Examples](#7-examples)
+- [Customization](#8-customization)
+- [Best Practices](#9-best-practices)
+- [Contributing](#10-contributing)
+- [License](#11-license)
+- [Acknowledgements](#12-acknoledgements)
 
-2. ## Introduction
+## 2. Introduction
 FESGAS is a modular, composition-inspired, and extensible ability-handling system that supports a built-in attribute system. This framework provides the material necessary to build complex abilities and gameplay effects, as well as monitor and manage interactions between systems.
 
 **Goals:**
@@ -43,7 +43,7 @@ This framework is inspired by @sjai013 [Unity Gameplay Ability System](https://g
     - Efficient handling of impacted attributes
     - Pre and post-attribute impact monitoring and management
 
-4. ## Getting Started
+## 4. Getting Started
 
 **4.1 Prerequisites**
 
@@ -69,7 +69,7 @@ This framework is inspired by @sjai013 [Unity Gameplay Ability System](https://g
 - Create `MagnitudeModifier` datas by right-clicking, then navigating to `FESGAS/Magnitude Modifier/...`
 - Create `Attribute` datas by right-clicking, then navigating to `FESGAS/Attribute`
 
-5. ## Architecture Overview
+## 5. Architecture Overview
 ASDASD
 
 ## What Is It
