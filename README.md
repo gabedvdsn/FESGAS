@@ -4,7 +4,7 @@
 ![Static Badge](https://img.shields.io/badge/UnityVersion-2022.3.37f1-brightgreen)
 
 ## 1. Table of Contents
-- [Introduction](#introduction)
+- [Introduction](#2.-introduction)
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Architecture Overview](#architecture-overview)
