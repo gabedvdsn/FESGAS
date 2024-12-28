@@ -26,7 +26,7 @@ namespace FESGameplayAbilitySystem
 
         private void Update()
         {
-            if (!Source.TryGetModifiedAttributeValue(AttributeTarget, out ModifiedAttributeValue attributeValue)) return;
+            // if (!Source.TryGetModifiedAttributeValue(AttributeTarget, out ModifiedAttributeValue attributeValue)) return;
             // Compile(attributeValue);
         }
 

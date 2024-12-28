@@ -71,11 +71,6 @@ namespace FESGameplayAbilitySystem
         
         #region Effect Handling
         
-        public GameplayEffectSpec GenerateEffectSpec(GASComponent Source, GameplayEffectScriptableObject GameplayEffect, int Level)
-        {
-            return GameplayEffect.Generate(Source, this, Level);
-        }
-
         public GameplayEffectSpec GenerateEffectSpec(AbilitySpec ability, GameplayEffectScriptableObject GameplayEffect)
         {
             return GameplayEffect.Generate(ability, this);
@@ -144,17 +139,17 @@ namespace FESGameplayAbilitySystem
         {
             if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
             
-            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToModifiedAttributeValue(attributeValue));
+            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToSourcedModified(attributeValue));
         }
         
         private void ApplyInstantGameplayEffect(GameplayEffectShelfContainer container)
         {
             if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
 
-            ModifiedAttributeValue modifiedAttributeValue = container.Spec.ToModifiedAttributeValue(attributeValue);
-            if (container.Spec.Base.ImpactSpecification.ReverseImpactOnRemoval) container.TrackImpact(modifiedAttributeValue);
+            SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.ToSourcedModified(attributeValue);
+            if (container.Spec.Base.ImpactSpecification.ReverseImpactOnRemoval) container.TrackImpact(sourcedModifiedValue);
             
-            AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, modifiedAttributeValue);
+            AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
         }
 
         private void HandleGameplayEffects()

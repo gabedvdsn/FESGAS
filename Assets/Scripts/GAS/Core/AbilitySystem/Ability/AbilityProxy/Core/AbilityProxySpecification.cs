@@ -5,13 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
     [Serializable]
     public class AbilityProxySpecification
     {
-        public ImplicitProxyDataInstructions Instructions;
+        public ProxyTargetingDataInstructions Instructions;
         public List<AbilityProxyStage> Stages;
 
         public AbilityProxy GenerateProxy()
@@ -24,6 +25,8 @@ namespace FESGameplayAbilitySystem
     {
         private int StageIndex;
         private readonly AbilityProxySpecification Specification;
+
+        public bool HasTargetingTask => Specification.Instructions.TargetingProxy;
         
         public AbilityProxy(AbilityProxySpecification specification)
         {
@@ -36,7 +39,21 @@ namespace FESGameplayAbilitySystem
             StageIndex = -1;
         }
 
-        public async UniTask Activate(AbilitySpec spec, CancellationToken token, ProxyDataPacket implicitData = null)
+        public async UniTask ActivateTargetingTask(AbilitySpec spec, CancellationToken token, ProxyDataPacket implicitData)
+        {
+            ProxyDataPacket data = new ProxyDataPacket(spec);
+            if (implicitData is not null)
+            {
+                data.CompileWith(implicitData);
+                
+            }
+
+            await Specification.Instructions.TargetingProxy.Prepare(data, token);
+            await Specification.Instructions.TargetingProxy.Activate(data, token);
+            await Specification.Instructions.TargetingProxy.Clean(data, token);
+        }
+
+        public async UniTask Activate(AbilitySpec spec, CancellationToken token, ProxyDataPacket implicitData)
         {
             Reset();
             
@@ -114,9 +131,17 @@ namespace FESGameplayAbilitySystem
     }
 
     [Serializable]
-    public class ImplicitProxyDataInstructions
+    public class ProxyTargetingDataInstructions
     {
-        public bool UseImplicitData = true;
+        [Header("Targeting")]
+        
+        public AbstractSelectTargetProxyTaskScriptableObject TargetingProxy;
+        
+        [Space]
+        
+        [Header("Implicit Targeting Instructions")]
+        
+        public bool IncludeImplicitTargeting = true;
         public ESourceTarget OwnerAs = ESourceTarget.Target;
     }
 }

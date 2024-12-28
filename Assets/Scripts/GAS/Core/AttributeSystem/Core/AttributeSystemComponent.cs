@@ -6,17 +6,22 @@ namespace FESGameplayAbilitySystem
 {
     public class AttributeSystemComponent : MonoBehaviour
     {
+        [Header("Attributes")]
+        
         public AttributeSetScriptableObject AttributeSet;
         
+        [Header("Attribute Change Events")]
+        
+        public List<AbstractAttributeChangeEventScriptableObject> AttributeChangeEvents;
         
         private Dictionary<AttributeScriptableObject, AttributeValue> AttributeCache;
         private Dictionary<AttributeScriptableObject, ModifiedAttributeValue> ModifiedAttributeCache;
+        public SourcedModifiedAttributeCache SourcedMAC;
         private bool modifiedCacheDirty;
 
         // Order of events should be considered (e.g. clamping before damage numbers)
         // Pre: changing modified attribute values to reflect weakness, amplification, etc...
         // Post: clamping max values, damage numbers, etc...
-        [SerializeField] private List<AbstractAttributeChangeEventScriptableObject> AttributeChangeEvents;
 
         private GASComponent System;
 
@@ -37,6 +42,7 @@ namespace FESGameplayAbilitySystem
         {
             AttributeCache = new Dictionary<AttributeScriptableObject, AttributeValue>();
             ModifiedAttributeCache = new Dictionary<AttributeScriptableObject, ModifiedAttributeValue>();
+            SourcedMAC = new SourcedModifiedAttributeCache();
         }
 
         private void InitializeAttributeSets()
@@ -50,7 +56,6 @@ namespace FESGameplayAbilitySystem
         public void ProvideAttribute(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
         {
             if (AttributeCache.ContainsKey(attribute)) return;
-            Debug.Log($"Provided {attribute.Name} for {modifiedAttributeValue.ToString()}");
             AttributeCache[attribute] = modifiedAttributeValue.ToAttributeValue();
         }
 
@@ -81,6 +86,7 @@ namespace FESGameplayAbilitySystem
 
             modifiedCacheDirty = false;
             ModifiedAttributeCache.Clear();
+            SourcedMAC.Clear();
         }
 
         private void OverrideAttributeValue(AttributeScriptableObject attribute, AttributeValue overrideAttributeValue)
@@ -89,16 +95,23 @@ namespace FESGameplayAbilitySystem
             AttributeCache[attribute] = overrideAttributeValue;
         }
 
-        public void ModifyAttribute(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
+        public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
         {
             if (!AttributeCache.ContainsKey(attribute)) return;
             
             modifiedCacheDirty = true;
             if (!TryGetModifiedAttributeValue(attribute, out ModifiedAttributeValue currModifiedAttributeValue))
             {
-                ModifiedAttributeCache[attribute] = modifiedAttributeValue;
+                ModifiedAttributeCache[attribute] = sourcedModifiedValue.ToModifiedAttributeValue();
             }
-            else ModifiedAttributeCache[attribute] = currModifiedAttributeValue.Combine(modifiedAttributeValue);
+            else ModifiedAttributeCache[attribute] = currModifiedAttributeValue.Combine(sourcedModifiedValue.ToModifiedAttributeValue());
+
+            SourcedMAC.Add(attribute, sourcedModifiedValue);
+        }
+
+        private void OnAttributeModified(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
+        {
+            
         }
 
         public bool TryGetAttributeValue(AttributeScriptableObject attribute, out AttributeValue attributeValue)

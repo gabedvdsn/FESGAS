@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(menuName = "FESGAS/Gameplay Effect", fileName = "New Gameplay Effect")]
-    public class GameplayEffectScriptableObject : ScriptableObject
+    public class GameplayEffectScriptableObject : AbstractGameplayEffectScriptableObject
     {
         [Header("Gameplay Effect")]
         
@@ -28,21 +28,17 @@ namespace FESGameplayAbilitySystem
         [Header("Interactions")] 
         
         public GameplayTagScriptableObject[] RemoveEffectsWithTag;
-        
-        public GameplayEffectSpec Generate(GASComponent Source, GASComponent Target, float Level)
+
+        public override GameplayEffectSpec Generate(AbilitySpec ability, GASComponent target)
         {
-            GameplayEffectSpec spec = new GameplayEffectSpec(this, Source, Target, Level);
-            ImpactSpecification.ApplyImpactSpecifications(spec);
+            GameplayEffectSpec spec = new GameplayEffectSpec(this, ability, target);
+            ApplyImpactSpecification(spec);
 
             return spec;
         }
-
-        public GameplayEffectSpec Generate(AbilitySpec ability, GASComponent target)
+        public override void ApplyImpactSpecification(GameplayEffectSpec spec)
         {
-            GameplayEffectSpec spec = new GameplayEffectSpec(this, ability, target);
             ImpactSpecification.ApplyImpactSpecifications(spec);
-
-            return spec;
         }
 
         private void OnValidate()
@@ -60,37 +56,28 @@ namespace FESGameplayAbilitySystem
         public GameplayEffectScriptableObject Base;
         public float Level;
         public float RelativeLevel;
-        
+
+        public AbilitySpec Ability;
         public GASComponent Source;
         public GASComponent Target;
 
         public Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?> SourceCapturedAttributes;
 
-        public GameplayEffectSpec(GameplayEffectScriptableObject gameplayEffect, GASComponent source, GASComponent target, float level)
-        {
-            Base = gameplayEffect;
-            Source = source;
-            Target = target;
-            
-            Level = level;
-            RelativeLevel = level - 1;
-
-            SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
-        }
-
         public GameplayEffectSpec(GameplayEffectScriptableObject GameplayEffect, AbilitySpec ability, GASComponent target)
         {
             Base = GameplayEffect;
-            Source = ability.Owner;
+            Ability = ability;
+            
+            Source = Ability.Owner;
             Target = target;
 
-            Level = ability.Level;
-            RelativeLevel = ability.RelativeLevel;
+            Level = Ability.Level;
+            RelativeLevel = Ability.RelativeLevel;
 
             SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
         }
 
-        public ModifiedAttributeValue ToModifiedAttributeValue(AttributeValue attributeValue)
+        public SourcedModifiedAttributeValue ToSourcedModified(AttributeValue attributeValue)
         {
             float magnitude = Base.ImpactSpecification.GetMagnitude(this);
             float currValue = attributeValue.CurrentValue;
@@ -153,7 +140,8 @@ namespace FESGameplayAbilitySystem
                     throw new ArgumentOutOfRangeException();
             }
 
-            return new ModifiedAttributeValue(
+            return new SourcedModifiedAttributeValue(
+                Ability,
                 currValue - attributeValue.CurrentValue,
                 baseValue - attributeValue.BaseValue
             );
@@ -172,7 +160,7 @@ namespace FESGameplayAbilitySystem
         public float PeriodDuration;
         public float TimeUntilPeriodTick;
 
-        public ModifiedAttributeValue TrackedImpact;
+        public SourcedModifiedAttributeValue TrackedImpact;
 
         public GameplayEffectShelfContainer(GameplayEffectSpec spec, bool ongoing)
         {
@@ -202,7 +190,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void TrackImpact(ModifiedAttributeValue modifiedAttributeValue)
+        public void TrackImpact(SourcedModifiedAttributeValue modifiedAttributeValue)
         {
             Debug.Log(modifiedAttributeValue);
             TrackedImpact = TrackedImpact.Combine(modifiedAttributeValue);

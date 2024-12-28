@@ -113,9 +113,9 @@ namespace FESGameplayAbilitySystem
             AbilitySpecContainer container = AbilityCache[abilityIndex];
 
             container.Spec.ApplyUsageEffects();
-            return container.Spec.Base.Proxy.Instructions.UseImplicitData 
+            return container.Spec.Base.Proxy.Instructions.IncludeImplicitTargeting 
                 ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, ESourceTarget.Target)) 
-                : container.ActivateAbility();;
+                : container.ActivateAbility(null);
         }
 
         private void ClearAbilityCache()
@@ -158,7 +158,7 @@ namespace FESGameplayAbilitySystem
                 Debug.Log($"CREATED ABILITY: {Spec.Base.Definition.Name} with proxy: {Proxy}");
             }
             
-            public bool ActivateAbility(ProxyDataPacket implicitData = null)
+            public bool ActivateAbility(ProxyDataPacket implicitData)
             {
                 ResetToken();
                 AwaitAbility(implicitData).Forget();
@@ -166,9 +166,10 @@ namespace FESGameplayAbilitySystem
                 return true;
             }
 
-            private async UniTaskVoid AwaitAbility(ProxyDataPacket implicitData = null)
+            private async UniTaskVoid AwaitAbility(ProxyDataPacket implicitData)
             {
                 IsActive = true;
+                await Proxy.ActivateTargetingTask(Spec, cst.Token, implicitData);
                 await Proxy.Activate(Spec, cst.Token, implicitData);
                 IsActive = false;
             }

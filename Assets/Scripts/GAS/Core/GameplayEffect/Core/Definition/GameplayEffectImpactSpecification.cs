@@ -8,6 +8,8 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public class GameplayEffectImpactSpecification
     {
+        [Header("Attribute Impact")]
+        
         public AttributeScriptableObject AttributeTarget;
         public EffectImpactTarget ValueTarget;
         public CalculationOperation ImpactOperation;
@@ -17,7 +19,11 @@ namespace FESGameplayAbilitySystem
         
         public float Magnitude;
         public AbstractMagnitudeModifierScriptableObject MagnitudeCalculation;
-        [FormerlySerializedAs("MagnitudeOperation")] public MagnitudeOperation MagnitudeCalculationOperation;
+        public MagnitudeOperation MagnitudeCalculationOperation;
+        
+        [Header("Contained Effect")]
+        public GameplayEffectScriptableObject ContainedEffect;
+        
 
         public void ApplyImpactSpecifications(GameplayEffectSpec spec)
         {
