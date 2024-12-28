@@ -29,8 +29,6 @@ namespace FESGameplayAbilitySystem
 
             EffectShelf = new List<GameplayEffectShelfContainer>();
             FinishedEffects = new List<GameplayEffectShelfContainer>();
-
-            
         }
 
         private void Start()
@@ -140,6 +138,10 @@ namespace FESGameplayAbilitySystem
             if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
             
             AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToSourcedModified(attributeValue));
+            if (spec.Base.ImpactSpecification.ContainedEffect)
+            {
+                ApplyGameplayEffect(spec.Ability, spec.Base.ImpactSpecification.ContainedEffect);
+            }
         }
         
         private void ApplyInstantGameplayEffect(GameplayEffectShelfContainer container)

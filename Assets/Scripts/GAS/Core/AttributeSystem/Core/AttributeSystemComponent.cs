@@ -86,7 +86,7 @@ namespace FESGameplayAbilitySystem
 
             modifiedCacheDirty = false;
             ModifiedAttributeCache.Clear();
-            SourcedMAC.Clear();
+            // SourcedMAC.Clear();
         }
 
         private void OverrideAttributeValue(AttributeScriptableObject attribute, AttributeValue overrideAttributeValue)
@@ -106,7 +106,7 @@ namespace FESGameplayAbilitySystem
             }
             else ModifiedAttributeCache[attribute] = currModifiedAttributeValue.Combine(sourcedModifiedValue.ToModifiedAttributeValue());
 
-            SourcedMAC.Add(attribute, sourcedModifiedValue);
+            //SourcedMAC.Add(attribute, sourcedModifiedValue);
         }
 
         private void OnAttributeModified(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)

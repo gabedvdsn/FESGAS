@@ -113,7 +113,8 @@ namespace FESGameplayAbilitySystem
             AbilitySpecContainer container = AbilityCache[abilityIndex];
 
             container.Spec.ApplyUsageEffects();
-            return container.Spec.Base.Proxy.Instructions.IncludeImplicitTargeting 
+            
+            return container.Spec.Base.Proxy.IncludeImplicitTargeting 
                 ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, ESourceTarget.Target)) 
                 : container.ActivateAbility(null);
         }

@@ -19,19 +19,22 @@ MonoBehaviour:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     ValueTarget: 0
     ImpactOperation: 0
+    ReverseImpactOnRemoval: 0
     Magnitude: -50
     MagnitudeCalculation: {fileID: 11400000, guid: 6fe2df4a3a27c6b47a4ab966e476d7b6, type: 2}
-    MagnitudeOperation: 0
+    MagnitudeCalculationOperation: 0
+    ContainedEffect: {fileID: 0}
   DurationSpecification:
     DurationPolicy: 0
     TickOnApplication: 0
     Duration: 0
     DurationCalculation: {fileID: 11400000, guid: 2b2911e14b1e24241b1aca4d59433794, type: 2}
-    DurationCalculationPolicy: 0
+    DurationCalculationOperation: 0
     Ticks: 0
     TickCalculation: {fileID: 11400000, guid: 2b2911e14b1e24241b1aca4d59433794, type: 2}
-    TickCalculationPolicy: 0
+    TickCalculationOperation: 0
     Rounding: 0
+    UseDefaultTickRate: 0
   SourceRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   TargetRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   RemoveEffectsWithTag: []
