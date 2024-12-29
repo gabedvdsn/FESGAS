@@ -1,7 +1,7 @@
 ![image](https://github.com/user-attachments/assets/ea55e71b-cb68-4995-9ef4-fb8e9da299ea)
 
 # Unity Gameplay Ability System Framework (FESGAS)
-![Static Badge](https://img.shields.io/badge/UnityVersion-2022.3.37f1-brightgreen)
+![Static Badge](https://img.shields.io/badge/Unity-2022.3.37f1-brightgreen)
 
 ## 1. Table of Contents
 - [Introduction](#2-introduction)
@@ -107,9 +107,9 @@ The unique behavior of an `Ability` is encapsulated in an `AbilityProxySpecifica
 ### Purifying Flames (Oracle, Dota 2)
 At level 1, when cast on a target, this ability immediately deals 90 damage and then heals the target for 150 health over 10 seconds.
 
-**Step 1: Create Gameplay Effects**
-
-1. Instant Damage
+<details>
+    <summary>Step 1: Create Gameplay Effects</summary>
+    1. Instant Damage
 This effect will immediately deal 50 damage to the target.
 - **Impact Specification**
     - **Attribute Target:** `Attribute.Health`
@@ -155,7 +155,7 @@ This effect will heal the target by 10 every .5 seconds for 3 seconds, healing f
    c. Add an `AbilityProxyStage`
        i. **Task Policy:** Any
        ii. 
-
+</details>
 
 After an activation request is validated and relayed to the `AbilitySystemComponent`, the ...
 
