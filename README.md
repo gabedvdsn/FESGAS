@@ -108,7 +108,7 @@ The unique behavior of an `Ability` is encapsulated in an `AbilityProxySpecifica
 At level 1, when cast on a target, this ability immediately deals 90 damage and then heals the target for 150 health over 10 seconds.
 
 <details>
-    <summary>Step 1: Create Gameplay Effects</summary>
+    <summary>Create Gameplay Effects</summary>
     
 1. Instant Damage
 This effect will immediately deal 50 damage to the target.
@@ -142,8 +142,10 @@ This effect will heal the target by 10 every .5 seconds for 3 seconds, healing f
     - **Tick Calculation:** `MagnitudeModifier.Constant`
     - **Tick Calculation Operation:** Multiply
     - ...
+</details>
+<details>
+    <summary>Create Proxy Task</summary>
 
-**Step 2: Create Proxy Task Subclass**
 1. Create `AbstractAbilityProxyTask.ApplyEffectProxyTask` as a subclass of `AbstractAbilityProxyTask`
    a. This task will take in a `GameplayEffectScriptableObject`\
    b. Within the `ApplyEffectProxyTask.Activate(...)` method, 
@@ -156,8 +158,8 @@ This effect will heal the target by 10 every .5 seconds for 3 seconds, healing f
    c. Add an `AbilityProxyStage`
        i. **Task Policy:** Any
        ii. 
-</details>
 
+</details>
 After an activation request is validated and relayed to the `AbilitySystemComponent`, the ...
 
 ### This project (and README) is still being developed.
