@@ -109,7 +109,8 @@ At level 1, when cast on a target, this ability immediately deals 90 damage and 
 
 <details>
     <summary>Step 1: Create Gameplay Effects</summary>
-    1. Instant Damage
+    
+1. Instant Damage
 This effect will immediately deal 50 damage to the target.
 - **Impact Specification**
     - **Attribute Target:** `Attribute.Health`
