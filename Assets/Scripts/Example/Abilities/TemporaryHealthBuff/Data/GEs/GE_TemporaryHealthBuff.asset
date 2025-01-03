@@ -18,22 +18,24 @@ MonoBehaviour:
   ImpactSpecification:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     ValueTarget: 1
-    ImpactOperation: 2
+    ImpactOperation: 0
     ReverseImpactOnRemoval: 1
+    ReApplicationPolicy: 0
     Magnitude: 75
     MagnitudeCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     MagnitudeCalculationOperation: 0
+    ContainedEffect: {fileID: 0}
   DurationSpecification:
     DurationPolicy: 2
     TickOnApplication: 1
     Duration: 5
     DurationCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     DurationCalculationOperation: 0
-    Ticks: 1
+    Ticks: 0
     TickCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     TickCalculationOperation: 0
     Rounding: 0
-    UseDefaultRate: 0
+    UseDefaultTickRate: 0
   SourceRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   TargetRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   RemoveEffectsWithTag: []

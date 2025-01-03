@@ -9,7 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0c617fefc5e8e94c914f46d5475e586, type: 3}
-  m_Name: GEID_DOT_ChanneledBigDamage
+  m_Script: {fileID: 11500000, guid: b9657128c22d4be5b88d5845f856d220, type: 3}
+  m_Name: ApplyDamageReductionEvent
   m_EditorClassIdentifier: 
-  Name: BigDamage.DOT
+  PrimaryAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  RelativeTo: {fileID: 11400000, guid: 7c2f5766cf91a2d4d9462437c2a71f6b, type: 2}

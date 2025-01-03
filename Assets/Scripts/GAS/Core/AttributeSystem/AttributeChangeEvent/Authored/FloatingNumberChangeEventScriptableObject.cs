@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(menuName = "FESGAS/Authored/Attribute Change Event/Floating Number", fileName = "ACE_FloatingNumber")]
-    public class FloatingNumberChangeEventScriptableObject : AbstractAttributeChangeEventScriptableObject
+    public class FloatingNumberChangeEventScriptableObject : AbstractFocusedAttributeChangeEventScriptableObject
     {
 
         public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)

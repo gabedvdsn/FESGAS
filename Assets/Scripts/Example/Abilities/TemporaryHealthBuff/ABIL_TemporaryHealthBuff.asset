@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ABIL_TemporaryHealthBuff
   m_EditorClassIdentifier: 
   Definition:
-    Name: 
+    Name: Temporary Health Buff
     Description: 
     UnlearnedIcon: {fileID: 0}
     NormalIcon: {fileID: 0}
@@ -30,9 +30,9 @@ MonoBehaviour:
       AvoidTags: []
       RequireTags: []
   Proxy:
-    Instructions:
-      UseImplicitData: 1
-      OwnerAs: 0
+    TargetingProxy: {fileID: 0}
+    IncludeImplicitTargeting: 1
+    OwnerAs: 0
     Stages:
     - TaskPolicy: 0
       Tasks:

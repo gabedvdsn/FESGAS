@@ -1,4 +1,7 @@
-﻿namespace FESGameplayAbilitySystem
+﻿using FESGameplayAbilitySystem.Core;
+using UnityEngine;
+
+namespace FESGameplayAbilitySystem
 {
     public struct ModifiedAttributeValue
     {
@@ -25,11 +28,30 @@
                 -DeltaBaseValue
             );
         }
+        
+        public ModifiedAttributeValue Multiply(AttributeValue attributeValue, bool oneMinus = true)
+        {
+            if (oneMinus)
+            {
+                return new ModifiedAttributeValue(
+                    DeltaCurrentValue - DeltaCurrentValue * attributeValue.CurrentValue,
+                    DeltaBaseValue - DeltaBaseValue * attributeValue.BaseValue
+                );
+            }
+            
+            return new ModifiedAttributeValue(
+                DeltaCurrentValue * attributeValue.CurrentValue,
+                DeltaBaseValue * attributeValue.BaseValue
+            );
+            
+        }
 
-        public SourcedModifiedAttributeValue ToSourced(AbilitySpec ability)
+        public SignPolicy SignPolicy => StaticSignPolicy.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
+
+        public SourcedModifiedAttributeValue ToSourced(GameplayEffectShelfContainer container)
         {
             return new SourcedModifiedAttributeValue(
-                ability,
+                container,
                 DeltaCurrentValue,
                 DeltaBaseValue
             );
@@ -39,32 +61,32 @@
 
         public override string ToString()
         {
-            return $"[ MOD-ATTR ] {DeltaCurrentValue}/{DeltaBaseValue}";
+            return $"[ MAV ] {DeltaCurrentValue}/{DeltaBaseValue}";
         }
     }
 
     public struct SourcedModifiedAttributeValue
     {
-        public AbilitySpec Ability;
+        public GameplayEffectShelfContainer Container;
         public float DeltaCurrentValue;
         public float DeltaBaseValue;
 
-        public SourcedModifiedAttributeValue(AbilitySpec ability, float deltaCurrentValue, float deltaBaseValue)
+        public SourcedModifiedAttributeValue(GameplayEffectShelfContainer container, float deltaCurrentValue, float deltaBaseValue)
         {
-            Ability = ability;
+            Container = container;
             DeltaCurrentValue = deltaCurrentValue;
             DeltaBaseValue = deltaBaseValue;
         }
 
         public SourcedModifiedAttributeValue Combine(SourcedModifiedAttributeValue other)
         {
-            if (other.Ability != Ability)
+            if (other.Container != Container)
             {
                 return this;
             }
             
             return new SourcedModifiedAttributeValue(
-                Ability,
+                Container,
                 DeltaCurrentValue + other.DeltaCurrentValue, 
                 DeltaBaseValue + other.DeltaBaseValue
             );
@@ -73,9 +95,36 @@
         public SourcedModifiedAttributeValue Negate()
         {
             return new SourcedModifiedAttributeValue(
-                Ability,
+                Container,
                 -DeltaCurrentValue,
                 -DeltaBaseValue
+            );
+        }
+
+        public SourcedModifiedAttributeValue Multiply(float magnitude)
+        {
+            return new SourcedModifiedAttributeValue(
+                Container,
+                DeltaCurrentValue * magnitude,
+                DeltaBaseValue * magnitude
+            );
+        }
+        
+        public SourcedModifiedAttributeValue Add(float magnitude)
+        {
+            return new SourcedModifiedAttributeValue(
+                Container,
+                DeltaCurrentValue * magnitude,
+                DeltaBaseValue * magnitude
+            );
+        }
+        
+        public SourcedModifiedAttributeValue Override(float currentMagnitude, float baseMagnitude)
+        {
+            return new SourcedModifiedAttributeValue(
+                Container,
+                currentMagnitude,
+                baseMagnitude
             );
         }
 
@@ -85,7 +134,8 @@
 
         public override string ToString()
         {
-            return $"[ MOD-ATTR ] {DeltaCurrentValue}/{DeltaBaseValue}";
+            if (Container is null) return $"[ SMAV-NULL ] {DeltaCurrentValue}/{DeltaBaseValue}";
+            return $"[ SMAV-{Container.Spec.Ability.Base.Definition.Name} ] {DeltaCurrentValue}/{DeltaBaseValue}";
         }
     }
 }

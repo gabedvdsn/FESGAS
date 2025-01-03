@@ -13,7 +13,11 @@ namespace FESGameplayAbilitySystem
         public AttributeScriptableObject AttributeTarget;
         public EffectImpactTarget ValueTarget;
         public CalculationOperation ImpactOperation;
+        
+        [Space(3)]
+        
         public bool ReverseImpactOnRemoval;
+        public GameplayEffectApplicationPolicy ReApplicationPolicy;
         
         [Space]
         

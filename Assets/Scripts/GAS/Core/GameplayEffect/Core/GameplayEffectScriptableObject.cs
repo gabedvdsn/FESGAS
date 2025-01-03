@@ -51,6 +51,13 @@ namespace FESGameplayAbilitySystem
 
     }
 
+    public enum GameplayEffectApplicationPolicy
+    {
+        Refresh,
+        Append,
+        Extend
+    }
+
     public class GameplayEffectSpec
     {
         public GameplayEffectScriptableObject Base;
@@ -65,8 +72,11 @@ namespace FESGameplayAbilitySystem
 
         public GameplayEffectSpec(GameplayEffectScriptableObject GameplayEffect, AbilitySpec ability, GASComponent target)
         {
+            
             Base = GameplayEffect;
             Ability = ability;
+            
+            Debug.Log($"Effect created with ability: {Ability.Base.Definition.Name}");
             
             Source = Ability.Owner;
             Target = target;
@@ -77,7 +87,7 @@ namespace FESGameplayAbilitySystem
             SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
         }
 
-        public SourcedModifiedAttributeValue ToSourcedModified(AttributeValue attributeValue)
+        public SourcedModifiedAttributeValue ToSourcedModified(AttributeValue attributeValue, GameplayEffectShelfContainer container)
         {
             float magnitude = Base.ImpactSpecification.GetMagnitude(this);
             float currValue = attributeValue.CurrentValue;
@@ -141,68 +151,11 @@ namespace FESGameplayAbilitySystem
             }
 
             return new SourcedModifiedAttributeValue(
-                Ability,
+                container,
                 currValue - attributeValue.CurrentValue,
                 baseValue - attributeValue.BaseValue
             );
         }
     }
 
-    public class GameplayEffectShelfContainer
-    {
-        public GameplayEffectSpec Spec;
-        public bool Ongoing;
-        public bool Valid;
-        
-        public float TotalDuration;
-        public float DurationRemaining;
-
-        public float PeriodDuration;
-        public float TimeUntilPeriodTick;
-
-        public SourcedModifiedAttributeValue TrackedImpact;
-
-        public GameplayEffectShelfContainer(GameplayEffectSpec spec, bool ongoing)
-        {
-            Spec = spec;
-            Ongoing = ongoing;
-            Valid = true;
-            
-            Spec.Base.DurationSpecification.ApplyDurationSpecifications(this);
-        }
-
-        public void UpdateTimeRemaining(float deltaTime)
-        {
-            DurationRemaining -= deltaTime;
-        }
-
-        public void TickPeriodic(float deltaTime, out bool executeTick)
-        {
-            TimeUntilPeriodTick -= deltaTime;
-            if (TimeUntilPeriodTick <= 0f)
-            {
-                TimeUntilPeriodTick += PeriodDuration;
-                executeTick = true;
-            }
-            else
-            {
-                executeTick = false;
-            }
-        }
-
-        public void TrackImpact(SourcedModifiedAttributeValue modifiedAttributeValue)
-        {
-            Debug.Log(modifiedAttributeValue);
-            TrackedImpact = TrackedImpact.Combine(modifiedAttributeValue);
-        }
-
-        public void OnRemove()
-        {
-            Valid = false;
-            if (Spec.Base.ImpactSpecification.ReverseImpactOnRemoval)
-            {
-                Spec.Target.AttributeSystem.ModifyAttribute(Spec.Base.ImpactSpecification.AttributeTarget, TrackedImpact.Negate());
-            }
-        }
-    }
 }

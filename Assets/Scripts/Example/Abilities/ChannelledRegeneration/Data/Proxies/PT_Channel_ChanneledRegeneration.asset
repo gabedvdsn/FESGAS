@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ReadOnlyDescription: Holds a channeling state for the assigned duration, and updates
     the Slider value while doing so
-  ChannelDuration: 2.5
+  ChannelDuration: 3

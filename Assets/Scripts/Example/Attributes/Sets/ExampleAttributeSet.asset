@@ -17,7 +17,9 @@ MonoBehaviour:
     Target: 0
     CollisionPolicy: 0
     Magnitude: 100
-  SubSets:
-  - {fileID: 11400000, guid: 4fe11fa6d6b4a1b43ad2f561ca06c4e3, type: 2}
-  - {fileID: 11400000, guid: 7159b40655007e04ea207351026d87d8, type: 2}
+  - Attribute: {fileID: 11400000, guid: 7c2f5766cf91a2d4d9462437c2a71f6b, type: 2}
+    Target: 0
+    CollisionPolicy: 0
+    Magnitude: 0.25
+  SubSets: []
   AttributeSetCollisionResolution: 0

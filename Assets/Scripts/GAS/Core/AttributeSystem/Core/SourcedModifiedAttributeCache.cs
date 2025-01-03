@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
+using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
@@ -7,8 +9,8 @@ namespace FESGameplayAbilitySystem
     {
         private const int WAIT_CYCLES = 3;
         
-        private Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>> cache;
-        private Dictionary<AttributeScriptableObject, int> cycles;
+        private Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>> cache = new();
+        private Dictionary<AttributeScriptableObject, int> cycles = new();
 
         public Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>>.KeyCollection Attributes => cache.Keys;
 
@@ -22,6 +24,7 @@ namespace FESGameplayAbilitySystem
             {
                 cache[attribute].Add(sourcedModifiedValue);
             }
+            foreach (SourcedModifiedAttributeValue smav in cache[attribute]) Debug.Log($"[ SMAC-{attribute.Name} ] {smav}");
         }
 
         public void Clear()
@@ -37,6 +40,93 @@ namespace FESGameplayAbilitySystem
             {
                 cache.Remove(attribute);
                 cycles.Remove(attribute);
+            }
+        }
+
+        public void Multiply(AttributeScriptableObject attribute, float magnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                cache[attribute][i] = cache[attribute][i].Multiply(magnitude);
+            }
+        }
+        
+        public void Add(AttributeScriptableObject attribute, float magnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                cache[attribute][i] = cache[attribute][i].Add(magnitude);
+            }
+        }
+        
+        public void Override(AttributeScriptableObject attribute, float currentMagnitude, float baseMagnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                cache[attribute][i] = cache[attribute][i].Override(currentMagnitude, baseMagnitude);
+            }
+        }
+
+        public void Multiply(AttributeScriptableObject attribute, GameplayEffectShelfContainer container, float magnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].Container != container) continue;
+                cache[attribute][i] = cache[attribute][i].Multiply(magnitude);
+            }
+        }
+        
+        public void Add(AttributeScriptableObject attribute, GameplayEffectShelfContainer container, float magnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].Container != container) continue;
+                cache[attribute][i] = cache[attribute][i].Add(magnitude);
+            }
+        }
+        
+        public void Override(AttributeScriptableObject attribute, GameplayEffectShelfContainer container, float currentMagnitude, float baseMagnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].Container != container) continue;
+                cache[attribute][i] = cache[attribute][i].Override(currentMagnitude, baseMagnitude);
+            }
+        }
+        
+        public void Multiply(AttributeScriptableObject attribute, AbilityScriptableObject ability, float magnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].Container.Spec.Ability.Base != ability) continue;
+                cache[attribute][i] = cache[attribute][i].Multiply(magnitude);
+            }
+        }
+        
+        public void Add(AttributeScriptableObject attribute, AbilityScriptableObject ability, float magnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].Container.Spec.Ability.Base != ability) continue;
+                cache[attribute][i] = cache[attribute][i].Add(magnitude);
+            }
+        }
+        
+        public void Override(AttributeScriptableObject attribute, AbilityScriptableObject ability, float currentMagnitude, float baseMagnitude)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].Container.Spec.Ability.Base != ability) continue;
+                cache[attribute][i] = cache[attribute][i].Override(currentMagnitude, baseMagnitude);
             }
         }
 
@@ -70,7 +160,7 @@ namespace FESGameplayAbilitySystem
                 return false;
             }
 
-            sourcedModifiers = foundSMAVs.Where(smav => smav.Ability.Base == source).ToList();
+            sourcedModifiers = foundSMAVs.Where(smav => smav.Container.Spec.Ability.Base == source).ToList();
             return true;
         }
         
@@ -82,7 +172,7 @@ namespace FESGameplayAbilitySystem
                 return false;
             }
 
-            sourcedModifiers = foundSMAVs.Where(smav => smav.Ability.Owner == owner).ToList();
+            sourcedModifiers = foundSMAVs.Where(smav => smav.Container.Spec.Ability.Owner == owner).ToList();
             return true;
         }
     }

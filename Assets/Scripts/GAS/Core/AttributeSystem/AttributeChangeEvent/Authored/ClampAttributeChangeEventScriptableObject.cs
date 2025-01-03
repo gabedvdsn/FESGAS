@@ -6,8 +6,8 @@ namespace FESGameplayAbilitySystem
     /// <summary>
     /// Clamps an attributes current value based on its base value
     /// </summary>
-    [CreateAssetMenu(menuName = "FESGAS/Authored/Attribute Change Event/Clamp Relative", fileName = "ACE_ClampRelative")]
-    public class ClampRelativeAttributeChangeEventScriptableObject : AbstractAttributeChangeEventScriptableObject
+    [CreateAssetMenu(menuName = "FESGAS/Authored/Attribute Change Event/Clamp", fileName = "ACE_Clamp")]
+    public class ClampAttributeChangeEventScriptableObject : AbstractFocusedAttributeChangeEventScriptableObject
     {
         public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)
         {
