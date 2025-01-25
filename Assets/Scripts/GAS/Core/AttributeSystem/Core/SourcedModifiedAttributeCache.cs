@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -10,36 +11,67 @@ namespace FESGameplayAbilitySystem
         private const int WAIT_CYCLES = 3;
         
         private Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>> cache = new();
-        private Dictionary<AttributeScriptableObject, int> cycles = new();
+        private List<AttributeScriptableObject> active;
 
         public Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>>.KeyCollection Attributes => cache.Keys;
 
+        public void SubscribeAttribute(AttributeScriptableObject attribute)
+        {
+            cache[attribute] = new List<SourcedModifiedAttributeValue>();
+        }
+        
         public void Add(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
         {
-            if (!cache.ContainsKey(attribute))
-            {
-                cache[attribute] = new List<SourcedModifiedAttributeValue> { sourcedModifiedValue };
-            }
-            else
-            {
-                cache[attribute].Add(sourcedModifiedValue);
-            }
-            foreach (SourcedModifiedAttributeValue smav in cache[attribute]) Debug.Log($"[ SMAC-{attribute.Name} ] {smav}");
+            if (!cache.ContainsKey(attribute)) return;
+            
+            cache[attribute].Add(sourcedModifiedValue);
+            // foreach (SourcedModifiedAttributeValue smav in cache[attribute]) Debug.Log($"[ SMAC-{attribute.Name} ] {smav}");
         }
+
+        public List<AttributeScriptableObject> Get() => active;
 
         public void Clear()
         {
-            List<AttributeScriptableObject> toRemove = new List<AttributeScriptableObject>();
-            foreach (AttributeScriptableObject attribute in cycles.Keys)
-            {
-                if (cache[attribute].Count > 0) cycles[attribute] = 0;
-                else if (cycles[attribute] > WAIT_CYCLES) toRemove.Add(attribute);
-            }
+            if (active.Count == 0) return;
+            foreach (AttributeScriptableObject attribute in active) cache[attribute].Clear();
+        }
 
-            foreach (AttributeScriptableObject attribute in toRemove)
+        public void Set(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+        }
+
+        public void LimitTop(AttributeScriptableObject attribute, ModifiedAttributeValue limit,
+            AttributeModificationApplicationMethod method = AttributeModificationApplicationMethod.FromLast)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+
+            ModifiedAttributeValue mav = ToModified(attribute);
+            if (mav.DeltaCurrentValue <= limit.DeltaCurrentValue && mav.DeltaBaseValue <= limit.DeltaBaseValue) return;
+            
+            ModifiedAttributeValue remaining = default;
+            if (mav.DeltaCurrentValue > limit.DeltaCurrentValue)
+                remaining.DeltaCurrentValue = mav.DeltaCurrentValue - limit.DeltaCurrentValue;
+            if (mav.DeltaBaseValue > limit.DeltaBaseValue)
+                remaining.DeltaBaseValue = mav.DeltaBaseValue - limit.DeltaBaseValue;
+            
+            switch (method)
             {
-                cache.Remove(attribute);
-                cycles.Remove(attribute);
+                case AttributeModificationApplicationMethod.FromLast:
+                    int index = cache[attribute].Count - 1;
+                    while (index >= 0)
+                    {
+                        if (remaining.DeltaCurrentValue > 0) cache[attribute][index] = cache[attribute][index].DeltaCurrentValue
+                        index -= 1;
+                    }
+                    
+                    break;
+                case AttributeModificationApplicationMethod.FromFirst:
+                    break;
+                case AttributeModificationApplicationMethod.FromEach:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(method), method, null);
             }
         }
 
@@ -129,7 +161,7 @@ namespace FESGameplayAbilitySystem
                 cache[attribute][i] = cache[attribute][i].Override(currentMagnitude, baseMagnitude);
             }
         }
-
+        
         public ModifiedAttributeValue ToModified(AttributeScriptableObject attribute)
         {
             TryToModified(attribute, out ModifiedAttributeValue mav);
@@ -140,7 +172,7 @@ namespace FESGameplayAbilitySystem
             if (!TryGetValue(attribute, out var sourcedModifiers))
             {
                 modifiedAttributeValue = default;
-                return default;
+                return false;
             }
             
             modifiedAttributeValue = sourcedModifiers.Aggregate(new ModifiedAttributeValue(), (current, smav) => current.Combine(smav.ToModifiedAttributeValue()));
@@ -151,7 +183,7 @@ namespace FESGameplayAbilitySystem
         {
             return cache.TryGetValue(attribute, out sourcedModifiers);
         }
-
+        
         public bool TryGetValue(AttributeScriptableObject attribute, AbilityScriptableObject source, out List<SourcedModifiedAttributeValue> sourcedModifiers)
         {
             if (!TryGetValue(attribute, out List<SourcedModifiedAttributeValue> foundSMAVs))
@@ -176,6 +208,12 @@ namespace FESGameplayAbilitySystem
             return true;
         }
     }
-    
+
+    public enum AttributeModificationApplicationMethod
+    {
+        FromLast,
+        FromFirst,
+        FromEach
+    }
     
 }

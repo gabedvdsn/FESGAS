@@ -63,6 +63,12 @@ namespace FESGameplayAbilitySystem
         {
             return $"[ MAV ] {DeltaCurrentValue}/{DeltaBaseValue}";
         }
+
+        public static ModifiedAttributeValue operator -(ModifiedAttributeValue mav1, ModifiedAttributeValue mav2)
+        {
+            return new ModifiedAttributeValue(mav1.DeltaCurrentValue - mav2.DeltaCurrentValue,
+                mav1.DeltaBaseValue - mav2.DeltaBaseValue);
+        }
     }
 
     public struct SourcedModifiedAttributeValue

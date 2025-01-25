@@ -20,7 +20,7 @@ namespace FESGameplayAbilitySystem
         public List<AbstractAttributeWorkerScriptableObject> AttributeWorkers;
         
         private Dictionary<AttributeScriptableObject, AttributeValue> AttributeCache;
-        private Dictionary<AttributeScriptableObject, ModifiedAttributeValue> ModifiedAttributeCache;
+        //private Dictionary<AttributeScriptableObject, ModifiedAttributeValue> ModifiedAttributeCache;
         public SourcedModifiedAttributeCache SourcedMAC;
         private bool modifiedCacheDirty;
 
@@ -46,7 +46,7 @@ namespace FESGameplayAbilitySystem
         private void InitializeCaches()
         {
             AttributeCache = new Dictionary<AttributeScriptableObject, AttributeValue>();
-            ModifiedAttributeCache = new Dictionary<AttributeScriptableObject, ModifiedAttributeValue>();
+            //ModifiedAttributeCache = new Dictionary<AttributeScriptableObject, ModifiedAttributeValue>();
             SourcedMAC = new SourcedModifiedAttributeCache();
         }
 
@@ -83,25 +83,27 @@ namespace FESGameplayAbilitySystem
             
             foreach (AbstractAttributeChangeEventScriptableObject changeEvent in AttributeChangeEvents)
             {
-                changeEvent.PreAttributeChange(System, ref AttributeCache, ref ModifiedAttributeCache);
+                //changeEvent.PreAttributeChange(System, ref AttributeCache, ref ModifiedAttributeCache);
+                changeEvent.PreAttributeChange(System, ref AttributeCache, SourcedMAC);
             }
             
-            foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.Keys)
+            foreach (AttributeScriptableObject attribute in SourcedMAC.Get())
             {
-                AttributeValue newAttributeValue = AttributeCache[attribute].ApplyModified(ModifiedAttributeCache[attribute]);
+                AttributeValue newAttributeValue = AttributeCache[attribute].ApplyModified(SourcedMAC.ToModified(attribute));
                 AttributeCache[attribute] = newAttributeValue;
             }
             
             foreach (AbstractAttributeChangeEventScriptableObject changeEvent in AttributeChangeEvents)
             {
-                changeEvent.PostAttributeChange(System, ref AttributeCache, ref ModifiedAttributeCache);
+                //changeEvent.PostAttributeChange(System, ref AttributeCache, ref ModifiedAttributeCache);
+                changeEvent.PostAttributeChange(System, ref AttributeCache, SourcedMAC);
             }
 
             modifiedCacheDirty = false;
-            ModifiedAttributeCache.Clear();
+            //ModifiedAttributeCache.Clear();
             SourcedMAC.Clear();
         }
-
+        
         private void OverrideAttributeValue(AttributeScriptableObject attribute, AttributeValue overrideAttributeValue)
         {
             // Override is not added to modification cache
@@ -113,11 +115,12 @@ namespace FESGameplayAbilitySystem
             if (!AttributeCache.ContainsKey(attribute)) return;
             
             modifiedCacheDirty = true;
-            if (!TryGetModifiedAttributeValue(attribute, out ModifiedAttributeValue currModifiedAttributeValue))
+            /*if (!TryGetModifiedAttributeValue(attribute, out ModifiedAttributeValue currModifiedAttributeValue))
             {
                 ModifiedAttributeCache[attribute] = sourcedModifiedValue.ToModifiedAttributeValue();
             }
             else ModifiedAttributeCache[attribute] = currModifiedAttributeValue.Combine(sourcedModifiedValue.ToModifiedAttributeValue());
+            */
 
             SourcedMAC.Add(attribute, sourcedModifiedValue);
         }
@@ -137,8 +140,9 @@ namespace FESGameplayAbilitySystem
 
         public bool TryGetModifiedAttributeValue(AttributeScriptableObject attribute, out ModifiedAttributeValue modifiedAttributeValue)
         {
-            if (attribute) return ModifiedAttributeCache.TryGetValue(attribute, out modifiedAttributeValue);
-
+            // if (attribute) return ModifiedAttributeCache.TryGetValue(attribute, out modifiedAttributeValue);
+            if (attribute) return SourcedMAC.TryToModified(attribute, out modifiedAttributeValue);
+            
             modifiedAttributeValue = default;
             return false;
         }

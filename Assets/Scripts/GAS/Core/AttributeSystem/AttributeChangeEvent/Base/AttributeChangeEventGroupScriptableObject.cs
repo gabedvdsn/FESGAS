@@ -8,13 +8,13 @@ namespace FESGameplayAbilitySystem
     {
         public List<AbstractAttributeChangeEventScriptableObject> FocusedEvents;
         
-        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)
+        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
-            foreach (AbstractAttributeChangeEventScriptableObject fEvent in FocusedEvents) fEvent.PreAttributeChange(system, ref attributeCache, ref modifiedAttributeCache);
+            foreach (AbstractAttributeChangeEventScriptableObject fEvent in FocusedEvents) fEvent.PreAttributeChange(system, ref attributeCache, modifiedAttributeCache);
         }
-        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)
+        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
-            foreach (AbstractAttributeChangeEventScriptableObject fEvent in FocusedEvents) fEvent.PostAttributeChange(system, ref attributeCache, ref modifiedAttributeCache);
+            foreach (AbstractAttributeChangeEventScriptableObject fEvent in FocusedEvents) fEvent.PostAttributeChange(system, ref attributeCache, modifiedAttributeCache);
         }
     }
 }
