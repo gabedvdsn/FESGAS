@@ -10,12 +10,13 @@ namespace FESGameplayAbilitySystem
         public SignPolicy SignPolicy;
         public bool OneMinus = true;
         
-        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)
+        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
-            if (!modifiedAttributeCache.TryGetValue(PrimaryAttribute, out ModifiedAttributeValue modifiedAttributeValue)) return;
-            AttributeValue value = attributeCache[RelativeTo];
+            if (!modifiedAttributeCache.TryToModified(PrimaryAttribute, out ModifiedAttributeValue modifiedAttributeValue)) return;
             if (SignPolicy != modifiedAttributeValue.SignPolicy) return;
-            modifiedAttributeCache[PrimaryAttribute] = modifiedAttributeValue.Multiply(value, OneMinus);
+            
+            modifiedAttributeCache.Set(PrimaryAttribute, modifiedAttributeValue.Multiply(attributeCache[RelativeTo], OneMinus));
+            modifiedAttributeCache.Multiply(PrimaryAttribute, modifiedAttributeValue.Multiply(attributeCache[RelativeTo], OneMinus));
         }
         
         public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)

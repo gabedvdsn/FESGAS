@@ -5,7 +5,6 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractAttributeChangeEventScriptableObject : ScriptableObject
     {
-        public abstract void AttributeChangeEvent(GASComponent system, )
         public abstract void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache);
         public abstract void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache);
     }

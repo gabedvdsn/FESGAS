@@ -46,6 +46,22 @@ namespace FESGameplayAbilitySystem
             
         }
 
+        public ModifiedAttributeValue Multiply(ModifiedAttributeValue modifiedAttributeValue, bool oneMinus = true)
+        {
+            if (oneMinus)
+            {
+                return new ModifiedAttributeValue(
+                    DeltaCurrentValue - DeltaCurrentValue * modifiedAttributeValue.DeltaCurrentValue,
+                    DeltaBaseValue - DeltaBaseValue * modifiedAttributeValue.DeltaBaseValue
+                );
+            }
+            
+            return new ModifiedAttributeValue(
+                DeltaCurrentValue * modifiedAttributeValue.DeltaCurrentValue,
+                DeltaBaseValue * modifiedAttributeValue.DeltaBaseValue
+            );
+        }
+
         public SignPolicy SignPolicy => StaticSignPolicy.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
 
         public SourcedModifiedAttributeValue ToSourced(GameplayEffectShelfContainer container)
@@ -115,6 +131,11 @@ namespace FESGameplayAbilitySystem
                 DeltaBaseValue * magnitude
             );
         }
+
+        public SourcedModifiedAttributeValue Multiply(ModifiedAttributeValue modifiedAttributeValue)
+        {
+            return ToModified().Multiply(modifiedAttributeValue).ToSourced(Container);
+        }
         
         public SourcedModifiedAttributeValue Add(float magnitude)
         {
@@ -122,6 +143,15 @@ namespace FESGameplayAbilitySystem
                 Container,
                 DeltaCurrentValue * magnitude,
                 DeltaBaseValue * magnitude
+            );
+        }
+        
+        public SourcedModifiedAttributeValue Add(ModifiedAttributeValue modifiedAttributeValue)
+        {
+            return new SourcedModifiedAttributeValue(
+                Container,
+                DeltaCurrentValue * modifiedAttributeValue.DeltaCurrentValue,
+                DeltaBaseValue * modifiedAttributeValue.DeltaBaseValue
             );
         }
         
@@ -133,8 +163,17 @@ namespace FESGameplayAbilitySystem
                 baseMagnitude
             );
         }
+        
+        public SourcedModifiedAttributeValue Override(ModifiedAttributeValue modifiedAttributeValue)
+        {
+            return new SourcedModifiedAttributeValue(
+                Container,
+                modifiedAttributeValue.DeltaCurrentValue,
+                modifiedAttributeValue.DeltaBaseValue
+            );
+        }
 
-        public ModifiedAttributeValue ToModifiedAttributeValue() => new(DeltaCurrentValue, DeltaBaseValue);
+        public ModifiedAttributeValue ToModified() => new(DeltaCurrentValue, DeltaBaseValue);
 
         public AttributeValue ToAttributeValue() => new(DeltaCurrentValue, DeltaBaseValue);
 

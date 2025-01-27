@@ -18,8 +18,9 @@ namespace FESGameplayAbilitySystem
         
         [Header("Leveling")]
 
-        public int StartingLevel = 1;
+        public int StartingLevel = 0;
         public int MaxLevel = 4;
+        public bool IgnoreWhenLevelZero = true;
 
         [Header("Using")]
         

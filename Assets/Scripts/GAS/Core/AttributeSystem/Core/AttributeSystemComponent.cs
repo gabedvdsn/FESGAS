@@ -61,7 +61,9 @@ namespace FESGameplayAbilitySystem
         public void ProvideAttribute(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
         {
             if (AttributeCache.ContainsKey(attribute)) return;
+            
             AttributeCache[attribute] = modifiedAttributeValue.ToAttributeValue();
+            SourcedMAC.SubscribeAttribute(attribute);
         }
 
         private void UpdateAttributes()
@@ -117,9 +119,9 @@ namespace FESGameplayAbilitySystem
             modifiedCacheDirty = true;
             /*if (!TryGetModifiedAttributeValue(attribute, out ModifiedAttributeValue currModifiedAttributeValue))
             {
-                ModifiedAttributeCache[attribute] = sourcedModifiedValue.ToModifiedAttributeValue();
+                ModifiedAttributeCache[attribute] = sourcedModifiedValue.ToModified();
             }
-            else ModifiedAttributeCache[attribute] = currModifiedAttributeValue.Combine(sourcedModifiedValue.ToModifiedAttributeValue());
+            else ModifiedAttributeCache[attribute] = currModifiedAttributeValue.Combine(sourcedModifiedValue.ToModified());
             */
 
             SourcedMAC.Add(attribute, sourcedModifiedValue);
@@ -140,7 +142,7 @@ namespace FESGameplayAbilitySystem
 
         public bool TryGetModifiedAttributeValue(AttributeScriptableObject attribute, out ModifiedAttributeValue modifiedAttributeValue)
         {
-            // if (attribute) return ModifiedAttributeCache.TryGetValue(attribute, out modifiedAttributeValue);
+            // if (attribute) return ModifiedAttributeCache.TryGetCachedValue(attribute, out modifiedAttributeValue);
             if (attribute) return SourcedMAC.TryToModified(attribute, out modifiedAttributeValue);
             
             modifiedAttributeValue = default;

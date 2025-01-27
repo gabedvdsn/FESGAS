@@ -23,14 +23,14 @@ namespace FESGameplayAbilitySystem
             AttributeValue primaryAttributeValue = attributeCache[PrimaryAttribute];
             if (primaryAttributeValue.BaseValue < primaryAttributeValue.CurrentValue)
             {
-                modifiedAttributeValue.DeltaCurrentValue -= primaryAttributeValue.CurrentValue - primaryAttributeValue.BaseValue;
+                // modifiedAttributeValue.DeltaCurrentValue -= primaryAttributeValue.CurrentValue - primaryAttributeValue.BaseValue;
                 primaryAttributeValue.CurrentValue = primaryAttributeValue.BaseValue;
             }
 
             attributeCache[PrimaryAttribute] = primaryAttributeValue;
             
             // Set the modified attribute value to reflect the actual modification post clamp
-            modifiedAttributeCache[PrimaryAttribute] = modifiedAttributeValue;
+            // modifiedAttributeCache.Set(PrimaryAttribute, modifiedAttributeValue);
         }
     }
 }

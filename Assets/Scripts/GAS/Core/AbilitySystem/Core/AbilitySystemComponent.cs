@@ -107,7 +107,7 @@ namespace FESGameplayAbilitySystem
             return AbilityCache.TryGetValue(index, out AbilitySpecContainer container) && container.Spec.ValidateActivationRequirements();
         }
 
-        public bool ActivateAbilityAtIndex(int abilityIndex)
+        public bool TryActivateAbility(int abilityIndex)
         {
             if (!CanActivateAbility(abilityIndex)) return false;
             AbilitySpecContainer container = AbilityCache[abilityIndex];
@@ -117,6 +117,17 @@ namespace FESGameplayAbilitySystem
             return container.Spec.Base.Proxy.IncludeImplicitTargeting 
                 ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, ESourceTarget.Target)) 
                 : container.ActivateAbility(null);
+        }
+
+        public bool TryActivateAbility(AbilitySpec spec)
+        {
+            foreach (int abilityIndex in AbilityCache.Keys)
+            {
+                if (AbilityCache[abilityIndex].Spec != spec) continue;
+                return TryActivateAbility(abilityIndex);
+            }
+
+            return false;
         }
 
         private void ClearAbilityCache()
