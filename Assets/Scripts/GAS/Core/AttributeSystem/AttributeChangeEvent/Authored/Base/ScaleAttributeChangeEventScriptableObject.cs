@@ -9,17 +9,18 @@ namespace FESGameplayAbilitySystem
     [CreateAssetMenu(menuName = "FESGAS/Authored/Attribute Change Event/Scale", fileName = "ACE_Scale")]
     public class ScaleAttributeChangeEventScriptableObject : AbstractFocusedAttributeChangeEventScriptableObject
     {
-        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)
+        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
-            if (!modifiedAttributeCache.TryGetValue(PrimaryAttribute, out ModifiedAttributeValue modifiedAttributeValue)) return;
+            if (!modifiedAttributeCache.TryToModified(PrimaryAttribute, out ModifiedAttributeValue modifiedAttributeValue)) return;
             if (modifiedAttributeValue.DeltaBaseValue == 0f) return;
 
             float proportion = attributeCache[PrimaryAttribute].CurrentValue / attributeCache[PrimaryAttribute].BaseValue;
             modifiedAttributeValue.DeltaCurrentValue = proportion * modifiedAttributeValue.DeltaBaseValue;
-            modifiedAttributeCache[PrimaryAttribute] = modifiedAttributeValue;
+
+            modifiedAttributeCache.Override(PrimaryAttribute, modifiedAttributeValue);
         }
         
-        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, ref Dictionary<AttributeScriptableObject, ModifiedAttributeValue> modifiedAttributeCache)
+        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
             // Scale self shouldn't implement anything here
         }

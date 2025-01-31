@@ -20,9 +20,9 @@ namespace FESGameplayAbilitySystem
         
         public int Ticks;
         public AbstractMagnitudeModifierScriptableObject TickCalculation;
-        [FormerlySerializedAs("TickCalculationPolicy")] public MagnitudeOperation TickCalculationOperation;
+        public MagnitudeOperation TickCalculationOperation;
         public TickCalculationRounding Rounding;
-        [FormerlySerializedAs("UseDefaultRate")] public bool UseDefaultTickRate;
+        public bool UseDefaultTickRate;
 
         public void ApplyDurationSpecifications(GameplayEffectShelfContainer container)
         {

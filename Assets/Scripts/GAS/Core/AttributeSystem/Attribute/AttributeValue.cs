@@ -44,6 +44,16 @@ namespace FESGameplayAbilitySystem
             return new AttributeValue(a.CurrentValue / b, a.BaseValue / b);
         }
         
+        public static AttributeValue operator *(AttributeValue a, float b)
+        {
+            return new AttributeValue(a.CurrentValue * b, a.BaseValue * b);
+        }
+        
+        public static AttributeValue operator *(AttributeValue a, AttributeValue b)
+        {
+            return new AttributeValue(a.CurrentValue * b.CurrentValue, a.BaseValue * b.BaseValue);
+        }
+        
         public override string ToString()
         {
             return $"[ ATTR ] {CurrentValue}/{BaseValue}";

@@ -147,14 +147,18 @@ namespace FESGameplayAbilitySystem
             
             switch (spec.Base.ImpactSpecification.ReApplicationPolicy)
             {
-                case GameplayEffectApplicationPolicy.Extend:
-                    container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
-                    return true;
                 case GameplayEffectApplicationPolicy.Refresh:
                     container.Refresh();
                     return true;
-                case GameplayEffectApplicationPolicy.Append:
-                    return false;
+                case GameplayEffectApplicationPolicy.Extend:
+                    container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
+                    return true;
+                case GameplayEffectApplicationPolicy.StackRefresh:
+                    container.Refresh();
+                    return true;
+                case GameplayEffectApplicationPolicy.StackExtend:
+                    container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
+                    return true;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -164,7 +168,7 @@ namespace FESGameplayAbilitySystem
         {
             if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
             
-            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToSourcedModified(attributeValue, null));
+            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToSourcedModified(attributeValue));
             if (spec.Base.ImpactSpecification.ContainedEffect)
             {
                 ApplyGameplayEffect(spec.Ability, spec.Base.ImpactSpecification.ContainedEffect);
@@ -175,7 +179,7 @@ namespace FESGameplayAbilitySystem
         {
             if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
 
-            SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.ToSourcedModified(attributeValue, container);
+            SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.ToSourcedModified(attributeValue);
             container.TrackImpact(sourcedModifiedValue);
             
             AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);

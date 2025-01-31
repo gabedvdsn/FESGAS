@@ -10,6 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6a646b5a2dc74d4baa65e4dd098f5ad, type: 3}
-  m_Name: DamageResistance
+  m_Name: MagicalDamageResistance
   m_EditorClassIdentifier: 
-  Name: Damage Resistance
+  Name: Magical Damage Resistance

@@ -9,15 +9,14 @@ namespace FESGameplayAbilitySystem
     public class SourcedModifiedAttributeCache
     {
         private Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>> cache = new();
-        private List<AttributeScriptableObject> active;
+        private List<AttributeScriptableObject> active = new();
 
         public Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>>.KeyCollection Attributes => cache.Keys;
-
-        
         
         public void SubscribeAttribute(AttributeScriptableObject attribute)
         {
             cache[attribute] = new List<SourcedModifiedAttributeValue>();
+            Debug.Log($"Subscribed attribute: {attribute}");
         }
 
         public bool DefinesAttribute(AttributeScriptableObject attribute) => cache.ContainsKey(attribute);
@@ -25,9 +24,10 @@ namespace FESGameplayAbilitySystem
         public void Add(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
         {
             if (!cache.ContainsKey(attribute)) return;
+            if (!active.Contains(attribute)) active.Add(attribute);
             
             cache[attribute].Add(sourcedModifiedValue);
-            // foreach (SourcedModifiedAttributeValue smav in cache[attribute]) Debug.Log($"[ SMAC-{attribute.Name} ] {smav}");
+            //foreach (SourcedModifiedAttributeValue smav in cache[attribute]) Debug.Log($"[ SMAC-{attribute} ] {smav}");
         }
 
         public List<AttributeScriptableObject> Get() => active;
@@ -39,12 +39,6 @@ namespace FESGameplayAbilitySystem
             active.Clear();
         }
 
-        public void Set(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!DefinesAttribute(attribute)) return;
-            
-        }
-
         /// <summary>
         /// Ceils the total MAV values for the specified attribute by the provided limit.
         /// </summary>
@@ -52,58 +46,108 @@ namespace FESGameplayAbilitySystem
         /// <param name="limit">The limit value</param>
         /// <param name="method">The application method</param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public void Ceil(AttributeScriptableObject attribute, ModifiedAttributeValue limit,
+        /*public void Ceil(AttributeScriptableObject attribute, ModifiedAttributeValue limit,
             AttributeModificationApplicationMethod method = AttributeModificationApplicationMethod.FromLast)
         {
-            if (!TryToModified(attribute, out ModifiedAttributeValue mav)) return;
-
-            if (mav.DeltaCurrentValue <= limit.DeltaCurrentValue && mav.DeltaBaseValue <= limit.DeltaBaseValue) return;
+            if (!TryToModified(attribute, out ModifiedAttributeValue mavSum)) return;
             
-            ModifiedAttributeValue remaining = default;
-            if (mav.DeltaCurrentValue > limit.DeltaCurrentValue)
-                remaining.DeltaCurrentValue = mav.DeltaCurrentValue - limit.DeltaCurrentValue;
-            if (mav.DeltaBaseValue > limit.DeltaBaseValue)
-                remaining.DeltaBaseValue = mav.DeltaBaseValue - limit.DeltaBaseValue;
+            float totalCurr = mavSum.DeltaCurrentValue;
+            float totalBase = mavSum.DeltaBaseValue;
 
-            int cacheIndex;
+            float excessCurr = Mathf.Max(0f, totalCurr - limit.DeltaCurrentValue);
+            float excessBase = Mathf.Max(0f, totalBase - limit.DeltaBaseValue);
+
             switch (method)
             {
+
                 case AttributeModificationApplicationMethod.FromLast:
-                    cacheIndex = cache[attribute].Count - 1;
-                    while (cacheIndex >= 0)
+                    for (int i = cache[attribute].Count - 1; i >= 0; i--)
                     {
-                        if (!(remaining.DeltaCurrentValue > 0 && remaining.DeltaBaseValue > 0)) break;
-
-                        ModifiedAttributeValue newMav = Limit(attribute, cacheIndex, remaining, 0, float.MaxValue);
-
-                        remaining -= cache[attribute][cacheIndex].ToModified() - newMav;
-                        cache[attribute][cacheIndex] = newMav.ToSourced(cache[attribute][cacheIndex].Container);
+                        if (excessCurr == 0f && excessBase == 0f) break;
+                        ModifiedAttributeValue newMav = cache[attribute][i].ToModified();
                         
-                        cacheIndex -= 1;
+                        if (excessCurr > 0)
+                        {
+                            float reduction = Mathf.Min(cache[attribute][i].DeltaCurrentValue, excessCurr);
+                            newMav.DeltaCurrentValue -= reduction;
+                            excessCurr -= reduction;
+                        }
+                        
+                        if (excessBase > 0)
+                        {
+                            float reduction = Mathf.Min(cache[attribute][i].DeltaBaseValue, excessBase);
+                            newMav.DeltaBaseValue -= reduction;
+                            excessBase -= reduction;
+                        }
+
+                        cache[attribute][i] = newMav.ToSourced(cache[attribute][i].SourceSpec);
                     }
-                    
                     break;
                 case AttributeModificationApplicationMethod.FromFirst:
-                    cacheIndex = 0;
-                    while (cacheIndex < cache[attribute].Count)
+                    for (int i = 0; i < cache[attribute].Count; i++)
                     {
-                        if (!(remaining.DeltaCurrentValue > 0 && remaining.DeltaBaseValue > 0)) break;
-
-                        ModifiedAttributeValue newMav = Limit(attribute, cacheIndex, remaining, 0, float.MaxValue);
-
-                        remaining -= cache[attribute][cacheIndex].ToModified() - newMav;
-                        cache[attribute][cacheIndex] = newMav.ToSourced(cache[attribute][cacheIndex].Container);
+                        if (excessCurr == 0f && excessBase == 0f) break;
+                        ModifiedAttributeValue newMav = cache[attribute][i].ToModified();
                         
-                        cacheIndex += 1;
+                        if (excessCurr > 0)
+                        {
+                            float reduction = Mathf.Min(cache[attribute][i].DeltaCurrentValue, excessCurr);
+                            newMav.DeltaCurrentValue -= reduction;
+                            excessCurr -= reduction;
+                        }
+                        
+                        if (excessBase > 0)
+                        {
+                            float reduction = Mathf.Min(cache[attribute][i].DeltaBaseValue, excessBase);
+                            newMav.DeltaBaseValue -= reduction;
+                            excessBase -= reduction;
+                        }
+
+                        cache[attribute][i] = newMav.ToSourced(cache[attribute][i].SourceSpec);
                     }
                     break;
                 case AttributeModificationApplicationMethod.FromEach:
-                    
+                    while (excessCurr > 0 || excessBase > 0)
+                    {
+                        for (int i = 0; i < cache[attribute].Count; i++)
+                        {
+                            if (excessCurr == 0f && excessBase == 0f) break;
+                            ModifiedAttributeValue newMav = cache[attribute][i].ToModified();
+                        
+                            if (excessCurr > 0)
+                            {
+                                float reduction = Mathf.Min(cache[attribute][i].DeltaCurrentValue, excessCurr, Mathf.Max(1f, Mathf.Floor(excessCurr / cache[attribute].Count)));
+                                newMav.DeltaCurrentValue -= reduction;
+                                excessCurr -= reduction;
+                            }
+                        
+                            if (excessBase > 0)
+                            {
+                                float reduction = Mathf.Min(cache[attribute][i].DeltaBaseValue, excessBase, Mathf.Max(1f, Mathf.Floor(excessBase / cache[attribute].Count)));
+                                newMav.DeltaBaseValue -= reduction;
+                                excessBase -= reduction;
+                            }
+
+                            cache[attribute][i] = newMav.ToSourced(cache[attribute][i].SourceSpec);
+                        }
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(method), method, null);
             }
         }
+
+        public void Floor(AttributeScriptableObject attribute, ModifiedAttributeValue limit,
+            AttributeModificationApplicationMethod method = AttributeModificationApplicationMethod.FromLast)
+        {
+            if (!TryToModified(attribute, out ModifiedAttributeValue mavSum)) return;
+            
+            float totalCurr = mavSum.DeltaCurrentValue;
+            float totalBase = mavSum.DeltaBaseValue;
+
+            float deficitCurr = Mathf.Max(0f, limit.DeltaCurrentValue - totalCurr);
+            float deficitBase = Mathf.Max(0f, limit.DeltaBaseValue - totalBase);
+        }*/
 
         private ModifiedAttributeValue Limit(AttributeScriptableObject attribute, int cacheIndex, ModifiedAttributeValue remaining, float clampMin, float clampMax)
         {
@@ -123,6 +167,47 @@ namespace FESGameplayAbilitySystem
             }
         }
         
+        public void Multiply(AttributeScriptableObject attribute, AttributeValue attributeValue)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                cache[attribute][i] = cache[attribute][i].Multiply(attributeValue);
+            }
+        }
+
+        public void Multiply(AttributeScriptableObject attribute, SignPolicy signPolicy, float multiplier, bool isScalar, bool clampScalar)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].SignPolicy != signPolicy) continue;
+                if (isScalar)
+                {
+                    if (clampScalar) cache[attribute][i] = cache[attribute][i].Multiply(Mathf.Clamp01(1 - multiplier));
+                    else cache[attribute][i] = cache[attribute][i].Multiply(1 - multiplier);
+                }
+                else cache[attribute][i] = cache[attribute][i].Multiply(multiplier);
+            }
+        }
+        
+        public void Multiply(AttributeScriptableObject attribute, EDamageType damageType, SignPolicy signPolicy, float multiplier, bool isScalar, bool clampScalar)
+        {
+            if (!cache.ContainsKey(attribute)) return;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].SourceSpec.Base.ImpactSpecification.ImpactType != EDamageType.NotApplicable 
+                    && cache[attribute][i].SourceSpec.Base.ImpactSpecification.ImpactType != damageType) continue;
+                if (cache[attribute][i].SignPolicy != signPolicy) continue;
+                if (isScalar)
+                {
+                    if (clampScalar) cache[attribute][i] = cache[attribute][i].Multiply(Mathf.Clamp01(1 - multiplier));
+                    else cache[attribute][i] = cache[attribute][i].Multiply(1 - multiplier);
+                }
+                else cache[attribute][i] = cache[attribute][i].Multiply(multiplier);
+            }
+        }
+        
         public void Add(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
         {
             if (!cache.ContainsKey(attribute)) return;
@@ -137,69 +222,11 @@ namespace FESGameplayAbilitySystem
             if (!cache.ContainsKey(attribute)) return;
             for (int i = 0; i < cache[attribute].Count; i++)
             {
-                cache[attribute][i] = cache[attribute][i].Override(currentMagnitude, baseMagnitude);
+                cache[attribute][i] = cache[attribute][i].Override(modifiedAttributeValue);
             }
         }
 
-        public void Multiply(AttributeScriptableObject attribute, GameplayEffectShelfContainer container, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!cache.ContainsKey(attribute)) return;
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (cache[attribute][i].Container != container) continue;
-                cache[attribute][i] = cache[attribute][i].Multiply(magnitude);
-            }
-        }
-        
-        public void Add(AttributeScriptableObject attribute, GameplayEffectShelfContainer container, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!cache.ContainsKey(attribute)) return;
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (cache[attribute][i].Container != container) continue;
-                cache[attribute][i] = cache[attribute][i].Add(magnitude);
-            }
-        }
-        
-        public void Override(AttributeScriptableObject attribute, GameplayEffectShelfContainer container, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!cache.ContainsKey(attribute)) return;
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (cache[attribute][i].Container != container) continue;
-                cache[attribute][i] = cache[attribute][i].Override(currentMagnitude, baseMagnitude);
-            }
-        }
-        
-        public void Multiply(AttributeScriptableObject attribute, AbilityScriptableObject ability, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!cache.ContainsKey(attribute)) return;
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (cache[attribute][i].Container.Spec.Ability.Base != ability) continue;
-                cache[attribute][i] = cache[attribute][i].Multiply(magnitude);
-            }
-        }
-        
-        public void Add(AttributeScriptableObject attribute, AbilityScriptableObject ability, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!cache.ContainsKey(attribute)) return;
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (cache[attribute][i].Container.Spec.Ability.Base != ability) continue;
-                cache[attribute][i] = cache[attribute][i].Add(magnitude);
-            }
-        }
-        
-        public void Override(AttributeScriptableObject attribute, AbilityScriptableObject ability, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!cache.ContainsKey(attribute)) return;
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (cache[attribute][i].Container.Spec.Ability.Base != ability) continue;
-                cache[attribute][i] = cache[attribute][i].Override(currentMagnitude, baseMagnitude);
-            }
-        }
+        public bool AttributeIsActive(AttributeScriptableObject attribute) => cache.ContainsKey(attribute) && cache[attribute].Count > 0;
         
         public ModifiedAttributeValue ToModified(AttributeScriptableObject attribute)
         {
@@ -232,7 +259,7 @@ namespace FESGameplayAbilitySystem
                 return false;
             }
 
-            sourcedModifiers = foundSMAVs.Where(smav => smav.Container.Spec.Ability.Base == source).ToList();
+            sourcedModifiers = foundSMAVs.Where(smav => smav.SourceSpec.Ability.Base == source).ToList();
             return true;
         }
         
@@ -244,7 +271,7 @@ namespace FESGameplayAbilitySystem
                 return false;
             }
 
-            sourcedModifiers = foundSMAVs.Where(smav => smav.Container.Spec.Ability.Owner == owner).ToList();
+            sourcedModifiers = foundSMAVs.Where(smav => smav.SourceSpec.Ability.Owner == owner).ToList();
             return true;
         }
     }

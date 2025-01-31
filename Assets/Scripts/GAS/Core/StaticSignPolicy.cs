@@ -11,8 +11,8 @@ namespace FESGameplayAbilitySystem.Core
             {
                 > 0 => SignPolicy.Positive,
                 < 0 => SignPolicy.Negative,
-                0 when magnitudes.Any(mag => mag != 0) => SignPolicy.Both,
-                _ => SignPolicy.Neither
+                0 when magnitudes.Any(mag => mag != 0) => SignPolicy.ZeroBiased,
+                _ => SignPolicy.ZeroNeutral
             };
         }
     }

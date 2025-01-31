@@ -91,6 +91,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (AttributeScriptableObject attribute in SourcedMAC.Get())
             {
+                Debug.Log(SourcedMAC.ToModified(attribute));
                 AttributeValue newAttributeValue = AttributeCache[attribute].ApplyModified(SourcedMAC.ToModified(attribute));
                 AttributeCache[attribute] = newAttributeValue;
             }

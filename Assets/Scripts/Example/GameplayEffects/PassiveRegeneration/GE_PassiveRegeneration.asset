@@ -19,17 +19,20 @@ MonoBehaviour:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     ValueTarget: 0
     ImpactOperation: 0
+    ImpactType: 0
     ReverseImpactOnRemoval: 0
+    ReApplicationPolicy: 0
     Magnitude: 2
     MagnitudeCalculation: {fileID: 11400000, guid: 6da644ed775b9434db3fd3a8cfcef088, type: 2}
     MagnitudeCalculationOperation: 0
+    ContainedEffect: {fileID: 0}
   DurationSpecification:
     DurationPolicy: 1
     TickOnApplication: 0
     Duration: 1
     DurationCalculation: {fileID: 11400000, guid: b0149cf63e7d08249ba2b7a0c81e0783, type: 2}
     DurationCalculationOperation: 2
-    Ticks: 5
+    Ticks: 7
     TickCalculation: {fileID: 11400000, guid: 6fe2df4a3a27c6b47a4ab966e476d7b6, type: 2}
     TickCalculationOperation: 2
     Rounding: 0

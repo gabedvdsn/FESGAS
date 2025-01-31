@@ -13,9 +13,10 @@ namespace FESGameplayAbilitySystem
         public AttributeScriptableObject AttributeTarget;
         public EffectImpactTarget ValueTarget;
         public CalculationOperation ImpactOperation;
+
+        [Space(3)] 
         
-        [Space(3)]
-        
+        public EDamageType ImpactType;
         public bool ReverseImpactOnRemoval;
         public GameplayEffectApplicationPolicy ReApplicationPolicy;
         
@@ -24,6 +25,8 @@ namespace FESGameplayAbilitySystem
         public float Magnitude;
         public AbstractMagnitudeModifierScriptableObject MagnitudeCalculation;
         public MagnitudeOperation MagnitudeCalculationOperation;
+        
+        [Space]
         
         [Header("Contained Effect")]
         public GameplayEffectScriptableObject ContainedEffect;

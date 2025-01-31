@@ -9,6 +9,7 @@ namespace FESGameplayAbilitySystem
     public class MagnitudeModifierGroupScriptableObject : AbstractMagnitudeModifierScriptableObject
     {
         public List<MagnitudeModifierGroupMember> Calculations;
+        public EValueCollisionPolicy OverrideMemberCollisionPolicy;
         
         public override void Initialize(GameplayEffectSpec spec)
         {
@@ -21,7 +22,16 @@ namespace FESGameplayAbilitySystem
         {
             if (Calculations.Any(m => m.RelativeOperation == CalculationOperation.Override))
             {
-                return Calculations.Where(m => m.RelativeOperation == CalculationOperation.Override).Max(m => m.Calculation.Evaluate(spec));
+                return OverrideMemberCollisionPolicy switch
+                {
+                    EValueCollisionPolicy.UseMaximum => Calculations.Where(m => m.RelativeOperation == CalculationOperation.Override)
+                        .Max(m => m.Calculation.Evaluate(spec)),
+                    EValueCollisionPolicy.UseMinimum => Calculations.Where(m => m.RelativeOperation == CalculationOperation.Override)
+                        .Min(m => m.Calculation.Evaluate(spec)),
+                    EValueCollisionPolicy.UseAverage => Calculations.Where(m => m.RelativeOperation == CalculationOperation.Override)
+                        .Average(m => m.Calculation.Evaluate(spec)),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
             }
             
             float value = Calculations.Where(m => m.RelativeOperation == CalculationOperation.Add).Sum(member => member.Calculation.Evaluate(spec));

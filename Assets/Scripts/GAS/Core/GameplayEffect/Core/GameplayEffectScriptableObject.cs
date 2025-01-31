@@ -53,9 +53,10 @@ namespace FESGameplayAbilitySystem
 
     public enum GameplayEffectApplicationPolicy
     {
-        Refresh,
-        Append,
-        Extend
+        Refresh,  // Refresh the duration of the effect
+        Extend,  // Extend the duration of the effect
+        StackRefresh,  // Stacks and refreshes the duration of the effect
+        StackExtend  // Stacks and extends the duration of the effect
     }
 
     public class GameplayEffectSpec
@@ -87,7 +88,7 @@ namespace FESGameplayAbilitySystem
             SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
         }
 
-        public SourcedModifiedAttributeValue ToSourcedModified(AttributeValue attributeValue, GameplayEffectShelfContainer container)
+        public SourcedModifiedAttributeValue ToSourcedModified(AttributeValue attributeValue)
         {
             float magnitude = Base.ImpactSpecification.GetMagnitude(this);
             float currValue = attributeValue.CurrentValue;
@@ -151,7 +152,7 @@ namespace FESGameplayAbilitySystem
             }
 
             return new SourcedModifiedAttributeValue(
-                container,
+                this,
                 currValue - attributeValue.CurrentValue,
                 baseValue - attributeValue.BaseValue
             );

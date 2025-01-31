@@ -20,7 +20,7 @@
             Ongoing = ongoing;
             Valid = true;
 
-            TrackedImpact = new SourcedModifiedAttributeValue(this, 0, 0);
+            TrackedImpact = new SourcedModifiedAttributeValue(Spec, 0, 0);
             Spec.Base.DurationSpecification.ApplyDurationSpecifications(this);
         }
 
