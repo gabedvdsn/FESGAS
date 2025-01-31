@@ -153,6 +153,8 @@ namespace FESGameplayAbilitySystem
                 case GameplayEffectApplicationPolicy.Extend:
                     container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
                     return true;
+                case GameplayEffectApplicationPolicy.Append:
+                    return false;
                 case GameplayEffectApplicationPolicy.StackRefresh:
                     container.Refresh();
                     return true;

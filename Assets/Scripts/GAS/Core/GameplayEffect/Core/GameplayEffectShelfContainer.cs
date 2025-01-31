@@ -1,4 +1,6 @@
-﻿namespace FESGameplayAbilitySystem
+﻿using UnityEngine;
+
+namespace FESGameplayAbilitySystem
 {
     public class GameplayEffectShelfContainer
     {
@@ -48,9 +50,11 @@
             }
         }
 
-        public void TrackImpact(SourcedModifiedAttributeValue modifiedAttributeValue)
+        public void TrackImpact(SourcedModifiedAttributeValue smav)
         {
-            TrackedImpact = TrackedImpact.Combine(modifiedAttributeValue);
+            Debug.Log($"Tracked impact of: {smav}");
+            TrackedImpact = TrackedImpact.Combine(smav);
+            Debug.Log($"Total tracked impact: {TrackedImpact}");
         }
 
         public void Refresh()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -26,6 +27,14 @@ namespace FESGameplayAbilitySystem
         
         public GameplayEffectScriptableObject Cost;
         public GameplayEffectScriptableObject Cooldown;
+        
+        [Header("Impact Workers")]
+        
+        public List<AbstractAbilityImpactWorkerScriptableObject> ImpactWorkers;
+
+        [Header("Impact Subscriptions")]
+
+        public List<AbilityScriptableObject> ImpactSubscriptions;
 
         public AbilitySpec Generate(GASComponent Owner, int Level)
         {

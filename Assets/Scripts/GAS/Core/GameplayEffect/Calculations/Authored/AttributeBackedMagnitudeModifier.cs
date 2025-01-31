@@ -17,21 +17,20 @@ namespace FESGameplayAbilitySystem
         
         public override void Initialize(GameplayEffectSpec spec)
         {
-            if (CaptureWhen == ECaptureAttributeWhen.OnCreation)
+            if (CaptureWhen != ECaptureAttributeWhen.OnCreation) return;
+            
+            switch (CaptureFrom)
             {
-                switch (CaptureFrom)
-                {
-                    case ESourceTarget.Source:
-                        if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue sourceAttributeValue)) break;
-                        spec.SourceCapturedAttributes[this] = sourceAttributeValue;
-                        break;
-                    case ESourceTarget.Target:
-                        if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue targetAttributeValue)) break;
-                        spec.SourceCapturedAttributes[this] = targetAttributeValue;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                case ESourceTarget.Source:
+                    if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue sourceAttributeValue)) break;
+                    spec.SourceCapturedAttributes[this] = sourceAttributeValue;
+                    break;
+                case ESourceTarget.Target:
+                    if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue targetAttributeValue)) break;
+                    spec.SourceCapturedAttributes[this] = targetAttributeValue;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
         

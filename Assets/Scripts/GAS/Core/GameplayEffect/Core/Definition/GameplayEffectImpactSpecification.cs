@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         public EffectImpactTarget ValueTarget;
         public CalculationOperation ImpactOperation;
 
-        [Space(3)] 
+        [Space] 
         
         public EDamageType ImpactType;
         public bool ReverseImpactOnRemoval;

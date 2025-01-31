@@ -18,7 +18,7 @@ MonoBehaviour:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     ValueTarget: 0
     ImpactOperation: 0
-    ImpactType: 2
+    ImpactType: 1
     ReverseImpactOnRemoval: 0
     ReApplicationPolicy: 0
     Magnitude: -15

@@ -55,6 +55,7 @@ namespace FESGameplayAbilitySystem
     {
         Refresh,  // Refresh the duration of the effect
         Extend,  // Extend the duration of the effect
+        Append,  // Append another instance of the effect independent of existing one(s)
         StackRefresh,  // Stacks and refreshes the duration of the effect
         StackExtend  // Stacks and extends the duration of the effect
     }

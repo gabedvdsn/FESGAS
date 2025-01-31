@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Attributes:
   - Attribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-    Target: 0
+    Target: 1
     CollisionPolicy: 0
     Magnitude: 100
   - Attribute: {fileID: 11400000, guid: 7c2f5766cf91a2d4d9462437c2a71f6b, type: 2}
