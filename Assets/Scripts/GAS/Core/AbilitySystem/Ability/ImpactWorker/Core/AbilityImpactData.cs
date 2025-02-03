@@ -17,5 +17,10 @@
         {
             return new AbilityImpactData(attribute, sourcedModifier, realImpact);
         }
+
+        public override string ToString()
+        {
+            return $"{Attribute} ({RealImpact})";
+        }
     }
 }

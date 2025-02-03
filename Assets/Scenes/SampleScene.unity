@@ -514,13 +514,14 @@ MonoBehaviour:
   AbilitySystem: {fileID: 0}
   Data:
     Level: 1
-    distinctName: Player
+    MaxLevel: 15
+    NameTag: {fileID: 11400000, guid: e2b0847fc4b69e2429cd462dc8c3099f, type: 2}
   StartingAbilityMapping:
     _serializedList:
     - Key: 113
       Value: {fileID: 11400000, guid: 2f4f962a331e64346ad51ca233b4c6d6, type: 2}
     - Key: 119
-      Value: {fileID: 11400000, guid: 562f4792557c0a64ebcdef73ff1e9554, type: 2}
+      Value: {fileID: 11400000, guid: 840dc75d468b1454ebf42676ea0a599b, type: 2}
     - Key: 101
       Value: {fileID: 11400000, guid: b2893d4506c43044c8686e5471de86e1, type: 2}
     - Key: 114
@@ -538,6 +539,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxAbilities: 5
+  Workers: []
 --- !u!1 &189208826
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,9 +16,9 @@ namespace FESGameplayAbilitySystem
         
         public AbstractSelectTargetProxyTaskScriptableObject TargetingProxy;
         
-        [Space]
+        [FormerlySerializedAs("IncludeImplicitTargeting")] [Space]
         
-        public bool IncludeImplicitTargeting = true;
+        public bool UseImplicitTargeting = true;
         public ESourceTarget OwnerAs = ESourceTarget.Target;
         
         [Header("Proxy Stages")]
@@ -35,8 +35,6 @@ namespace FESGameplayAbilitySystem
     {
         private int StageIndex;
         private readonly AbilityProxySpecification Specification;
-
-        public bool HasTargetingTask => Specification.TargetingProxy;
         
         public AbilityProxy(AbilityProxySpecification specification)
         {
@@ -57,7 +55,8 @@ namespace FESGameplayAbilitySystem
                 data.CompileWith(implicitData);
             }
 
-            if (HasTargetingTask)
+            // If there is a targeting task assigned...
+            if (Specification.TargetingProxy)
             {
                 await Specification.TargetingProxy.Prepare(data, token);
                 await Specification.TargetingProxy.Activate(data, token);
@@ -140,11 +139,5 @@ namespace FESGameplayAbilitySystem
     {
         Any,
         All
-    }
-
-    [Serializable]
-    public class ProxyTargetingDataInstructions
-    {
-        
     }
 }

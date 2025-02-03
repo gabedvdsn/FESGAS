@@ -13,13 +13,13 @@ namespace FESGameplayAbilitySystem
     {
         public SignPolicy SignPolicy;
         
-        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
             if (!modifiedAttributeCache.AttributeIsActive(PrimaryAttribute)) return;
-            modifiedAttributeCache.Multiply(PrimaryAttribute, attributeCache[RelativeTo]);
+            modifiedAttributeCache.Multiply(PrimaryAttribute, attributeCache[RelativeTo].Value);
         }
         
-        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
             // Shouldn't implement anything here
         }

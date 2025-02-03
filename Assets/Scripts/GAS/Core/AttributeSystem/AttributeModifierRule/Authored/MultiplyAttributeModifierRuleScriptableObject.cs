@@ -6,7 +6,7 @@ namespace FESGameplayAbilitySystem.Core.AttributeSystem.AttributeModifierRule.Au
     {
         public override ModifiedAttributeValue ApplyRule(AttributeSystemComponent system, ModifiedAttributeValue modifiedAttributeValue)
         {
-            return !system.TryGetAttributeValue(SourceAttribute, out AttributeValue attributeValue) ? modifiedAttributeValue : modifiedAttributeValue.Multiply(attributeValue);
+            return !system.TryGetAttributeValue(SourceAttribute, out CachedAttributeValue attributeValue) ? modifiedAttributeValue : modifiedAttributeValue.Multiply(attributeValue.Value);
         }
     }
 }

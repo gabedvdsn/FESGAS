@@ -11,13 +11,13 @@ namespace FESGameplayAbilitySystem
         [Tooltip("If the value is a scalar, should it be clamped between 0-1?")]
         public bool ClampScalar01 = true;
         
-        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
             if (!modifiedAttributeCache.AttributeIsActive(PrimaryAttribute)) return;
-            modifiedAttributeCache.Multiply(PrimaryAttribute, SignPolicy, attributeCache[RelativeTo].CurrentValue * RelativeMultiplier, IsScalar, ClampScalar01);
+            modifiedAttributeCache.Multiply(PrimaryAttribute, SignPolicy, attributeCache[RelativeTo].Value.CurrentValue * RelativeMultiplier, IsScalar, ClampScalar01);
         }
         
-        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, AttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
             // Shouldn't implement anything here
         }

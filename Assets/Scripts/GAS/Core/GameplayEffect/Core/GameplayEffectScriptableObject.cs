@@ -29,9 +29,9 @@ namespace FESGameplayAbilitySystem
         
         public GameplayTagScriptableObject[] RemoveEffectsWithTag;
 
-        public override GameplayEffectSpec Generate(AbilitySpec ability, GASComponent target)
+        public override GameplayEffectSpec Generate(IEffectDerivation derivation, GASComponent target)
         {
-            GameplayEffectSpec spec = new GameplayEffectSpec(this, ability, target);
+            GameplayEffectSpec spec = new GameplayEffectSpec(this, derivation, target);
             ApplyImpactSpecification(spec);
 
             return spec;
@@ -60,31 +60,28 @@ namespace FESGameplayAbilitySystem
         StackExtend  // Stacks and extends the duration of the effect
     }
 
-    public class GameplayEffectSpec
+    public class GameplayEffectSpec : IAttributeDerivation
     {
         public GameplayEffectScriptableObject Base;
         public float Level;
         public float RelativeLevel;
 
-        public AbilitySpec Ability;
+        public IEffectDerivation Derivation;
         public GASComponent Source;
         public GASComponent Target;
 
         public Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?> SourceCapturedAttributes;
 
-        public GameplayEffectSpec(GameplayEffectScriptableObject GameplayEffect, AbilitySpec ability, GASComponent target)
+        public GameplayEffectSpec(GameplayEffectScriptableObject GameplayEffect, IEffectDerivation derivation, GASComponent target)
         {
-            
             Base = GameplayEffect;
-            Ability = ability;
+            Derivation = derivation;
             
-            Debug.Log($"Effect created with ability: {Ability.Base.Definition.Name}");
-            
-            Source = Ability.Owner;
+            Source = Derivation.GetOwner();
             Target = target;
 
-            Level = Ability.Level;
-            RelativeLevel = Ability.RelativeLevel;
+            Level = Derivation.GetLevel();
+            RelativeLevel = Derivation.GetRelativeLevel();
 
             SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
         }
@@ -157,6 +154,69 @@ namespace FESGameplayAbilitySystem
                 currValue - attributeValue.CurrentValue,
                 baseValue - attributeValue.BaseValue
             );
+        }
+
+        public IEffectDerivation GetEffectDerivation()
+        {
+            return Derivation;
+        }
+        public GASComponent GetSource()
+        {
+            return Source;
+        }
+        public EImpactType GetImpactType()
+        {
+            return Base.ImpactSpecification.ImpactType;
+        }
+    }
+
+    public interface IEffectDerivation
+    {
+        public GASComponent GetOwner();
+        public GameplayTagScriptableObject GetContextTag();
+        public int GetLevel();
+        public void SetLevel(int level);
+        public float GetRelativeLevel();
+        public string GetName();
+
+        public static SourceEffectDerivation GenerateSourceDerivation(GASComponent source)
+        {
+            return new SourceEffectDerivation(source);
+        }
+    }
+
+    public class SourceEffectDerivation : IEffectDerivation
+    {
+        private GASComponent Owner;
+
+        public SourceEffectDerivation(GASComponent owner)
+        {
+            Owner = owner;
+        }
+
+        public GASComponent GetOwner()
+        {
+            return Owner;
+        }
+        public GameplayTagScriptableObject GetContextTag()
+        {
+            return Owner.Data.NameTag;
+        }
+        public int GetLevel()
+        {
+            return Owner.Data.Level;
+        }
+        public void SetLevel(int level)
+        {
+            Owner.Data.Level = level;
+        }
+        public float GetRelativeLevel()
+        {
+            return (Owner.Data.Level - 1) / (float)(Owner.Data.MaxLevel - 1);
+        }
+        public string GetName()
+        {
+            return Owner.Data.DistinctName;
         }
     }
 

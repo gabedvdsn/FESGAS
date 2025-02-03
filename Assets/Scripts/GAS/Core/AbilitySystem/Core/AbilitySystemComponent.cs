@@ -16,21 +16,21 @@ namespace FESGameplayAbilitySystem
         
         private GASComponent System;
         private Dictionary<int, AbilitySpecContainer> AbilityCache;
-        
-        private Dictionary<AbilityScriptableObject, List<AbilitySpecContainer>> AbilityImpactSubscriptions;
 
+        [Header("Impact Workers")]
+        public List<AbstractImpactWorkerScriptableObject> Workers;
+        
         private void Awake()
         {
             System = GetComponent<GASComponent>();
             AbilityCache = new Dictionary<int, AbilitySpecContainer>();
-            AbilityImpactSubscriptions = new Dictionary<AbilityScriptableObject, List<AbilitySpecContainer>>();
         }
 
         public void SetAbilitiesLevel(int level)
         {
             foreach (AbilitySpecContainer container in AbilityCache.Values)
             {
-                container.Spec.Level = Mathf.Min(level, container.Spec.Base.MaxLevel);
+                container.Spec.SetLevel(Mathf.Min(level, container.Spec.Base.MaxLevel));
             }
         }
 
@@ -55,9 +55,11 @@ namespace FESGameplayAbilitySystem
             foreach (AbilitySpecContainer _container in AbilityCache.Values.Where(_container => _container.Spec.Base == ability))
             {
                 container = _container;
+                Debug.Log($"Successfully found container");
                 return true;
             }
 
+            Debug.Log($"Did not find container");
             container = null;
             return false;
         }
@@ -129,8 +131,8 @@ namespace FESGameplayAbilitySystem
 
             container.Spec.ApplyUsageEffects();
             
-            return container.Spec.Base.Proxy.IncludeImplicitTargeting 
-                ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, ESourceTarget.Target)) 
+            return container.Spec.Base.Proxy.UseImplicitTargeting 
+                ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, container.Spec.Base.Proxy.OwnerAs)) 
                 : container.ActivateAbility(null);
         }
 
@@ -158,57 +160,10 @@ namespace FESGameplayAbilitySystem
         #endregion
         
         #region Impact Workers
-
-        public bool SubscribeToAbilityImpact(AbilitySpec subscriber, AbilityScriptableObject subscribeTo)
-        {
-            if (!TryGetAbilityContainer(subscriber.Base, out AbilitySpecContainer container)) return false;
-            
-            if (!AbilityImpactSubscriptions.ContainsKey(subscribeTo)) AbilityImpactSubscriptions[subscribeTo] = new List<AbilitySpecContainer>() { container };
-            else if (!AbilityImpactSubscriptions[subscribeTo].Contains(container)) AbilityImpactSubscriptions[subscribeTo].Add(container);
-
-            container.AddSubscription(subscribeTo);
-            return true;
-        }
-
-        public bool UnsubscribeFromAbilityImpact(AbilitySpec subscriber, AbilityScriptableObject subscribeTo)
-        {
-            if (!TryGetAbilityContainer(subscriber.Base, out AbilitySpecContainer container)) return false;
-            if (!AbilityImpactSubscriptions.ContainsKey(subscribeTo)) return false;
-            if (!AbilityImpactSubscriptions[subscribeTo].Contains(container)) return false;
-            
-            container.RemoveSubscription(subscribeTo);
-            AbilityImpactSubscriptions[subscribeTo].Remove(container);
-            if (AbilityImpactSubscriptions[subscribeTo].Count == 0) AbilityImpactSubscriptions.Remove(subscribeTo);
-
-            return true;
-        }
-
-        public bool UnsubscribeAll(AbilitySpec subscriber)
-        {
-            if (!TryGetAbilityContainer(subscriber.Base, out AbilitySpecContainer container)) return false;
-
-            bool success = false;
-            foreach (AbilityScriptableObject subscribeTo in AbilityImpactSubscriptions.Keys)
-            {
-                success = UnsubscribeFromAbilityImpact(subscriber, subscribeTo);
-            }
-
-            return success;
-        }
         
         public void CommunicateAbilityImpact(AbilityImpactData impactData)
         {
-            if (impactData.SourcedModifier.SourceSpec.Ability.Base.ImpactWorkers.Count == 0) return;
-
-            foreach (AbstractAbilityImpactWorkerScriptableObject worker in impactData.SourcedModifier.SourceSpec.Ability.Base.ImpactWorkers)
-            {
-                worker.InterpretImpact(impactData);
-            }
-
-            if (AbilityImpactSubscriptions.TryGetValue(impactData.SourcedModifier.SourceSpec.Ability.Base, out var subscribedContainers))
-            {
-                foreach (AbilitySpecContainer container in subscribedContainers) container.CommunicateSubscribedAbilityImpact(impactData);
-            }
+            
         }
         
         #endregion
@@ -229,8 +184,6 @@ namespace FESGameplayAbilitySystem
             
             public AbilityProxy Proxy;
             private CancellationTokenSource cst;
-
-            private List<AbilityScriptableObject> subscriptions;
             
             public AbilitySpecContainer(AbilitySpec spec)
             {
@@ -242,28 +195,6 @@ namespace FESGameplayAbilitySystem
                 
                 // Debug.Log($"CREATED ABILITY: {Spec.Base.Definition.Name} with proxy: {Proxy}");
             }
-
-            public void SetupSubscriptions()
-            {
-                subscriptions = new List<AbilityScriptableObject>();   
-                foreach (AbilityScriptableObject ability in Spec.Base.ImpactSubscriptions)
-                {
-                    subscriptions.Add(ability);
-                    Spec.Owner.AbilitySystem.SubscribeToAbilityImpact(Spec, ability);
-                }
-            }
-
-            public void AddSubscription(AbilityScriptableObject subscribeTo)
-            {
-                if (subscriptions.Contains(subscribeTo)) return;
-                subscriptions.Add(subscribeTo);
-            }
-
-            public void RemoveSubscription(AbilityScriptableObject subscribeTo)
-            {
-                if (!subscriptions.Contains(subscribeTo)) return;
-                subscriptions.Remove(subscribeTo);
-            }
             
             public bool ActivateAbility(ProxyDataPacket implicitData)
             {
@@ -271,11 +202,6 @@ namespace FESGameplayAbilitySystem
                 AwaitAbility(implicitData).Forget();
 
                 return true;
-            }
-
-            public void CommunicateSubscribedAbilityImpact(AbilityImpactData impactData)
-            {
-                
             }
 
             private async UniTaskVoid AwaitAbility(ProxyDataPacket implicitData)

@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5a42dbe2415465689d11a1e8ae1fdbc, type: 3}
-  m_Name: ABIL_InstantDamage
+  m_Name: ABIL_InstantHealth
   m_EditorClassIdentifier: 
   Definition:
-    Name: Instant Damage
-    Description: Immediately take damage
+    Name: 
+    Description: 
     UnlearnedIcon: {fileID: 0}
     NormalIcon: {fileID: 0}
     QueuedIcon: {fileID: 0}
     OnCooldownIcon: {fileID: 0}
   Tags:
-    AssetTag: {fileID: 11400000, guid: 662020c5bc519b8478df2b6190178956, type: 2}
+    AssetTag: {fileID: 0}
     ContextTag: {fileID: 0}
     PassivelyGrantedTags: []
     ActiveGrantedTags: []
@@ -37,13 +37,10 @@ MonoBehaviour:
     Stages:
     - TaskPolicy: 0
       Tasks:
-      - {fileID: 11400000, guid: 3a265e219ac188f48b031d2f413cf011, type: 2}
-  StartingLevel: 1
+      - {fileID: 11400000, guid: 5062fbd9c9153254d8dffbad6a2f42d0, type: 2}
+  StartingLevel: 0
   MaxLevel: 4
   IgnoreWhenLevelZero: 1
-  Cost: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
-  Cooldown: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
-  AbilityEventSubscription:
-  - Event: 0
-    SubscribeToContextTags: []
-    Workers: []
+  Cost: {fileID: 0}
+  Cooldown: {fileID: 0}
+  AbilityEventSubscription: []

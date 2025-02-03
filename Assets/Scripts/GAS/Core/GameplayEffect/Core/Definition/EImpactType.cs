@@ -1,6 +1,6 @@
 ﻿namespace FESGameplayAbilitySystem
 {
-    public enum EDamageType
+    public enum EImpactType
     {
         NotApplicable,
         Physical,

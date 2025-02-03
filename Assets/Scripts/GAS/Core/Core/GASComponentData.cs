@@ -7,13 +7,10 @@ namespace FESGameplayAbilitySystem
     public class GASComponentData
     {
         public int Level = 1;
+        public int MaxLevel = 15;
 
-        [SerializeField] private string distinctName;
+        public GameplayTagScriptableObject NameTag;
 
-        public string DistinctName
-        {
-            get => string.IsNullOrEmpty(distinctName) ? "Non-Distinct Ability System" : distinctName;
-            set => distinctName = value;
-        }
+        public string DistinctName => NameTag ? "Non-Distinct Ability System" : NameTag.Name;
     }
 }

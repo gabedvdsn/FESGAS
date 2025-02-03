@@ -19,7 +19,7 @@ namespace FESGameplayAbilitySystem
         
         public List<AbstractAttributeWorkerScriptableObject> AttributeWorkers;
         
-        private Dictionary<AttributeScriptableObject, AttributeValue> AttributeCache;
+        private Dictionary<AttributeScriptableObject, CachedAttributeValue> AttributeCache;
         private SourcedModifiedAttributeCache ModifiedAttributeCache;
         private bool modifiedCacheDirty;
 
@@ -46,7 +46,7 @@ namespace FESGameplayAbilitySystem
 
         private void InitializeCaches()
         {
-            AttributeCache = new Dictionary<AttributeScriptableObject, AttributeValue>();
+            AttributeCache = new Dictionary<AttributeScriptableObject, CachedAttributeValue>();
             ModifiedAttributeCache = new SourcedModifiedAttributeCache();
             HoldAttributeCache = new Dictionary<AttributeScriptableObject, AttributeValue>();
         }
@@ -62,22 +62,15 @@ namespace FESGameplayAbilitySystem
         public void ProvideAttribute(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
         {
             if (AttributeCache.ContainsKey(attribute)) return;
+            AttributeCache[attribute] = new CachedAttributeValue();
             
-            AttributeCache[attribute] = modifiedAttributeValue.ToAttributeValue();
+            AttributeCache[attribute].Add(IAttributeDerivation.GenerateSourceDerivation(System), modifiedAttributeValue.ToAttributeValue());
             ModifiedAttributeCache.SubscribeAttribute(attribute);
         }
 
         private void UpdateAttributes()
         {
             ApplyAttributeModifications();
-        }
-
-        private void ApplyAttributeWorkerModifications()
-        {
-            foreach (AbstractAttributeWorkerScriptableObject worker in AttributeWorkers)
-            {
-                
-            }
         }
         
         private void ApplyAttributeModifications()
@@ -86,15 +79,17 @@ namespace FESGameplayAbilitySystem
             
             foreach (AbstractAttributeChangeEventScriptableObject changeEvent in AttributeChangeEvents)
             {
-                //changeEvent.PreAttributeChange(System, ref AttributeCache, ref ModifiedAttributeCache);
                 changeEvent.PreAttributeChange(System, ref AttributeCache, ModifiedAttributeCache);
             }
 
             foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.Get())
             {
-                HoldAttributeCache[attribute] = AttributeCache[attribute];
-                AttributeValue newAttributeValue = AttributeCache[attribute].ApplyModified(ModifiedAttributeCache.ToModified(attribute));
-                AttributeCache[attribute] = newAttributeValue;
+                HoldAttributeCache[attribute] = AttributeCache[attribute].Value;
+                if (!ModifiedAttributeCache.TryGetCachedValue(attribute, out List<SourcedModifiedAttributeValue> sourcedModifiers)) continue;
+                foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
+                {
+                    AttributeCache[attribute].Add(sourcedModifier.Derivation, sourcedModifier.ToModified());
+                }
             }
             
             foreach (AbstractAttributeChangeEventScriptableObject changeEvent in AttributeChangeEvents)
@@ -108,9 +103,9 @@ namespace FESGameplayAbilitySystem
                 if (!ModifiedAttributeCache.TryGetCachedValue(attribute, out var sourcedModifiers)) continue;
                 foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
                 {
-                    sourcedModifier.SourceSpec.Source.AbilitySystem.CommunicateAbilityImpact(
+                    sourcedModifier.Derivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
                         AbilityImpactData.Generate(
-                            attribute, sourcedModifier, AttributeCache[attribute] - HoldAttributeCache[attribute]
+                            attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
                         )
                     );
                 }
@@ -119,12 +114,6 @@ namespace FESGameplayAbilitySystem
             modifiedCacheDirty = false;
             HoldAttributeCache.Clear();
             ModifiedAttributeCache.Clear();
-        }
-        
-        private void OverrideAttributeValue(AttributeScriptableObject attribute, AttributeValue overrideAttributeValue)
-        {
-            // Override is not added to modification cache
-            AttributeCache[attribute] = overrideAttributeValue;
         }
 
         public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
@@ -135,7 +124,12 @@ namespace FESGameplayAbilitySystem
             ModifiedAttributeCache.Add(attribute, sourcedModifiedValue);
         }
 
-        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out AttributeValue attributeValue)
+        public void ModifyAttributeImmediate(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
+        {
+            
+        }
+
+        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out CachedAttributeValue attributeValue)
         {
             if (attribute) return AttributeCache.TryGetValue(attribute, out attributeValue);
             

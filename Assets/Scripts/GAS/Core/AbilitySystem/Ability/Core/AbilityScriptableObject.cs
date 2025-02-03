@@ -27,19 +27,42 @@ namespace FESGameplayAbilitySystem
         
         public GameplayEffectScriptableObject Cost;
         public GameplayEffectScriptableObject Cooldown;
-        
-        [Header("Impact Workers")]
-        
-        public List<AbstractAbilityImpactWorkerScriptableObject> ImpactWorkers;
 
-        [Header("Impact Subscriptions")]
+        [Header("Impact Event Subscriptions")]
 
-        public List<AbilityScriptableObject> ImpactSubscriptions;
+        public List<AbilityEventSubscription> AbilityEventSubscription;
 
         public AbilitySpec Generate(GASComponent Owner, int Level)
         {
             return new AbilitySpec(Owner, this, Level);
         }
+    }
+
+    [Serializable]
+    public class AbilityEventSubscription
+    {
+        /// <summary>
+        /// Whenever an ability with a subscribed context tag fires the specified event, activate the event workers
+        /// </summary>
+        public EAbilityEvent Event;
+        public List<GameplayTagScriptableObject> SubscribeToContextTags;
+        public List<AbstractImpactWorkerScriptableObject> Workers;
+
+        public AbilityEventSubscription(EAbilityEvent _event, List<GameplayTagScriptableObject> subscribeToContextTags, List<AbstractImpactWorkerScriptableObject> workers)
+        {
+            Event = _event;
+            SubscribeToContextTags = subscribeToContextTags;
+            Workers = workers;
+        }
+    }
+
+    public enum EAbilityEvent
+    {
+        OnActivate,
+        OnInitialImpact,
+        OnSecondaryImpact,
+        OnAnyImpact,
+        OnComplete
     }
 
 }

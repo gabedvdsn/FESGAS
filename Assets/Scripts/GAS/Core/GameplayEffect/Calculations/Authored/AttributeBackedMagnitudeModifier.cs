@@ -22,12 +22,12 @@ namespace FESGameplayAbilitySystem
             switch (CaptureFrom)
             {
                 case ESourceTarget.Source:
-                    if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue sourceAttributeValue)) break;
-                    spec.SourceCapturedAttributes[this] = sourceAttributeValue;
+                    if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out CachedAttributeValue sourceAttributeValue)) break;
+                    spec.SourceCapturedAttributes[this] = sourceAttributeValue.Value;
                     break;
                 case ESourceTarget.Target:
-                    if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue targetAttributeValue)) break;
-                    spec.SourceCapturedAttributes[this] = targetAttributeValue;
+                    if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out CachedAttributeValue targetAttributeValue)) break;
+                    spec.SourceCapturedAttributes[this] = targetAttributeValue.Value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -48,23 +48,23 @@ namespace FESGameplayAbilitySystem
 
             if (CaptureFrom == ESourceTarget.Source)
             {
-                if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue attributeValue)) return 0f;
+                if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out CachedAttributeValue attributeValue)) return 0f;
                 return ScalingPolicy switch
                 {
 
-                    AttributedBackedScalingPolicy.EvaluateCurrentValue => Scaling.Evaluate(attributeValue.CurrentValue),
-                    AttributedBackedScalingPolicy.EvaluateBaseValue => Scaling.Evaluate(attributeValue.BaseValue),
+                    AttributedBackedScalingPolicy.EvaluateCurrentValue => Scaling.Evaluate(attributeValue.Value.CurrentValue),
+                    AttributedBackedScalingPolicy.EvaluateBaseValue => Scaling.Evaluate(attributeValue.Value.BaseValue),
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
             else
             {
-                if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue attributeValue)) return 0f;
+                if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out CachedAttributeValue attributeValue)) return 0f;
                 return ScalingPolicy switch
                 {
 
-                    AttributedBackedScalingPolicy.EvaluateCurrentValue => Scaling.Evaluate(attributeValue.CurrentValue),
-                    AttributedBackedScalingPolicy.EvaluateBaseValue => Scaling.Evaluate(attributeValue.BaseValue),
+                    AttributedBackedScalingPolicy.EvaluateCurrentValue => Scaling.Evaluate(attributeValue.Value.CurrentValue),
+                    AttributedBackedScalingPolicy.EvaluateBaseValue => Scaling.Evaluate(attributeValue.Value.BaseValue),
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }

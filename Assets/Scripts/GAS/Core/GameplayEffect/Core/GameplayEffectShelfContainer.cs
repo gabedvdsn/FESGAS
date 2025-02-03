@@ -52,9 +52,7 @@ namespace FESGameplayAbilitySystem
 
         public void TrackImpact(SourcedModifiedAttributeValue smav)
         {
-            Debug.Log($"Tracked impact of: {smav}");
             TrackedImpact = TrackedImpact.Combine(smav);
-            Debug.Log($"Total tracked impact: {TrackedImpact}");
         }
 
         public void Refresh()

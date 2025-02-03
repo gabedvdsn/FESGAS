@@ -69,9 +69,9 @@ namespace FESGameplayAbilitySystem
         
         #region Effect Handling
         
-        public GameplayEffectSpec GenerateEffectSpec(AbilitySpec ability, GameplayEffectScriptableObject GameplayEffect)
+        public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, GameplayEffectScriptableObject GameplayEffect)
         {
-            return GameplayEffect.Generate(ability, this);
+            return GameplayEffect.Generate(derivation, this);
         }
 
         public void BackCommunicateGameplayEffectImpact(GameplayEffectShelfContainer container, ModifiedAttributeValue modifiedAttributeValue)
@@ -105,9 +105,9 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public bool ApplyGameplayEffect(AbilitySpec ability, GameplayEffectScriptableObject GameplayEffect)
+        public bool ApplyGameplayEffect(IEffectDerivation derivation, GameplayEffectScriptableObject GameplayEffect)
         {
-            GameplayEffectSpec spec = GenerateEffectSpec(ability, GameplayEffect);
+            GameplayEffectSpec spec = GenerateEffectSpec(derivation, GameplayEffect);
             return ApplyGameplayEffect(spec);
         }
 
@@ -168,26 +168,26 @@ namespace FESGameplayAbilitySystem
 
         private void ApplyInstantGameplayEffect(GameplayEffectSpec spec)
         {
-            if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
+            if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out CachedAttributeValue attributeValue)) return;
             
-            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToSourcedModified(attributeValue));
+            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToSourcedModified(attributeValue.Value));
             if (spec.Base.ImpactSpecification.ContainedEffect)
             {
-                ApplyGameplayEffect(spec.Ability, spec.Base.ImpactSpecification.ContainedEffect);
+                ApplyGameplayEffect(spec.Derivation, spec.Base.ImpactSpecification.ContainedEffect);
             }
         }
         
         private void ApplyInstantGameplayEffect(GameplayEffectShelfContainer container)
         {
-            if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
+            if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out CachedAttributeValue attributeValue)) return;
 
-            SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.ToSourcedModified(attributeValue);
+            SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.ToSourcedModified(attributeValue.Value);
             container.TrackImpact(sourcedModifiedValue);
             
             AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
             if (container.Spec.Base.ImpactSpecification.ContainedEffect)
             {
-                ApplyGameplayEffect(container.Spec.Ability, container.Spec.Base.ImpactSpecification.ContainedEffect);
+                ApplyGameplayEffect(container.Spec.Derivation, container.Spec.Base.ImpactSpecification.ContainedEffect);
             }
         }
 

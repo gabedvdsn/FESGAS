@@ -9,7 +9,7 @@ namespace FESGameplayAbilitySystem.Core.AttributeSystem.AttributeWorker.Authored
 
         public override void Activate(AttributeSystemComponent system)
         {
-            if (!system.TryGetAttributeValue(PrimaryAttribute, out AttributeValue attributeValue)) return;
+            if (!system.TryGetAttributeValue(PrimaryAttribute, out CachedAttributeValue attributeValue)) return;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace FESGameplayAbilitySystem
 
         [Space] 
         
-        public EDamageType ImpactType;
+        public EImpactType ImpactType;
         public bool ReverseImpactOnRemoval;
         public GameplayEffectApplicationPolicy ReApplicationPolicy;
         

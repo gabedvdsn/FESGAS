@@ -9,6 +9,7 @@ namespace FESGameplayAbilitySystem
         [Header("Base")] 
         
         public GameplayTagScriptableObject AssetTag;
+        public GameplayTagScriptableObject ContextTag;
         
         [Header("Tags")]
         

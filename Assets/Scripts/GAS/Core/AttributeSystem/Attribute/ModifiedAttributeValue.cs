@@ -64,10 +64,10 @@ namespace FESGameplayAbilitySystem
 
         public SignPolicy SignPolicy => StaticSignPolicy.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
 
-        public SourcedModifiedAttributeValue ToSourced(GameplayEffectSpec spec)
+        public SourcedModifiedAttributeValue ToSourced(IAttributeDerivation derivation)
         {
             return new SourcedModifiedAttributeValue(
-                spec,
+                derivation,
                 DeltaCurrentValue,
                 DeltaBaseValue
             );
@@ -89,28 +89,28 @@ namespace FESGameplayAbilitySystem
 
     public struct SourcedModifiedAttributeValue
     {
-        public GameplayEffectSpec SourceSpec;
+        public IAttributeDerivation Derivation;
         public float DeltaCurrentValue;
         public float DeltaBaseValue;
 
         public SignPolicy SignPolicy => StaticSignPolicy.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
         
-        public SourcedModifiedAttributeValue(GameplayEffectSpec container, float deltaCurrentValue, float deltaBaseValue)
+        public SourcedModifiedAttributeValue(IAttributeDerivation derivation, float deltaCurrentValue, float deltaBaseValue)
         {
-            SourceSpec = container;
+            Derivation = derivation;
             DeltaCurrentValue = deltaCurrentValue;
             DeltaBaseValue = deltaBaseValue;
         }
 
         public SourcedModifiedAttributeValue Combine(SourcedModifiedAttributeValue other)
         {
-            if (other.SourceSpec != SourceSpec)
+            if (other.Derivation != Derivation)
             {
                 return this;
             }
             
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 DeltaCurrentValue + other.DeltaCurrentValue, 
                 DeltaBaseValue + other.DeltaBaseValue
             );
@@ -119,7 +119,7 @@ namespace FESGameplayAbilitySystem
         public SourcedModifiedAttributeValue Negate()
         {
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 -DeltaCurrentValue,
                 -DeltaBaseValue
             );
@@ -128,7 +128,7 @@ namespace FESGameplayAbilitySystem
         public SourcedModifiedAttributeValue Multiply(float magnitude)
         {
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 DeltaCurrentValue * magnitude,
                 DeltaBaseValue * magnitude
             );
@@ -137,7 +137,7 @@ namespace FESGameplayAbilitySystem
         public SourcedModifiedAttributeValue Multiply(AttributeValue attributeValue)
         {
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 DeltaCurrentValue * attributeValue.CurrentValue,
                 DeltaBaseValue * attributeValue.BaseValue
             );
@@ -145,13 +145,13 @@ namespace FESGameplayAbilitySystem
 
         public SourcedModifiedAttributeValue Multiply(ModifiedAttributeValue modifiedAttributeValue)
         {
-            return ToModified().Multiply(modifiedAttributeValue).ToSourced(SourceSpec);
+            return ToModified().Multiply(modifiedAttributeValue).ToSourced(Derivation);
         }
         
         public SourcedModifiedAttributeValue Add(float magnitude)
         {
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 DeltaCurrentValue * magnitude,
                 DeltaBaseValue * magnitude
             );
@@ -160,7 +160,7 @@ namespace FESGameplayAbilitySystem
         public SourcedModifiedAttributeValue Add(ModifiedAttributeValue modifiedAttributeValue)
         {
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 DeltaCurrentValue * modifiedAttributeValue.DeltaCurrentValue,
                 DeltaBaseValue * modifiedAttributeValue.DeltaBaseValue
             );
@@ -169,7 +169,7 @@ namespace FESGameplayAbilitySystem
         public SourcedModifiedAttributeValue Override(float currentMagnitude, float baseMagnitude)
         {
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 currentMagnitude,
                 baseMagnitude
             );
@@ -178,7 +178,7 @@ namespace FESGameplayAbilitySystem
         public SourcedModifiedAttributeValue Override(ModifiedAttributeValue modifiedAttributeValue)
         {
             return new SourcedModifiedAttributeValue(
-                SourceSpec,
+                Derivation,
                 modifiedAttributeValue.DeltaCurrentValue,
                 modifiedAttributeValue.DeltaBaseValue
             );
@@ -190,8 +190,8 @@ namespace FESGameplayAbilitySystem
 
         public override string ToString()
         {
-            if (SourceSpec is null) return $"[ SMAV-INSTANT ] {DeltaCurrentValue}/{DeltaBaseValue}";
-            return $"[ SMAV-{SourceSpec.Ability.Base.Definition.Name} ] {DeltaCurrentValue}/{DeltaBaseValue}";
+            if (Derivation is null) return $"[ SMAV-INSTANT ] {DeltaCurrentValue}/{DeltaBaseValue}";
+            return $"[ SMAV-{Derivation.GetEffectDerivation().GetName()} ] {DeltaCurrentValue}/{DeltaBaseValue}";
         }
     }
 }
