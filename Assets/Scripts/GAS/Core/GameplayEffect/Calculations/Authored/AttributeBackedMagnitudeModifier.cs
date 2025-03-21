@@ -89,6 +89,13 @@ namespace FESGameplayAbilitySystem
         Source,
         Both
     }
+    
+    public enum ESourceTargetEither
+    {
+        Target,
+        Source,
+        Either
+    }
 
     public enum ECaptureAttributeWhen
     {

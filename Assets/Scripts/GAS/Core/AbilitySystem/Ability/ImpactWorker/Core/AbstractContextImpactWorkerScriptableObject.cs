@@ -16,11 +16,12 @@ namespace FESGameplayAbilitySystem
         public EImpactTypeAny ImpactType;
         public EEffectImpactTarget ImpactTarget;
         public ESignPolicy ImpactSign;
+        public bool AllowSelfImpact;
         
         [Space(5)]
         
         public bool AnyContextTag;
-        [FormerlySerializedAs("AbilityContextTags")] [Tooltip("The sourced ability context tag must exist in this list")]
+        [Tooltip("The sourced ability context tag must exist in this list")]
         public List<GameplayTagScriptableObject> ImpactAbilityContextTags;
         
         [Header("Impact Work Response")] 
@@ -37,6 +38,7 @@ namespace FESGameplayAbilitySystem
         public override void InterpretImpact(AbilityImpactData impactData)
         {
             if (impactData.Attribute != ImpactedAttribute) return;  // If the context is not found
+            if (!AllowSelfImpact && impactData.SourcedModifier.Derivation.GetSource() == impactData.Target) return;  // If self-inflicted impact is not allowed
             if (!GASHelper.ValidateImpactTypes(impactData.SourcedModifier.Derivation.GetImpactType(), ImpactType)) return;  // If the impact type is not applicable
             if (!AnyContextTag && !ImpactAbilityContextTags.Contains(impactData.SourcedModifier.Derivation.GetEffectDerivation().GetContextTag())) return;
             
