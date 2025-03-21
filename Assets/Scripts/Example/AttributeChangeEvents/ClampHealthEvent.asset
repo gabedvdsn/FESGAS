@@ -12,4 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3dec84551a44eaf98d825ea832e524c, type: 3}
   m_Name: ClampHealthEvent
   m_EditorClassIdentifier: 
-  PrimaryAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  Priorities: 00000000
+  TargetAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  ClampPolicy: 0
+  SetCeil:
+    CurrentValue: 5
+    BaseValue: 0
+  SetFloor:
+    CurrentValue: 0
+    BaseValue: 0

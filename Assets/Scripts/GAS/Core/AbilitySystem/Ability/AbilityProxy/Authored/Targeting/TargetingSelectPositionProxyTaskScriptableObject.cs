@@ -10,8 +10,6 @@ namespace FESGameplayAbilitySystem
 
         public override UniTask Activate(ProxyDataPacket data, CancellationToken token)
         {
-            //
-            
             return UniTask.CompletedTask;
         }
     }

@@ -7,4 +7,13 @@
         Magical,
         Pure
     }
+
+    public enum EImpactTypeAny
+    {
+        NotApplicable,
+        Physical,
+        Magical,
+        Pure,
+        Any
+    }
 }

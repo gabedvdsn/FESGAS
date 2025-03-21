@@ -32,6 +32,13 @@ namespace FESGameplayAbilitySystem
         Base
     }
 
+    public enum EEffectImpactTarget
+    {
+        Current,
+        Base,
+        CurrentAndBase
+    }
+
     public enum EValueCollisionPolicy
     {
         UseMaximum,
@@ -46,16 +53,36 @@ namespace FESGameplayAbilitySystem
         public ELimitedEffectImpactTarget Target;
         public EAttributeElementCollisionPolicy CollisionPolicy;
         public float Magnitude;
+        public AttributeOverflowData Overflow;
 
-        public ModifiedAttributeValue ToModifiedAttribute()
+        public DefaultAttributeValue ToDefaultAttribute()
         {
             return Target switch
             {
-                ELimitedEffectImpactTarget.CurrentAndBase => new ModifiedAttributeValue(Magnitude, Magnitude),
-                ELimitedEffectImpactTarget.Base => new ModifiedAttributeValue(0, Magnitude),
+                ELimitedEffectImpactTarget.CurrentAndBase => new DefaultAttributeValue(new ModifiedAttributeValue(Magnitude, Magnitude), Overflow),
+                ELimitedEffectImpactTarget.Base => new DefaultAttributeValue(new ModifiedAttributeValue(0, Magnitude), Overflow),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+    }
+
+    public struct DefaultAttributeValue
+    {
+        public ModifiedAttributeValue DefaultValue;
+        public AttributeOverflowData Overflow;
+
+        public DefaultAttributeValue(ModifiedAttributeValue defaultValue, AttributeOverflowData overflow)
+        {
+            DefaultValue = defaultValue;
+            Overflow = overflow;
+        }
+
+        public DefaultAttributeValue Combine(DefaultAttributeValue other)
+        {
+            return new DefaultAttributeValue(DefaultValue.Combine(other.DefaultValue), Overflow);
+        }
+
+        public AttributeValue ToAttributeValue() => DefaultValue.ToAttributeValue();
     }
     
     public enum EAttributeElementCollisionPolicy
@@ -67,11 +94,11 @@ namespace FESGameplayAbilitySystem
 
     public class AttributeSetMeta
     {
-        private Dictionary<AttributeScriptableObject, Dictionary<EAttributeElementCollisionPolicy, List<ModifiedAttributeValue>>> matrix; 
+        private Dictionary<AttributeScriptableObject, Dictionary<EAttributeElementCollisionPolicy, List<DefaultAttributeValue>>> matrix; 
 
         public AttributeSetMeta(AttributeSetScriptableObject attributeSet)
         {
-            matrix = new Dictionary<AttributeScriptableObject, Dictionary<EAttributeElementCollisionPolicy, List<ModifiedAttributeValue>>>();
+            matrix = new Dictionary<AttributeScriptableObject, Dictionary<EAttributeElementCollisionPolicy, List<DefaultAttributeValue>>>();
             HandleAttributeSet(attributeSet);
         }
 
@@ -81,14 +108,14 @@ namespace FESGameplayAbilitySystem
             {
                 if (!matrix.TryGetValue(element.Attribute, out var table))
                 {
-                    table = matrix[element.Attribute] = new Dictionary<EAttributeElementCollisionPolicy, List<ModifiedAttributeValue>>();
+                    table = matrix[element.Attribute] = new Dictionary<EAttributeElementCollisionPolicy, List<DefaultAttributeValue>>();
                 }
 
                 if (!table.ContainsKey(element.CollisionPolicy))
                 {
-                    matrix[element.Attribute][element.CollisionPolicy] = new List<ModifiedAttributeValue> { element.ToModifiedAttribute() };
+                    matrix[element.Attribute][element.CollisionPolicy] = new List<DefaultAttributeValue> { element.ToDefaultAttribute() };
                 }
-                else matrix[element.Attribute][element.CollisionPolicy].Add(element.ToModifiedAttribute());
+                else matrix[element.Attribute][element.CollisionPolicy].Add(element.ToDefaultAttribute());
             }
             
             foreach (AttributeSetScriptableObject subSet in attributeSet.SubSets) HandleAttributeSet(subSet);
@@ -98,50 +125,50 @@ namespace FESGameplayAbilitySystem
         {
             foreach (AttributeScriptableObject attribute in matrix.Keys)
             {
-                if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseThis, out var mavs))
+                if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseThis, out var defaults))
                 {
-                    InitializeAggregatePolicy(system, attribute, mavs, attributeSet.AttributeSetCollisionResolution);
+                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.AttributeSetCollisionResolution);
                 }
-                else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.Combine, out mavs))
+                else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.Combine, out defaults))
                 {
-                    ModifiedAttributeValue mav = new ModifiedAttributeValue();
-                    foreach (ModifiedAttributeValue metaMav in mavs) mav = mav.Combine(metaMav);
+                    DefaultAttributeValue defaultValue = new DefaultAttributeValue();
+                    foreach (DefaultAttributeValue metaMav in defaults) defaultValue = defaultValue.Combine(metaMav);
 
-                    system.ProvideAttribute(attribute, mav);
+                    system.ProvideAttribute(attribute, defaultValue);
                 }
-                else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseExisting, out mavs))
+                else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseExisting, out defaults))
                 {
-                    InitializeAggregatePolicy(system, attribute, mavs, attributeSet.AttributeSetCollisionResolution);
+                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.AttributeSetCollisionResolution);
                 }
             }
         }
 
-        private void InitializeAggregatePolicy(AttributeSystemComponent system, AttributeScriptableObject attribute, List<ModifiedAttributeValue> mavs, EValueCollisionPolicy resolution)
+        private void InitializeAggregatePolicy(AttributeSystemComponent system, AttributeScriptableObject attribute, List<DefaultAttributeValue> defaults, EValueCollisionPolicy resolution)
         {
             switch (resolution)
             {
                 case EValueCollisionPolicy.UseAverage:
                 {
-                    float _current = mavs.Average(mav => mav.DeltaCurrentValue);
-                    float _base = mavs.Average(mav => mav.DeltaBaseValue);
+                    float _current = defaults.Average(mav => mav.DefaultValue.DeltaCurrentValue);
+                    float _base = defaults.Average(mav => mav.DefaultValue.DeltaBaseValue);
 
-                    system.ProvideAttribute(attribute, new ModifiedAttributeValue(_current, _base));
+                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow));
                     break;
                 }
                 case EValueCollisionPolicy.UseMaximum:
                 {
-                    float _current = mavs.Max(mav => mav.DeltaCurrentValue);
-                    float _base = mavs.Max(mav => mav.DeltaBaseValue);
+                    float _current = defaults.Max(mav => mav.DefaultValue.DeltaCurrentValue);
+                    float _base = defaults.Max(mav => mav.DefaultValue.DeltaBaseValue);
 
-                    system.ProvideAttribute(attribute, new ModifiedAttributeValue(_current, _base));
+                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow));
                     break;
                 }
                 case EValueCollisionPolicy.UseMinimum:
                 {
-                    float _current = mavs.Min(mav => mav.DeltaCurrentValue);
-                    float _base = mavs.Min(mav => mav.DeltaBaseValue);
+                    float _current = defaults.Min(mav => mav.DefaultValue.DeltaCurrentValue);
+                    float _base = defaults.Min(mav => mav.DefaultValue.DeltaBaseValue);
 
-                    system.ProvideAttribute(attribute, new ModifiedAttributeValue(_current, _base));
+                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow));
                     break;
                 }
                 default:

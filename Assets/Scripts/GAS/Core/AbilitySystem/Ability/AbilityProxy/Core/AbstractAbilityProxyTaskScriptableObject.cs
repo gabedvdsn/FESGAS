@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using Unity.VisualScripting;
+using Unity.VisualScripting.FullSerializer;
 
 namespace FESGameplayAbilitySystem
 {
@@ -43,8 +45,7 @@ namespace FESGameplayAbilitySystem
         
         public void AddRange(ESourceTarget sourceTarget, List<GASComponent> components, bool noDuplicates = true)
         {
-            if (SourceTargetData.ContainsKey(sourceTarget))
-                SourceTargetData[sourceTarget].AddRange(components.Where(component => noDuplicates && !SourceTargetData[sourceTarget].Contains(component)));
+            if (SourceTargetData.ContainsKey(sourceTarget)) SourceTargetData[sourceTarget].AddRange(noDuplicates ? components.Where(component => !SourceTargetData[sourceTarget].Contains(component)) : components);
             else SourceTargetData[sourceTarget] = components;
         }
 
@@ -56,11 +57,25 @@ namespace FESGameplayAbilitySystem
         public ProxyDataValue Target() => Get(ESourceTarget.Target);
         public ProxyDataValue Source() => Get(ESourceTarget.Source);
 
-        public static ProxyDataPacket GenerateFrom(AbilitySpec spec, GASComponent component, ESourceTarget sourceTarget)
+        public static ProxyDataPacket GenerateFrom(AbilitySpec spec, GASComponent component, ESourceTargetBoth sourceTarget)
         {
             ProxyDataPacket data = new ProxyDataPacket(spec);
-            data.Add(sourceTarget, component);
-
+            switch (sourceTarget)
+            {
+                case ESourceTargetBoth.Target:
+                    data.Add(ESourceTarget.Target, component);
+                    break;
+                case ESourceTargetBoth.Source:
+                    data.Add(ESourceTarget.Source, component);
+                    break;
+                case ESourceTargetBoth.Both:
+                    data.Add(ESourceTarget.Target, component);
+                    data.Add(ESourceTarget.Source, component);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sourceTarget), sourceTarget, null);
+            }
+            
             return data;
         }
 
@@ -71,13 +86,17 @@ namespace FESGameplayAbilitySystem
                 AddRange(sourceTarget, other.SourceTargetData[sourceTarget]);
             }
         }
+        public override string ToString()
+        {
+            return $"Ability: {Spec}, Source: ({Source()}), Target: ({Target()})";
+        }
     }
 
     public struct ProxyDataValue
     {
         private List<GASComponent> Data;
-        private bool Valid => Data is not null && Data.Count > 0;
-
+        public bool Valid => Data is not null && Data.Count > 0;
+        
         public ProxyDataValue(List<GASComponent> data)
         {
             Data = data;
@@ -88,5 +107,18 @@ namespace FESGameplayAbilitySystem
         public List<GASComponent> All => Valid ? Data : null;
         
         public GASComponent Last => Valid ? Data[^1] : null;
+
+        public override string ToString()
+        {
+            if (!Valid) return "NullProxyData";
+            string s = "";
+            for (int i = 0; i < Data.Count; i++)
+            {
+                s += $"{Data[i]}";
+                if (i < Data.Count - 1) s += ", ";
+            }
+
+            return s;
+        }
     }
 }

@@ -11,13 +11,13 @@ namespace FESGameplayAbilitySystem
     {
         public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
-            if (!modifiedAttributeCache.TryToModified(PrimaryAttribute, out ModifiedAttributeValue modifiedAttributeValue)) return;
+            if (!modifiedAttributeCache.TryToModified(TargetAttribute, out ModifiedAttributeValue modifiedAttributeValue)) return;
             if (modifiedAttributeValue.DeltaBaseValue == 0f) return;
 
-            float proportion = attributeCache[PrimaryAttribute].Value.CurrentValue / attributeCache[PrimaryAttribute].Value.BaseValue;
+            float proportion = attributeCache[TargetAttribute].Value.CurrentValue / attributeCache[TargetAttribute].Value.BaseValue;
             modifiedAttributeValue.DeltaCurrentValue = proportion * modifiedAttributeValue.DeltaBaseValue;
 
-            modifiedAttributeCache.Override(PrimaryAttribute, modifiedAttributeValue);
+            modifiedAttributeCache.Override(TargetAttribute, modifiedAttributeValue);
         }
         
         public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)

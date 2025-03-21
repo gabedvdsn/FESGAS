@@ -5,15 +5,16 @@
         public IEffectDerivation GetEffectDerivation();
         public GASComponent GetSource();
         public EImpactType GetImpactType();
-
+        public bool RetainAttributeImpact();
+        
         public static SourceAttributeDerivation GenerateSourceDerivation(GASComponent source, EImpactType impactType = EImpactType.NotApplicable)
         {
             return new SourceAttributeDerivation(source, impactType);
         }
 
-        public static SourceAttributeDerivation GenerateSourceDerivation(SourcedModifiedAttributeValue sourceModifier)
+        public static SourceAttributeDerivation GenerateSourceDerivation(SourcedModifiedAttributeValue sourceModifier, EImpactType impactType)
         {
-            return new SourceAttributeDerivation(sourceModifier.Derivation.GetSource(), sourceModifier.Derivation.GetImpactType());
+            return GenerateSourceDerivation(sourceModifier.Derivation.GetSource(), impactType);
         }
     }
 
@@ -39,6 +40,11 @@
         public EImpactType GetImpactType()
         {
             return ImpactType;
+        }
+
+        public bool RetainAttributeImpact()
+        {
+            return true;
         }
     }
 }

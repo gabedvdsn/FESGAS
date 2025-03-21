@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ABIL_InstantHealth
   m_EditorClassIdentifier: 
   Definition:
-    Name: 
-    Description: 
+    Name: Instant Health
+    Description: Intantly heals the target
     UnlearnedIcon: {fileID: 0}
     NormalIcon: {fileID: 0}
     QueuedIcon: {fileID: 0}

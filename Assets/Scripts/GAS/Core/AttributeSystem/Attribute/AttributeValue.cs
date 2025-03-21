@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
+    [Serializable]
     public struct AttributeValue
     {
         public float CurrentValue;
@@ -55,6 +57,14 @@ namespace FESGameplayAbilitySystem
         {
             return new AttributeValue(a.CurrentValue * b.CurrentValue, a.BaseValue * b.BaseValue);
         }
+
+        public AttributeValue BaseAligned() => new AttributeValue(BaseValue, BaseValue);
+
+        public static bool WithinLimits(AttributeValue value, AttributeValue floor, AttributeValue ceil)
+        {
+            return floor.CurrentValue <= value.CurrentValue && value.CurrentValue <= ceil.CurrentValue
+                                                            && floor.BaseValue <= value.BaseValue && value.BaseValue <= ceil.BaseValue;
+        }
         
         public override string ToString()
         {
@@ -66,6 +76,12 @@ namespace FESGameplayAbilitySystem
     {
         public Dictionary<IAttributeDerivation, AttributeValue> DerivedValues = new();
         public AttributeValue Value;
+        public AttributeOverflowData Overflow;
+
+        public CachedAttributeValue(AttributeOverflowData overflow)
+        {
+            Overflow = overflow;
+        }
 
         public void Add(IAttributeDerivation derivation, AttributeValue attributeValue)
         {
@@ -77,8 +93,11 @@ namespace FESGameplayAbilitySystem
 
         public void Add(IAttributeDerivation derivation, ModifiedAttributeValue modifiedAttributeValue)
         {
-            if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] = DerivedValues[derivation].ApplyModified(modifiedAttributeValue);
-            else DerivedValues[derivation] = modifiedAttributeValue.ToAttributeValue();
+            if (derivation.RetainAttributeImpact())
+            {
+                if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] = DerivedValues[derivation].ApplyModified(modifiedAttributeValue);
+                else DerivedValues[derivation] = modifiedAttributeValue.ToAttributeValue();
+            }
 
             Value += modifiedAttributeValue.ToAttributeValue();
         }
@@ -97,13 +116,42 @@ namespace FESGameplayAbilitySystem
             AttributeValue difference = attributeValue - DerivedValues[derivation];
             DerivedValues[derivation] = attributeValue;
             Value += difference;
+
+            // if (attributeValue.CurrentValue == 0f && attributeValue.BaseValue == 0f) Remove(derivation);
         }
 
-        public void Clamp(EAttributeModificationMethod method, AttributeValue floor, AttributeValue ceil)
+        public void Clean()
+        {
+            List<IAttributeDerivation> toRemove = new List<IAttributeDerivation>();
+            foreach (IAttributeDerivation derivation in DerivedValues.Keys)
+            {
+                if (DerivedValues[derivation].CurrentValue == 0f && DerivedValues[derivation].BaseValue == 0f) toRemove.Add(derivation);
+            }
+
+            foreach (IAttributeDerivation derivation in toRemove) Remove(derivation);
+        }
+        
+        public void Clamp(AttributeValue ceil)
+        {
+            if (0 <= Value.CurrentValue && Value.CurrentValue <= ceil.CurrentValue && 0 <= Value.BaseValue &&
+                Value.BaseValue <= ceil.BaseValue) return;
+            
+            float currDelta = 0f;
+            if (Value.CurrentValue < 0) currDelta = -Value.CurrentValue;
+            else if (Value.CurrentValue > ceil.CurrentValue) currDelta = ceil.CurrentValue - Value.CurrentValue;
+
+            float baseDelta = 0f;
+            if (Value.BaseValue < 0) baseDelta = -Value.BaseValue;
+            else if (Value.BaseValue > ceil.BaseValue) baseDelta = ceil.BaseValue - Value.BaseValue;
+
+            Value += new AttributeValue(currDelta, baseDelta);
+        }
+
+        public void Clamp(AttributeValue floor, AttributeValue ceil)
         {
             if (floor.CurrentValue <= Value.CurrentValue && Value.CurrentValue <= ceil.CurrentValue && floor.BaseValue <= Value.BaseValue &&
                 Value.BaseValue <= ceil.BaseValue) return;
-
+            
             float currDelta = 0f;
             if (Value.CurrentValue < floor.CurrentValue) currDelta = floor.CurrentValue - Value.CurrentValue;
             else if (Value.CurrentValue > ceil.CurrentValue) currDelta = ceil.CurrentValue - Value.CurrentValue;
@@ -112,73 +160,35 @@ namespace FESGameplayAbilitySystem
             if (Value.BaseValue < floor.BaseValue) baseDelta = floor.BaseValue - Value.BaseValue;
             else if (Value.BaseValue > ceil.BaseValue) baseDelta = ceil.BaseValue - Value.BaseValue;
 
-            Debug.Log($"Clamping with floor {floor} and ceil {ceil} with {currDelta}/{baseDelta} for {Value.CurrentValue}/{Value.BaseValue}");
-            
-            switch (method)
-            {
-                case EAttributeModificationMethod.FromLast:
-                    foreach (IAttributeDerivation derivation in DerivedValues.Keys.Reverse())
-                    {
-                        Debug.Log($"{derivation.GetEffectDerivation().GetName()} => {DerivedValues[derivation]}");
-                        if (currDelta == 0f && baseDelta == 0f) return;
-                        AttributeValue delta = Limit(derivation, ref currDelta, ref baseDelta);
-                        //DerivedValues[derivation] = delta;
-                        Set(derivation, delta);
-                    }
-                    break;
-                case EAttributeModificationMethod.FromFirst:
-                    foreach (IAttributeDerivation derivation in DerivedValues.Keys)
-                    {
-                        if (currDelta == 0f && baseDelta == 0f) return;
-                        AttributeValue delta = Limit(derivation, ref currDelta, ref baseDelta);
-                        //DerivedValues[derivation] = delta;
-                        Set(derivation, delta);
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(method), method, null);
-            }
-
-            foreach (IAttributeDerivation derivation in DerivedValues.Keys)
-            {
-                Debug.Log($"{derivation.GetEffectDerivation().GetName()} => {DerivedValues[derivation]}");
-            }
+            Value += new AttributeValue(currDelta, baseDelta);
         }
 
-        private AttributeValue Limit(IAttributeDerivation derivation, ref float currDelta, ref float baseDelta)
+        public string FormattedString(AttributeScriptableObject attribute)
         {
-            AttributeValue delta = default;
-            if (currDelta != 0f)
+            string s = $"[ CACHED-{attribute} ]\n";
+            foreach (IAttributeDerivation derivation in DerivedValues.Keys)
             {
-                if (currDelta < 0f)  // We want to decrease the curr value (higher than ceil)
-                {
-                    delta.CurrentValue = Mathf.Max(currDelta, DerivedValues[derivation].CurrentValue);
-                    currDelta -= delta.CurrentValue;
-                }
-                else  // We want to increase the curr value (lower than floor)
-                {
-                    delta.CurrentValue = Mathf.Min(currDelta, DerivedValues[derivation].CurrentValue);
-                    currDelta += delta.CurrentValue;
-                }
-            }
-                        
-            if (baseDelta != 0f)
-            {
-                if (baseDelta < 0f)  // We want to decrease the base value (higher than ceil)
-                {
-                    delta.BaseValue = Mathf.Max(baseDelta, DerivedValues[derivation].BaseValue);
-                    baseDelta -= delta.BaseValue;
-                }
-                else  // We want to increase the base value (lower than floor)
-                {
-                    delta.BaseValue = Mathf.Min(baseDelta, DerivedValues[derivation].BaseValue);
-                    baseDelta += delta.BaseValue;
-                }
+                s += $"\t{derivation.GetEffectDerivation().GetName()} -> {DerivedValues[derivation]}\n";
             }
 
-            Debug.Log($"Limited delta: {delta}");
-            return delta;
+            return s;
         }
     }
 
+    [Serializable]
+    public struct AttributeOverflowData
+    {
+        public EAttributeOverflowPolicy Policy;
+        public AttributeValue Floor;
+        public AttributeValue Ceil;
+    }
+
+    public enum EAttributeOverflowPolicy
+    {
+        ZeroToBase,
+        FloorToBase,
+        ZeroToCeil,
+        FloorToCeil,
+        Unlimited
+    }
 }

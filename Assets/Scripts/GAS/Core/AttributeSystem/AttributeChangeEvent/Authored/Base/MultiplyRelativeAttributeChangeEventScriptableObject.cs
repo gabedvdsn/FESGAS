@@ -11,12 +11,12 @@ namespace FESGameplayAbilitySystem
     [CreateAssetMenu(menuName = "FESGAS/Authored/Attribute Change Event/Multiply Relative", fileName = "ACE_MultiplyRelative")]
     public class MultiplyRelativeAttributeChangeEventScriptableObject : AbstractRelativeAttributeChangeEventScriptableObject
     {
-        public SignPolicy SignPolicy;
+        public ESignPolicy SignPolicy;
         
         public override void PreAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
         {
-            if (!modifiedAttributeCache.AttributeIsActive(PrimaryAttribute)) return;
-            modifiedAttributeCache.Multiply(PrimaryAttribute, attributeCache[RelativeTo].Value);
+            if (!modifiedAttributeCache.AttributeIsActive(TargetAttribute)) return;
+            modifiedAttributeCache.Multiply(TargetAttribute, attributeCache[RelativeTo].Value);
         }
         
         public override void PostAttributeChange(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
@@ -25,7 +25,7 @@ namespace FESGameplayAbilitySystem
         }
     }
 
-    public enum SignPolicy
+    public enum ESignPolicy
     {
         Negative,
         Positive,

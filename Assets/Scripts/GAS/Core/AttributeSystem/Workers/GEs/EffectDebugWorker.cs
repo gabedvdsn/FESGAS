@@ -16,10 +16,10 @@ namespace FESGameplayAbilitySystem
         public Slider DurationSlider;
         public Slider PeriodSlider;
 
-        private GameplayEffectShelfContainer Container;
+        private AbstractGameplayEffectShelfContainer Container;
         private bool initialized;
 
-        public void Set(ref GameplayEffectShelfContainer container)
+        public void Set(ref AbstractGameplayEffectShelfContainer container)
         {
             Container = container;
             initialized = true;

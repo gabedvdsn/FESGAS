@@ -16,10 +16,10 @@ namespace FESGameplayAbilitySystem
         
         public AbstractSelectTargetProxyTaskScriptableObject TargetingProxy;
         
-        [FormerlySerializedAs("IncludeImplicitTargeting")] [Space]
+        [Space]
         
-        public bool UseImplicitTargeting = true;
-        public ESourceTarget OwnerAs = ESourceTarget.Target;
+        public bool UseImplicitInstructions = true;
+        public ESourceTargetBoth OwnerAs = ESourceTargetBoth.Source;
         
         [Header("Proxy Stages")]
         
@@ -49,29 +49,28 @@ namespace FESGameplayAbilitySystem
 
         public async UniTask ActivateTargetingTask(AbilitySpec spec, CancellationToken token, ProxyDataPacket implicitData)
         {
-            ProxyDataPacket data = new ProxyDataPacket(spec);
-            if (implicitData is not null)
-            {
-                data.CompileWith(implicitData);
-            }
+            /*ProxyDataPacket data = new ProxyDataPacket(spec);
+            if (implicitData is not null) data.CompileWith(implicitData);*/
 
             // If there is a targeting task assigned...
             if (Specification.TargetingProxy)
             {
-                await Specification.TargetingProxy.Prepare(data, token);
-                await Specification.TargetingProxy.Activate(data, token);
-                await Specification.TargetingProxy.Clean(data, token);
+                await Specification.TargetingProxy.Prepare(implicitData, token);
+                await Specification.TargetingProxy.Activate(implicitData, token);
+                await Specification.TargetingProxy.Clean(implicitData, token);
             }
+
+            // Debug.Log(data);
         }
 
         public async UniTask Activate(AbilitySpec spec, CancellationToken token, ProxyDataPacket implicitData)
         {
             Reset();
             
-            ProxyDataPacket data = new ProxyDataPacket(spec);
-            if (implicitData is not null) data.CompileWith(implicitData);
+            /*ProxyDataPacket data = new ProxyDataPacket(spec);
+            if (implicitData is not null) data.CompileWith(implicitData);*/
             
-            await ActivateNextStage(data, token);
+            await ActivateNextStage(implicitData, token);
         }
         
         private async UniTask ActivateNextStage(ProxyDataPacket data, CancellationToken token)
@@ -93,11 +92,11 @@ namespace FESGameplayAbilitySystem
                 
                 switch (stage.TaskPolicy)
                 {
-                    case AbilityProxyTaskPolicy.Any:
+                    case EAnyAllPolicy.Any:
                         await UniTask.WhenAny(tasks);
                         stageCts.Cancel();
                         break;
-                    case AbilityProxyTaskPolicy.All:
+                    case EAnyAllPolicy.All:
                         await UniTask.WhenAll(tasks);
                         break;
                     default:
@@ -131,11 +130,11 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public class AbilityProxyStage
     {
-        public AbilityProxyTaskPolicy TaskPolicy;
+        public EAnyAllPolicy TaskPolicy;
         public List<AbstractAbilityProxyTaskScriptableObject> Tasks;
     }
 
-    public enum AbilityProxyTaskPolicy
+    public enum EAnyAllPolicy
     {
         Any,
         All

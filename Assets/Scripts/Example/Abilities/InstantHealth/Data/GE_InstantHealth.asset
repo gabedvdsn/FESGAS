@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d34fc1f98f8a0b4c9b37da3e706e0e1, type: 3}
   m_Name: GE_InstantHealth
   m_EditorClassIdentifier: 
-  Identifier: {fileID: 0}
-  GrantedTags: []
+  Identifier: {fileID: 11400000, guid: 21fcbf1e42e60214a9d5b3e6ffdae8be, type: 2}
+  GrantedTags:
+  - {fileID: 11400000, guid: 21fcbf1e42e60214a9d5b3e6ffdae8be, type: 2}
   ImpactSpecification:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     ValueTarget: 0

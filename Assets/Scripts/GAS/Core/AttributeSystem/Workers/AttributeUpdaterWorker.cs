@@ -19,12 +19,12 @@ namespace FESGameplayAbilitySystem
         
         private void LateUpdate()
         {
-            if (!Source.TryGetAttributeValue(AttributeTarget, out CachedAttributeValue attributeValue)) return;
+            if (!Source.TryGetAttributeValue(AttributeTarget, out AttributeValue attributeValue)) return;
 
-            CurrentText.text = attributeValue.Value.CurrentValue.ToString(CultureInfo.InvariantCulture);
-            BaseText.text = attributeValue.Value.BaseValue.ToString(CultureInfo.InvariantCulture);
+            CurrentText.text = attributeValue.CurrentValue.ToString(CultureInfo.InvariantCulture);
+            BaseText.text = attributeValue.BaseValue.ToString(CultureInfo.InvariantCulture);
 
-            float targetValue = attributeValue.Value.CurrentValue / attributeValue.Value.BaseValue;
+            float targetValue = attributeValue.CurrentValue / attributeValue.BaseValue;
             ValueSlider.value = Mathf.Lerp(ValueSlider.value, targetValue, Time.deltaTime * 10f);
         }
     }

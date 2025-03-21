@@ -11,6 +11,15 @@ namespace FESGameplayAbilitySystem
 
         public GameplayTagScriptableObject NameTag;
 
-        public string DistinctName => NameTag ? "Non-Distinct Ability System" : NameTag.Name;
+        private GASComponent System;
+
+        public void Initialize(GASComponent system) => System = system;
+
+        public string DistinctName => NameTag ? (System is null ? "Non-Distinct Ability System" : System.gameObject.name) : NameTag.Name;
+        
+        public override string ToString()
+        {
+            return DistinctName;
+        }
     }
 }

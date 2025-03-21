@@ -23,7 +23,7 @@ namespace FESGameplayAbilitySystem
             Workers = new List<EffectDebugWorker>();
         }
 
-        public void CreateDebugFor(ref GameplayEffectShelfContainer container)
+        public void CreateDebugFor(ref AbstractGameplayEffectShelfContainer container)
         {
             EffectDebugWorker worker = Instantiate(DebugPrefab, transform);
             worker.Set(ref container);

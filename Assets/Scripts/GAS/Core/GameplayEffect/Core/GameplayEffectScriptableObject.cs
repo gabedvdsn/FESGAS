@@ -53,11 +53,12 @@ namespace FESGameplayAbilitySystem
 
     public enum GameplayEffectApplicationPolicy
     {
+        Append,  // Create another instance of the effect independent of the existing one(s)
         Refresh,  // Refresh the duration of the effect
         Extend,  // Extend the duration of the effect
-        Append,  // Append another instance of the effect independent of existing one(s)
-        StackRefresh,  // Stacks and refreshes the duration of the effect
-        StackExtend  // Stacks and extends the duration of the effect
+        Stack,  // Inject a duration-independent stack of the effect into the existing one 
+        StackRefresh,  // Stack and refresh the duration of each stack
+        StackExtend  // Stacks and extend the duration of each stack
     }
 
     public class GameplayEffectSpec : IAttributeDerivation
@@ -167,6 +168,10 @@ namespace FESGameplayAbilitySystem
         public EImpactType GetImpactType()
         {
             return Base.ImpactSpecification.ImpactType;
+        }
+        public bool RetainAttributeImpact()
+        {
+            return false;
         }
     }
 

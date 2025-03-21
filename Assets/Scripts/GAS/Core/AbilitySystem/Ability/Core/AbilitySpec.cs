@@ -51,8 +51,8 @@ namespace FESGameplayAbilitySystem
         public bool CanCoverCost()
         {
             if (!Base.Cost || !Base.Cost.ImpactSpecification.AttributeTarget) return true;
-            if (!Owner.AttributeSystem.TryGetAttributeValue(Base.Cost.ImpactSpecification.AttributeTarget, out CachedAttributeValue attributeValue)) return false;
-            return attributeValue.Value.CurrentValue >= Base.Cost.ImpactSpecification.GetMagnitude(Owner.GenerateEffectSpec(this, Base.Cost));
+            if (!Owner.AttributeSystem.TryGetAttributeValue(Base.Cost.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return false;
+            return attributeValue.CurrentValue >= Base.Cost.ImpactSpecification.GetMagnitude(Owner.GenerateEffectSpec(this, Base.Cost));
         }
 
         public GASComponent GetOwner() => Owner;
@@ -61,5 +61,10 @@ namespace FESGameplayAbilitySystem
         public void SetLevel(int level) => Level = level;
         public float GetRelativeLevel() => RelativeLevel;
         public string GetName() => Base.Definition.Name;
+
+        public override string ToString()
+        {
+            return Base.ToString();
+        }
     }
 }

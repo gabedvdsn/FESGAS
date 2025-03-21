@@ -36,6 +36,11 @@ namespace FESGameplayAbilitySystem
         {
             return new AbilitySpec(Owner, this, Level);
         }
+
+        public override string ToString()
+        {
+            return Definition.Name;
+        }
     }
 
     [Serializable]

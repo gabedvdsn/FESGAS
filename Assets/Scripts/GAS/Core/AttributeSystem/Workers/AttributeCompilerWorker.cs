@@ -10,7 +10,6 @@ namespace FESGameplayAbilitySystem
     {
         public AttributeSystemComponent Source;
         public AttributeScriptableObject AttributeTarget;
-        public TMP_Text OutputText;
         
         private AttributeValue previousValue;
         private AttributeValue delta;
@@ -53,7 +52,7 @@ namespace FESGameplayAbilitySystem
         private void Output()
         {
             string styleText = $"{AttributeTarget.Name}/S";
-            OutputText.text = $"{deltaRate.ToString()} {styleText}";
+            // OutputText.text = $"{deltaRate.ToString()} {styleText}";
         }
     }
 

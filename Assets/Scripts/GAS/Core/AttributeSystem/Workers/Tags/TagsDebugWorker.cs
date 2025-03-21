@@ -13,10 +13,10 @@ namespace FESGameplayAbilitySystem
 
         public CanvasGroup Canvas;
         
-        private GameplayEffectShelfContainer Container;
+        private AbstractGameplayEffectShelfContainer Container;
         private bool initialized;
 
-        public void Set(ref GameplayEffectShelfContainer container, GameplayTagScriptableObject _tag)
+        public void Set(ref AbstractGameplayEffectShelfContainer container, GameplayTagScriptableObject _tag)
         {
             Container = container;
             initialized = true;

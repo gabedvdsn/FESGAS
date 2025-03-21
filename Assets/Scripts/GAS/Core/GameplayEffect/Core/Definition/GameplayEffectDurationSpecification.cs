@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         
         public float Duration;
         public AbstractMagnitudeModifierScriptableObject DurationCalculation;
-        [FormerlySerializedAs("DurationCalculationPolicy")] public MagnitudeOperation DurationCalculationOperation;
+        public MagnitudeOperation DurationCalculationOperation;
 
         [Space] 
         
@@ -24,31 +24,27 @@ namespace FESGameplayAbilitySystem
         public TickCalculationRounding Rounding;
         public bool UseDefaultTickRate;
 
-        public void ApplyDurationSpecifications(GameplayEffectShelfContainer container)
+        public void ApplyDurationSpecifications(AbstractGameplayEffectShelfContainer container)
         {
+            if (DurationPolicy == GameplayEffectDurationPolicy.Instant) return;
+            
             // Apply duration
-            if (DurationPolicy != GameplayEffectDurationPolicy.Instant)
-            {
-                container.TotalDuration = GetTotalDuration(container.Spec);
-
-                container.DurationRemaining = container.TotalDuration;
-            }
+            container.SetTotalDuration(GetTotalDuration(container.Spec));
+            container.SetDurationRemaining(container.TotalDuration);
             
             // Apply period
             int numTicks = GetTicks(container.Spec);
 
             if (numTicks > 0)
             {
-                container.PeriodDuration = container.TotalDuration / numTicks;
-                container.TimeUntilPeriodTick = container.PeriodDuration;
+                container.SetPeriodDuration(container.TotalDuration / numTicks);
+                container.SetTimeUntilPeriodTick(container.PeriodDuration);
             }
             else
             {
-                container.PeriodDuration = float.MaxValue;
-                container.TimeUntilPeriodTick = float.MaxValue;
+                container.SetPeriodDuration(float.MaxValue);
+                container.SetTimeUntilPeriodTick(container.PeriodDuration);
             }
-            
-            //container.TimeUntilPeriodTick = TickOnApplication ? 0f : container.PeriodDuration;
         }
 
         public float GetTotalDuration(GameplayEffectSpec spec)
@@ -78,7 +74,6 @@ namespace FESGameplayAbilitySystem
             };
             int numTicks = Rounding switch
             {
-
                 TickCalculationRounding.Floor => Mathf.FloorToInt(floatTicks),
                 TickCalculationRounding.Ceil => Mathf.CeilToInt(floatTicks),
                 _ => throw new ArgumentOutOfRangeException()

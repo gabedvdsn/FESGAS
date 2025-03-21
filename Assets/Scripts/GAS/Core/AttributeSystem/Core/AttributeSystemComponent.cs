@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using FESGameplayAbilitySystem.Core.AttributeSystem.AttributeWorker.Core;
+using UnityEditor;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -13,11 +15,9 @@ namespace FESGameplayAbilitySystem
         
         [Header("Attribute Change Events")]
         
-        public List<AbstractAttributeChangeEventScriptableObject> AttributeChangeEvents;
+        [SerializeField] private List<AbstractAttributeChangeEventScriptableObject> AttributeChangeEvents;
 
-        [Header("Attribute Workers")] 
-        
-        public List<AbstractAttributeWorkerScriptableObject> AttributeWorkers;
+        private AttributeChangeEventHandler ChangeEventHandler;
         
         private Dictionary<AttributeScriptableObject, CachedAttributeValue> AttributeCache;
         private SourcedModifiedAttributeCache ModifiedAttributeCache;
@@ -31,11 +31,12 @@ namespace FESGameplayAbilitySystem
 
         private GASComponent System;
 
-        private void Awake()
+        public void Initialize(GASComponent system)
         {
-            System = GetComponent<GASComponent>();
+            System = system;
             
             InitializeCaches();
+            InitializePriorityChangeEvents();
             InitializeAttributeSets();
         }
         
@@ -55,34 +56,52 @@ namespace FESGameplayAbilitySystem
         {
             AttributeSet.Initialize(this);
             
-            modifiedCacheDirty = true;
+            foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.GetDefined())
+            {
+                ModifyAttribute(attribute, new SourcedModifiedAttributeValue(IAttributeDerivation.GenerateSourceDerivation(System), 0f, 0f, false));
+            }
+            
             UpdateAttributes();
         }
 
-        public void ProvideAttribute(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
+        private void InitializePriorityChangeEvents()
         {
-            if (AttributeCache.ContainsKey(attribute)) return;
-            AttributeCache[attribute] = new CachedAttributeValue();
-            
-            AttributeCache[attribute].Add(IAttributeDerivation.GenerateSourceDerivation(System), modifiedAttributeValue.ToAttributeValue());
-            ModifiedAttributeCache.SubscribeAttribute(attribute);
+            ChangeEventHandler = new AttributeChangeEventHandler();
+            foreach (AbstractAttributeChangeEventScriptableObject changeEvent in AttributeChangeEvents) ChangeEventHandler.AddEvent(changeEvent);
         }
 
-        private void UpdateAttributes()
+        public void ProvideAttribute(AttributeScriptableObject attribute, DefaultAttributeValue defaultValue)
         {
-            ApplyAttributeModifications();
+            if (AttributeCache.ContainsKey(attribute)) return;
+            AttributeCache[attribute] = new CachedAttributeValue(defaultValue.Overflow);
+            
+            AttributeCache[attribute].Add(IAttributeDerivation.GenerateSourceDerivation(System), defaultValue.ToAttributeValue());
+            ModifiedAttributeCache.SubscribeModifiableAttribute(attribute);
+        }
+
+        public bool DefinesAttribute(AttributeScriptableObject attribute) => AttributeCache.ContainsKey(attribute);
+
+        private void UpdateAttributes(bool allowWorkers = true)
+        {
+            ApplyAttributeModifications(allowWorkers);
+        }
+
+        public void RemoveAttributeDerivations(List<AbstractGameplayEffectShelfContainer> effectContainers)
+        {
+            foreach (AbstractGameplayEffectShelfContainer container in effectContainers)
+            {
+                if (!AttributeCache.ContainsKey(container.Spec.Base.ImpactSpecification.AttributeTarget)) continue;
+                AttributeCache[container.Spec.Base.ImpactSpecification.AttributeTarget].Remove(container);
+            }
         }
         
-        private void ApplyAttributeModifications()
+        private void ApplyAttributeModifications(bool allowWorkers = true)
         {
             if (!modifiedCacheDirty) return;
             
-            foreach (AbstractAttributeChangeEventScriptableObject changeEvent in AttributeChangeEvents)
-            {
-                changeEvent.PreAttributeChange(System, ref AttributeCache, ModifiedAttributeCache);
-            }
+            ChangeEventHandler.RunPreChangeEvents(System, ref AttributeCache, ModifiedAttributeCache);
 
-            foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.Get())
+            foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.GetModified())
             {
                 HoldAttributeCache[attribute] = AttributeCache[attribute].Value;
                 if (!ModifiedAttributeCache.TryGetCachedValue(attribute, out List<SourcedModifiedAttributeValue> sourcedModifiers)) continue;
@@ -92,28 +111,31 @@ namespace FESGameplayAbilitySystem
                 }
             }
             
-            foreach (AbstractAttributeChangeEventScriptableObject changeEvent in AttributeChangeEvents)
-            {
-                changeEvent.PostAttributeChange(System, ref AttributeCache, ModifiedAttributeCache);
-            }
+            ChangeEventHandler.RunPostChangeEvents(System, ref AttributeCache, ModifiedAttributeCache);
 
+            List<GASComponent> communicateComps = new List<GASComponent>();
             // Communicate the impact of the modification back to the source
             foreach (AttributeScriptableObject attribute in HoldAttributeCache.Keys)
             {
                 if (!ModifiedAttributeCache.TryGetCachedValue(attribute, out var sourcedModifiers)) continue;
                 foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
                 {
-                    sourcedModifier.Derivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
-                        AbilityImpactData.Generate(
-                            attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
-                        )
-                    );
+                    if (sourcedModifier.Derivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
+                            AbilityImpactData.Generate(
+                                System, attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
+                            )
+                        )) communicateComps.Add(sourcedModifier.Derivation.GetSource());
                 }
+                
+                AttributeCache[attribute].Clean();
             }
-
+            
             modifiedCacheDirty = false;
             HoldAttributeCache.Clear();
             ModifiedAttributeCache.Clear();
+
+            if (!allowWorkers) return;
+            foreach (GASComponent comp in communicateComps) comp.AbilitySystem.ActivateAbilityImpactWorkers();
         }
 
         public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
@@ -124,26 +146,155 @@ namespace FESGameplayAbilitySystem
             ModifiedAttributeCache.Add(attribute, sourcedModifiedValue);
         }
 
-        public void ModifyAttributeImmediate(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
+        public void ModifyAttributeImmediate(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool allowWorkers = true)
         {
-            
+            ModifyAttribute(attribute, sourcedModifiedValue);
+            UpdateAttributes(allowWorkers);
         }
 
         public bool TryGetAttributeValue(AttributeScriptableObject attribute, out CachedAttributeValue attributeValue)
         {
-            if (attribute) return AttributeCache.TryGetValue(attribute, out attributeValue);
-            
+            return AttributeCache.TryGetValue(attribute, out attributeValue);
+        }
+
+        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out AttributeValue attributeValue)
+        {
+            if (AttributeCache.TryGetValue(attribute, out var cachedValue))
+            {
+                attributeValue = cachedValue.Value;
+                return true;
+            }
+
             attributeValue = default;
             return false;
         }
 
-        public bool TryGetModifiedAttributeValue(AttributeScriptableObject attribute, out ModifiedAttributeValue modifiedAttributeValue)
+        private class AttributeChangeEventHandler
         {
-            // if (attribute) return ModifiedAttributeCache.TryGetCachedValue(attribute, out modifiedAttributeValue);
-            if (attribute) return ModifiedAttributeCache.TryToModified(attribute, out modifiedAttributeValue);
+            private List<AttributeChangeEventPriorityPacket> Packets = new();
+
+            public void AddEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
+            {
+                if (Packets.Count == 0)
+                {
+                    Packets.Add(
+                        new AttributeChangeEventPriorityPacket(changeEvent.Priorities[0])
+                    );
+                    Packets[0].AddEvent(changeEvent, 1);
+                    return;
+                }
+
+                bool inserted = false;
+                for (int i = 0; i < Packets.Count; i++)
+                {
+                    if (changeEvent.Priorities[0] > Packets[i].Priority) continue;
+                    
+                    if (changeEvent.Priorities[0] == Packets[i].Priority) Packets[i].AddEvent(changeEvent, 1);
+                    else if (changeEvent.Priorities[0] < Packets[i].Priority)
+                    {
+                        Packets.Insert(i, new AttributeChangeEventPriorityPacket(changeEvent.Priorities[0]));
+                        Packets[i].AddEvent(changeEvent, 1);
+                    }
+                    
+                    inserted = true;
+                    break;
+                }
+
+                if (inserted) return;
+
+                Packets.Add(
+                    new AttributeChangeEventPriorityPacket(changeEvent.Priorities[0])
+                );
+                Packets[^1].AddEvent(changeEvent, 1);
+            }
+
+            public bool RemoveEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
+            {
+                return Packets.Any(packet => packet.TryRemoveEvent(changeEvent));
+            }
+
+            public void RunPreChangeEvents(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+            {
+                foreach (AttributeChangeEventPriorityPacket packet in Packets) packet.RunPreChangeEvents(system, ref attributeCache, modifiedAttributeCache);
+            }
+
+            public void RunPostChangeEvents(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+            {
+                foreach (AttributeChangeEventPriorityPacket packet in Packets) packet.RunPostChangeEvents(system, ref attributeCache, modifiedAttributeCache);
+            }
+        }
+        
+        private struct AttributeChangeEventPriorityPacket
+        {
+            public int Priority;
+            private List<AbstractAttributeChangeEventScriptableObject> Events;
+            private List<AttributeChangeEventPriorityPacket> SubPackets;
+
+            public AttributeChangeEventPriorityPacket(int priority)
+            {
+                Priority = priority;
+                
+                Events = new List<AbstractAttributeChangeEventScriptableObject>();
+                SubPackets = new List<AttributeChangeEventPriorityPacket>();
+            }
+
+            public void AddEvent(AbstractAttributeChangeEventScriptableObject changeEvent, int depth)
+            {
+                if (depth >= changeEvent.Priorities.Count) Events.Add(changeEvent);
+                else
+                {
+                    bool inserted = false;
+                    for (int i = 0; i < SubPackets.Count; i++)
+                    {
+                        if (changeEvent.Priorities[depth] > SubPackets[i].Priority) continue;
+                    
+                        if (changeEvent.Priorities[depth] == SubPackets[i].Priority) SubPackets[i].AddEvent(changeEvent, depth + 1);
+                        else if (changeEvent.Priorities[depth] < SubPackets[i].Priority)
+                        {
+                            SubPackets.Insert(i, new AttributeChangeEventPriorityPacket(changeEvent.Priorities[depth]));
+                            SubPackets[i].AddEvent(changeEvent, depth + 1);
+                        }
+                    
+                        inserted = true;
+                        break;
+                    }
+
+                    if (inserted) return;
+                    
+                    SubPackets.Add(new AttributeChangeEventPriorityPacket());
+                    SubPackets[^1].AddEvent(changeEvent, depth + 1);
+                }
+            }
+
+            public bool TryRemoveEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
+            {
+                if (Events.Remove(changeEvent)) return true;
+                
+                for (int i = 0; i < SubPackets.Count; i++)
+                {
+                    if (SubPackets[i].TryRemoveEvent(changeEvent))
+                    {
+                        if (SubPackets[i].Events.Count == 0) SubPackets.RemoveAt(i);
+                        return true;
+                    }
+                }
+
+                return false;
+
+            }
             
-            modifiedAttributeValue = default;
-            return false;
+            public void RunPreChangeEvents(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+            {
+                foreach (AbstractAttributeChangeEventScriptableObject changeEvent in Events) changeEvent.PreAttributeChange(system, ref attributeCache, modifiedAttributeCache);
+                foreach (AttributeChangeEventPriorityPacket packet in SubPackets) packet.RunPreChangeEvents(system, ref attributeCache, modifiedAttributeCache);
+            }
+
+            public void RunPostChangeEvents(GASComponent system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+            {
+                foreach (AbstractAttributeChangeEventScriptableObject changeEvent in Events) changeEvent.PostAttributeChange(system, ref attributeCache, modifiedAttributeCache);
+                foreach (AttributeChangeEventPriorityPacket packet in SubPackets) packet.RunPostChangeEvents(system, ref attributeCache, modifiedAttributeCache);
+            }
         }
     }
 }
+

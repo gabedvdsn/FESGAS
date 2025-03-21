@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a42dbe2415465689d11a1e8ae1fdbc, type: 3}
+  m_Name: ABIL_TargetedInstantDamage
+  m_EditorClassIdentifier: 
+  Definition:
+    Name: Targeted Instant Damage
+    Description: Immediately deals damage to the test target
+    UnlearnedIcon: {fileID: 0}
+    NormalIcon: {fileID: 0}
+    QueuedIcon: {fileID: 0}
+    OnCooldownIcon: {fileID: 0}
+  Tags:
+    AssetTag: {fileID: 11400000, guid: 855347e720ab13549893a403da896f00, type: 2}
+    ContextTag: {fileID: 0}
+    PassivelyGrantedTags: []
+    ActiveGrantedTags: []
+    SourceRequirements:
+      AvoidTags: []
+      RequireTags: []
+    TargetRequirements:
+      AvoidTags: []
+      RequireTags: []
+  Proxy:
+    TargetingProxy: {fileID: 11400000, guid: 24bc5acf10377ca489afa8ef5d852288, type: 2}
+    UseImplicitTargeting: 1
+    OwnerAs: 1
+    Stages:
+    - TaskPolicy: 0
+      Tasks:
+      - {fileID: 11400000, guid: dd03faf8ff9651047b1e1cb9499976ea, type: 2}
+  StartingLevel: 1
+  MaxLevel: 4
+  IgnoreWhenLevelZero: 1
+  Cost: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
+  Cooldown: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
+  AbilityEventSubscription: []

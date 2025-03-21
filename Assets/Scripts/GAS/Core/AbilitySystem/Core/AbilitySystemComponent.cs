@@ -14,16 +14,18 @@ namespace FESGameplayAbilitySystem
         
         public int MaxAbilities = 5;
         
-        private GASComponent System;
-        private Dictionary<int, AbilitySpecContainer> AbilityCache;
-
         [Header("Impact Workers")]
         public List<AbstractImpactWorkerScriptableObject> Workers;
+
+        private GASComponent System;
+        private Dictionary<int, AbilitySpecContainer> AbilityCache;
+        private List<AbilityImpactData> FrameImpactData;
         
-        private void Awake()
+        public void Initialize(GASComponent system)
         {
-            System = GetComponent<GASComponent>();
+            System = system;
             AbilityCache = new Dictionary<int, AbilitySpecContainer>();
+            FrameImpactData = new List<AbilityImpactData>();
         }
 
         public void SetAbilitiesLevel(int level)
@@ -131,7 +133,7 @@ namespace FESGameplayAbilitySystem
 
             container.Spec.ApplyUsageEffects();
             
-            return container.Spec.Base.Proxy.UseImplicitTargeting 
+            return container.Spec.Base.Proxy.UseImplicitInstructions 
                 ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, container.Spec.Base.Proxy.OwnerAs)) 
                 : container.ActivateAbility(null);
         }
@@ -161,9 +163,32 @@ namespace FESGameplayAbilitySystem
         
         #region Impact Workers
         
-        public void CommunicateAbilityImpact(AbilityImpactData impactData)
+        public bool CommunicateAbilityImpact(AbilityImpactData impactData)
         {
+            Debug.Log($"Communicated impact: {impactData}");
+
+            if (Workers.Count == 0) return false;
             
+            FrameImpactData.Add(impactData);
+
+            return true;
+        }
+
+        public void ActivateAbilityImpactWorkers()
+        {
+            if (FrameImpactData.Count == 0) return;
+
+            foreach (AbilityImpactData impactData in FrameImpactData)
+            {
+                // Skip non-workable impact (avoids cycles)
+                if (!impactData.SourcedModifier.Workable) continue;
+                foreach (AbstractImpactWorkerScriptableObject worker in Workers)
+                {
+                    worker.InterpretImpact(impactData);
+                }
+            }
+
+            FrameImpactData.Clear();
         }
         
         #endregion
@@ -192,8 +217,6 @@ namespace FESGameplayAbilitySystem
 
                 Proxy = Spec.Base.Proxy.GenerateProxy();
                 ResetToken();
-                
-                // Debug.Log($"CREATED ABILITY: {Spec.Base.Definition.Name} with proxy: {Proxy}");
             }
             
             public bool ActivateAbility(ProxyDataPacket implicitData)
@@ -204,11 +227,12 @@ namespace FESGameplayAbilitySystem
                 return true;
             }
 
-            private async UniTaskVoid AwaitAbility(ProxyDataPacket implicitData)
+            private async UniTaskVoid AwaitAbility(ProxyDataPacket data)
             {
                 IsActive = true;
-                await Proxy.ActivateTargetingTask(Spec, cst.Token, implicitData);
-                await Proxy.Activate(Spec, cst.Token, implicitData);
+                await Proxy.ActivateTargetingTask(Spec, cst.Token, data);
+                Debug.Log($"{data}");
+                await Proxy.Activate(Spec, cst.Token, data);
                 IsActive = false;
             }
 

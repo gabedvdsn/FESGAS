@@ -1,5 +1,4 @@
-﻿using FESGameplayAbilitySystem.Core;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
@@ -62,7 +61,7 @@ namespace FESGameplayAbilitySystem
             );
         }
 
-        public SignPolicy SignPolicy => StaticSignPolicy.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
+        public ESignPolicy SignPolicy => GASHelper.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
 
         public SourcedModifiedAttributeValue ToSourced(IAttributeDerivation derivation)
         {
@@ -93,13 +92,17 @@ namespace FESGameplayAbilitySystem
         public float DeltaCurrentValue;
         public float DeltaBaseValue;
 
-        public SignPolicy SignPolicy => StaticSignPolicy.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
+        public bool Workable;
+
+        public ESignPolicy SignPolicy => GASHelper.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
         
-        public SourcedModifiedAttributeValue(IAttributeDerivation derivation, float deltaCurrentValue, float deltaBaseValue)
+        public SourcedModifiedAttributeValue(IAttributeDerivation derivation, float deltaCurrentValue, float deltaBaseValue, bool workable = true)
         {
             Derivation = derivation;
             DeltaCurrentValue = deltaCurrentValue;
             DeltaBaseValue = deltaBaseValue;
+
+            Workable = workable;
         }
 
         public SourcedModifiedAttributeValue Combine(SourcedModifiedAttributeValue other)

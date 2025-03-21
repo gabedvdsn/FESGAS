@@ -21,7 +21,7 @@ MonoBehaviour:
     OnCooldownIcon: {fileID: 0}
   Tags:
     AssetTag: {fileID: 11400000, guid: 662020c5bc519b8478df2b6190178956, type: 2}
-    ContextTag: {fileID: 0}
+    ContextTag: {fileID: 11400000, guid: 2f7ceda08a5c82b44a7c9be005000c05, type: 2}
     PassivelyGrantedTags: []
     ActiveGrantedTags: []
     SourceRequirements:
@@ -32,8 +32,8 @@ MonoBehaviour:
       RequireTags: []
   Proxy:
     TargetingProxy: {fileID: 0}
-    UseImplicitTargeting: 1
-    OwnerAs: 0
+    UseImplicitInstructions: 1
+    OwnerAs: 2
     Stages:
     - TaskPolicy: 0
       Tasks:
@@ -46,4 +46,5 @@ MonoBehaviour:
   AbilityEventSubscription:
   - Event: 0
     SubscribeToContextTags: []
-    Workers: []
+    Workers:
+    - {fileID: 0}

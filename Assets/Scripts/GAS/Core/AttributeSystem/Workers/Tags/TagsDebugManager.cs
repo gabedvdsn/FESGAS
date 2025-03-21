@@ -16,7 +16,7 @@ namespace FESGameplayAbilitySystem
 
         public TagsDebugWorker DebugPrefab;
 
-        public void CreateDebugFor(ref GameplayEffectShelfContainer container)
+        public void CreateDebugFor(ref AbstractGameplayEffectShelfContainer container)
         {
             foreach (GameplayTagScriptableObject _tag in container.Spec.Base.GrantedTags)
             {

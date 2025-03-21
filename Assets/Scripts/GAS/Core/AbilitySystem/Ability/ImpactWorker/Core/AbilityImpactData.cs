@@ -2,25 +2,27 @@
 {
     public struct AbilityImpactData
     {
-        private AbilityImpactData(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
+        private AbilityImpactData(GASComponent target, AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
         {
+            Target = target;
             Attribute = attribute;
             SourcedModifier = sourcedModifier;
             RealImpact = realImpact;
         }
 
+        public GASComponent Target;
         public AttributeScriptableObject Attribute;
         public SourcedModifiedAttributeValue SourcedModifier;
         public AttributeValue RealImpact;
 
-        public static AbilityImpactData Generate(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
+        public static AbilityImpactData Generate(GASComponent target, AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
         {
-            return new AbilityImpactData(attribute, sourcedModifier, realImpact);
+            return new AbilityImpactData(target, attribute, sourcedModifier, realImpact);
         }
 
         public override string ToString()
         {
-            return $"{Attribute} ({RealImpact})";
+            return $"{SourcedModifier.Derivation.GetSource()} -> {Target} => {Attribute} ({RealImpact})";
         }
     }
 }
