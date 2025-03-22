@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public static class StaticRateNormals
+    public static class GASRateNormals
     {
         public const float DEFAULT_TICK_PERIOD = .2f;
     }

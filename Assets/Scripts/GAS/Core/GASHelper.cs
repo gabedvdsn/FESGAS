@@ -7,7 +7,7 @@ namespace FESGameplayAbilitySystem
 {
     public static class GASHelper
     {
-        public static ESignPolicy DeterminePolicy(params float[] magnitudes)
+        public static ESignPolicy SignPolicy(params float[] magnitudes)
         {
             float sum = magnitudes.Sum();
             return sum switch
@@ -126,6 +126,30 @@ namespace FESGameplayAbilitySystem
                 EImpactTypeAny.Pure => impactType == EImpactType.Pure,
                 EImpactTypeAny.Any => true,
                 _ => throw new ArgumentOutOfRangeException(nameof(impactTypeAny), impactTypeAny, null)
+            };
+        }
+
+        public static bool ValidateImpactTargets(EEffectImpactTarget impactTarget, AttributeValue attributeValue)
+        {
+            return impactTarget switch
+            {
+
+                EEffectImpactTarget.Current => attributeValue.CurrentValue != 0,
+                EEffectImpactTarget.Base => attributeValue.BaseValue != 0,
+                EEffectImpactTarget.CurrentAndBase => attributeValue.CurrentValue != 0 && attributeValue.BaseValue != 0,
+                _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
+            };
+        }
+
+        public static bool ValidateSignPolicy(ESignPolicy signPolicy, EEffectImpactTarget impactTarget, AttributeValue attributeValue)
+        {
+            return impactTarget switch
+            {
+
+                EEffectImpactTarget.Current => SignPolicy(attributeValue.CurrentValue) == signPolicy,
+                EEffectImpactTarget.Base => SignPolicy(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTarget.CurrentAndBase => SignPolicy(attributeValue.CurrentValue) == signPolicy && SignPolicy(attributeValue.BaseValue) == signPolicy,
+                _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
             };
         }
     }

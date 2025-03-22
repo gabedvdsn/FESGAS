@@ -32,12 +32,12 @@ namespace FESGameplayAbilitySystem
         Base
     }
 
-    public enum EEffectImpactTarget
+    /*public enum EEffectImpactTarget
     {
         Current,
         Base,
         CurrentAndBase
-    }
+    }*/
 
     public enum EValueCollisionPolicy
     {

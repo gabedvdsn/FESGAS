@@ -13,9 +13,14 @@ namespace FESGameplayAbilitySystem
         [Header("Ability System")]
         
         public int MaxAbilities = 5;
+
+        [Header("Application Workers")] 
+        
+        public List<AbstractApplicationWorkerScriptableObject> ApplicationWorkers;
         
         [Header("Impact Workers")]
-        public List<AbstractImpactWorkerScriptableObject> Workers;
+        
+        public List<AbstractImpactWorkerScriptableObject> ImpactWorkers;
 
         private GASComponent System;
         private Dictionary<int, AbilitySpecContainer> AbilityCache;
@@ -161,15 +166,44 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
+        #region Application Workers
+
+        public SourcedModifiedAttributeValue ApplyApplicationModifications(GASComponent target, SourcedModifiedAttributeValue smav)
+        {
+            SourcedModifiedAttributeValue newValue = smav;
+            foreach (AbstractApplicationWorkerScriptableObject worker in ApplicationWorkers)
+            {
+                if (!worker.ValidateWorkFor(target, newValue)) continue;
+                newValue = worker.ModifyImpact(target, newValue);
+            }
+
+            return newValue;
+        }
+        
+        #endregion
+        
         #region Impact Workers
         
         public bool CommunicateAbilityImpact(AbilityImpactData impactData)
         {
             Debug.Log($"Communicated impact: {impactData}");
+            
+            // Allow the impact derivation to track its impact
+            impactData.SourcedModifier.BaseDerivation.TrackImpact(impactData.RealImpact);
 
-            if (Workers.Count == 0) return false;
+            if (!ValidateWorkFor(impactData)) return false; 
             
             FrameImpactData.Add(impactData);
+            return true;
+        }
+
+        private bool ValidateWorkFor(AbilityImpactData impactData)
+        {
+            if (ImpactWorkers.Count == 0) return false;
+            foreach (AbstractImpactWorkerScriptableObject worker in ImpactWorkers)
+            {
+                if (!worker.ValidateWorkFor(impactData)) return false;
+            }
 
             return true;
         }
@@ -182,7 +216,7 @@ namespace FESGameplayAbilitySystem
             {
                 // Skip non-workable impact (avoids cycles)
                 if (!impactData.SourcedModifier.Workable) continue;
-                foreach (AbstractImpactWorkerScriptableObject worker in Workers)
+                foreach (AbstractImpactWorkerScriptableObject worker in ImpactWorkers)
                 {
                     worker.InterpretImpact(impactData);
                 }
@@ -231,7 +265,7 @@ namespace FESGameplayAbilitySystem
             {
                 IsActive = true;
                 await Proxy.ActivateTargetingTask(Spec, cst.Token, data);
-                Debug.Log($"{data}");
+                // Debug.Log($"{data}");
                 await Proxy.Activate(Spec, cst.Token, data);
                 IsActive = false;
             }

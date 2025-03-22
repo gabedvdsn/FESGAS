@@ -58,7 +58,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.GetDefined())
             {
-                ModifyAttribute(attribute, new SourcedModifiedAttributeValue(IAttributeDerivation.GenerateSourceDerivation(System), 0f, 0f, false));
+                ModifyAttribute(attribute, new SourcedModifiedAttributeValue(IAttributeDerivation.GenerateSourceDerivation(System, attribute), 0f, 0f, false));
             }
             
             UpdateAttributes();
@@ -75,7 +75,7 @@ namespace FESGameplayAbilitySystem
             if (AttributeCache.ContainsKey(attribute)) return;
             AttributeCache[attribute] = new CachedAttributeValue(defaultValue.Overflow);
             
-            AttributeCache[attribute].Add(IAttributeDerivation.GenerateSourceDerivation(System), defaultValue.ToAttributeValue());
+            AttributeCache[attribute].Add(IAttributeDerivation.GenerateSourceDerivation(System, attribute), defaultValue.ToAttributeValue());
             ModifiedAttributeCache.SubscribeModifiableAttribute(attribute);
         }
 
@@ -120,11 +120,15 @@ namespace FESGameplayAbilitySystem
                 if (!ModifiedAttributeCache.TryGetCachedValue(attribute, out var sourcedModifiers)) continue;
                 foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
                 {
-                    if (sourcedModifier.Derivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
+                    if (sourcedModifier.BaseDerivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
                             AbilityImpactData.Generate(
                                 System, attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
                             )
-                        )) communicateComps.Add(sourcedModifier.Derivation.GetSource());
+                        ))
+                    {
+                        // Only add if the comp has applicable workers
+                        communicateComps.Add(sourcedModifier.Derivation.GetSource());
+                    }
                 }
                 
                 AttributeCache[attribute].Clean();

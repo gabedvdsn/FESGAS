@@ -45,7 +45,7 @@ namespace FESGameplayAbilitySystem
         {
             if (DurationSpecification.UseDefaultTickRate && DurationSpecification.Duration > 0f)
             {
-                DurationSpecification.Ticks = Mathf.FloorToInt(DurationSpecification.Duration * (1 / StaticRateNormals.DEFAULT_TICK_PERIOD));
+                DurationSpecification.Ticks = Mathf.FloorToInt(DurationSpecification.Duration * (1 / GASRateNormals.DEFAULT_TICK_PERIOD));
             }
         }
 
@@ -86,8 +86,29 @@ namespace FESGameplayAbilitySystem
 
             SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
         }
+        
+        public SourcedModifiedAttributeValue SourcedImpact(AttributeValue attributeValue)
+        {
+            AttributeValue impactValue = AttributeImpact(attributeValue);
+            return new SourcedModifiedAttributeValue(
+                this,
+                impactValue.CurrentValue,
+                impactValue.BaseValue
+            );
+        }
 
-        public SourcedModifiedAttributeValue ToSourcedModified(AttributeValue attributeValue)
+        public SourcedModifiedAttributeValue SourcedImpact(IAttributeDerivation baseDerivation, AttributeValue attributeValue)
+        {
+            AttributeValue impactValue = AttributeImpact(attributeValue);
+            return new SourcedModifiedAttributeValue(
+                this,
+                baseDerivation,
+                impactValue.CurrentValue,
+                impactValue.BaseValue
+            );
+        }
+        
+        private AttributeValue AttributeImpact(AttributeValue attributeValue)
         {
             float magnitude = Base.ImpactSpecification.GetMagnitude(this);
             float currValue = attributeValue.CurrentValue;
@@ -95,16 +116,16 @@ namespace FESGameplayAbilitySystem
             
             switch (Base.ImpactSpecification.ImpactOperation)
             {
-                case CalculationOperation.Add:
+                case ECalculationOperation.Add:
                     switch (Base.ImpactSpecification.ValueTarget)
                     {
-                        case EffectImpactTarget.Current:
+                        case EEffectImpactTarget.Current:
                             currValue += magnitude;
                             break;
-                        case EffectImpactTarget.Base:
+                        case EEffectImpactTarget.Base:
                             baseValue += magnitude;
                             break;
-                        case EffectImpactTarget.CurrentAndBase:
+                        case EEffectImpactTarget.CurrentAndBase:
                             currValue += magnitude;
                             baseValue += magnitude;
                             break;
@@ -112,16 +133,16 @@ namespace FESGameplayAbilitySystem
                             throw new ArgumentOutOfRangeException();
                     }
                     break;
-                case CalculationOperation.Multiply:
+                case ECalculationOperation.Multiply:
                     switch (Base.ImpactSpecification.ValueTarget)
                     {
-                        case EffectImpactTarget.Current:
+                        case EEffectImpactTarget.Current:
                             currValue *= magnitude;
                             break;
-                        case EffectImpactTarget.Base:
+                        case EEffectImpactTarget.Base:
                             baseValue *= magnitude;
                             break;
-                        case EffectImpactTarget.CurrentAndBase:
+                        case EEffectImpactTarget.CurrentAndBase:
                             currValue *= magnitude;
                             baseValue *= magnitude;
                             break;
@@ -129,16 +150,16 @@ namespace FESGameplayAbilitySystem
                             throw new ArgumentOutOfRangeException();
                     }
                     break;
-                case CalculationOperation.Override:
+                case ECalculationOperation.Override:
                     switch (Base.ImpactSpecification.ValueTarget)
                     {
-                        case EffectImpactTarget.Current:
+                        case EEffectImpactTarget.Current:
                             currValue = magnitude;
                             break;
-                        case EffectImpactTarget.Base:
+                        case EEffectImpactTarget.Base:
                             baseValue = magnitude;
                             break;
-                        case EffectImpactTarget.CurrentAndBase:
+                        case EEffectImpactTarget.CurrentAndBase:
                             currValue = magnitude;
                             baseValue = magnitude;
                             break;
@@ -150,13 +171,16 @@ namespace FESGameplayAbilitySystem
                     throw new ArgumentOutOfRangeException();
             }
 
-            return new SourcedModifiedAttributeValue(
-                this,
+            return new AttributeValue(
                 currValue - attributeValue.CurrentValue,
                 baseValue - attributeValue.BaseValue
             );
         }
 
+        public AttributeScriptableObject GetAttribute()
+        {
+            return Base.ImpactSpecification.AttributeTarget;
+        }
         public IEffectDerivation GetEffectDerivation()
         {
             return Derivation;
@@ -171,6 +195,15 @@ namespace FESGameplayAbilitySystem
         }
         public bool RetainAttributeImpact()
         {
+            return false;
+        }
+        public void TrackImpact(AttributeValue impactValue)
+        {
+            // Specs do not track their own impact
+        }
+        public bool TryGetTrackedImpact(out AttributeValue impactValue)
+        {
+            impactValue = default;
             return false;
         }
     }

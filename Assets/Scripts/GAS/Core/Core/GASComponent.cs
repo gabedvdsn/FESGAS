@@ -189,8 +189,11 @@ namespace FESGameplayAbilitySystem
         private void ApplyInstantGameplayEffect(GameplayEffectSpec spec)
         {
             if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
+
+            SourcedModifiedAttributeValue sourcedModifiedValue = spec.SourcedImpact(attributeValue);
+            sourcedModifiedValue = spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
-            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, spec.ToSourcedModified(attributeValue));
+            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
             if (spec.Base.ImpactSpecification.ContainedEffect)
             {
                 ApplyGameplayEffect(spec.Derivation, spec.Base.ImpactSpecification.ContainedEffect);
@@ -201,8 +204,8 @@ namespace FESGameplayAbilitySystem
         {
             if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
 
-            SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.ToSourcedModified(attributeValue);
-            container.TrackImpact(sourcedModifiedValue);
+            SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.SourcedImpact(container, attributeValue);
+            sourcedModifiedValue = container.Spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
             AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
             if (container.Spec.Base.ImpactSpecification.ContainedEffect)
@@ -233,7 +236,9 @@ namespace FESGameplayAbilitySystem
                 
                 if (durationPolicy == GameplayEffectDurationPolicy.Instant) continue;
                 
-                container.TickPeriodic(Time.deltaTime, out int executeTicks);
+                float deltaTime = Time.deltaTime;
+                
+                container.TickPeriodic(deltaTime, out int executeTicks);
                 if (executeTicks > 0 && container.Ongoing)
                 {
                     for (int _ = 0; _ < executeTicks; _++) ApplyInstantGameplayEffect(container);
@@ -241,7 +246,7 @@ namespace FESGameplayAbilitySystem
 
                 if (durationPolicy == GameplayEffectDurationPolicy.Infinite) continue;
                 
-                container.UpdateTimeRemaining(Time.deltaTime);
+                container.UpdateTimeRemaining(deltaTime);
 
                 if (container.DurationRemaining > 0) continue;
                 

@@ -25,18 +25,6 @@ MonoBehaviour:
       Ceil:
         CurrentValue: 0
         BaseValue: 0
-  - Attribute: {fileID: 11400000, guid: 7c2f5766cf91a2d4d9462437c2a71f6b, type: 2}
-    Target: 0
-    CollisionPolicy: 0
-    Magnitude: 0.3
-    Overflow:
-      Policy: 4
-      Floor:
-        CurrentValue: 0
-        BaseValue: 0
-      Ceil:
-        CurrentValue: 0
-        BaseValue: 0
   - Attribute: {fileID: 11400000, guid: 3f1f46fc75e632240b3aba2bf54938cd, type: 2}
     Target: 0
     CollisionPolicy: 0

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e817b73c53a479a968672876970eee4, type: 3}
+  m_Name: AAW_MagicAmplification
+  m_EditorClassIdentifier: 
+  AppliedAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  ApplicationType: 2
+  ApplicationTarget: 0
+  ApplicationSign: 0
+  AllowSelfApplication: 0
+  AnyContextTag: 1
+  ApplyAbilityContextTags: []
+  RelativeAttribute: {fileID: 11400000, guid: 3f1f46fc75e632240b3aba2bf54938cd, type: 2}
+  Operation: 1
+  IsModifier: 1

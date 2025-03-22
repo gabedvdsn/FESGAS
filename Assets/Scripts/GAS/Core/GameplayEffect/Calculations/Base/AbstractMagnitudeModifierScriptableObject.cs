@@ -12,7 +12,7 @@ namespace FESGameplayAbilitySystem
         public abstract float Evaluate(GameplayEffectSpec spec);
     }
     
-    public enum CalculationOperation
+    public enum ECalculationOperation
     {
         Add,
         Multiply,

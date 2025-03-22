@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: AEW_Lifesteal
   m_EditorClassIdentifier: 
   ImpactedAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-  ImpactType: 2
+  ImpactType: 4
   ImpactTarget: 0
   ImpactSign: 0
+  AllowSelfImpact: 0
   AnyContextTag: 1
   ImpactAbilityContextTags: []
   WorkAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-  WorkImpactType: 0
-  WorkSignPolicy: 0
+  WorkImpactType: 2
+  WorkSignPolicy: 1
   WorkSameFrame: 0
   RelativeAttribute: {fileID: 11400000, guid: 4bc5fbad1abf1da4da52afcb59b209d3, type: 2}
   Operation: 1

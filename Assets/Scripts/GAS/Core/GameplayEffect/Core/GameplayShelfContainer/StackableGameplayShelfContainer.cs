@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
@@ -39,11 +40,18 @@ namespace FESGameplayAbilitySystem
                 if (Packets[i].TimeUntilPeriodTick > duration) Packets[i] = new StackableContainerPacket(totalDuration, duration);
             }
         }
+
+        public override int GetStacks()
+        {
+            return stacks;
+        }
+
         public override void UpdateTimeRemaining(float deltaTime)
         {
             int removeIndex = -1;
             foreach (StackableContainerPacket packet in Packets)
             {
+                Debug.Log($"{packet.DurationRemaining} ({deltaTime})");
                 packet.UpdateTimeRemaining(deltaTime);
                 if (packet.DurationRemaining <= 0f) removeIndex += 1;
             }
@@ -54,6 +62,7 @@ namespace FESGameplayAbilitySystem
         private void RemoveStack(int rangeIndex)
         {
             for (int i = 0; i < rangeIndex; i++) Packets.RemoveAt(i);
+            stacks -= rangeIndex - 1;
         }
         
         public override void TickPeriodic(float deltaTime, out int executeTicks)
@@ -90,7 +99,11 @@ namespace FESGameplayAbilitySystem
                 TimeUntilPeriodTick = periodDuration;
             }
 
-            public void UpdateTimeRemaining(float deltaTime) => DurationRemaining -= deltaTime;
+            public void UpdateTimeRemaining(float deltaTime)
+            {
+                DurationRemaining -= deltaTime;
+                // Debug.Log($"\t{DurationRemaining}");
+            }
 
             public void TickPeriodic(float deltaTime, float periodDuration, out bool executeTick)
             {

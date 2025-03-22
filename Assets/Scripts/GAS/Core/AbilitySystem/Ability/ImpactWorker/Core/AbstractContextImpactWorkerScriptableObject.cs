@@ -8,7 +8,6 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractContextImpactWorkerScriptableObject : AbstractImpactWorkerScriptableObject
     {
-        [FormerlySerializedAs("ContextAttribute")]
         [Header("Impact Context")]
         
         [Tooltip("The attribute must be the target attribute in the impact")]
@@ -24,7 +23,7 @@ namespace FESGameplayAbilitySystem
         [Tooltip("The sourced ability context tag must exist in this list")]
         public List<GameplayTagScriptableObject> ImpactAbilityContextTags;
         
-        [Header("Impact Work Response")] 
+        [Header("Work Context")] 
         
         [Tooltip("The attribute to apply work on")]
         public AttributeScriptableObject WorkAttribute;
@@ -42,27 +41,36 @@ namespace FESGameplayAbilitySystem
             if (!GASHelper.ValidateImpactTypes(impactData.SourcedModifier.Derivation.GetImpactType(), ImpactType)) return;  // If the impact type is not applicable
             if (!AnyContextTag && !ImpactAbilityContextTags.Contains(impactData.SourcedModifier.Derivation.GetEffectDerivation().GetContextTag())) return;
             
-            switch (ImpactTarget)
+            /*switch (ImpactTarget)
             {
                 case EEffectImpactTarget.Current:
                     if (impactData.RealImpact.CurrentValue == 0f) return;
-                    if (GASHelper.DeterminePolicy(impactData.RealImpact.CurrentValue) != ImpactSign) return;
+                    if (GASHelper.SignPolicy(impactData.RealImpact.CurrentValue) != ImpactSign) return;
                     break;
                 case EEffectImpactTarget.Base:
                     if (impactData.RealImpact.BaseValue == 0f) return;  
-                    if (GASHelper.DeterminePolicy(impactData.RealImpact.BaseValue) != ImpactSign) return;
+                    if (GASHelper.SignPolicy(impactData.RealImpact.BaseValue) != ImpactSign) return;
                     break;
                 case EEffectImpactTarget.CurrentAndBase:
                     if (impactData.RealImpact is { CurrentValue: 0f, BaseValue: 0f }) return;
-                    if (GASHelper.DeterminePolicy(impactData.RealImpact.CurrentValue) != ImpactSign) return;
-                    if (GASHelper.DeterminePolicy(impactData.RealImpact.BaseValue) != ImpactSign) return;
+                    if (GASHelper.SignPolicy(impactData.RealImpact.CurrentValue) != ImpactSign) return;
+                    if (GASHelper.SignPolicy(impactData.RealImpact.BaseValue) != ImpactSign) return;
 
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
-            }
+            }*/
             
             PerformImpactResponse(impactData);
+        }
+
+        public override bool ValidateWorkFor(AbilityImpactData impactData)
+        {
+            return impactData.Attribute == ImpactedAttribute
+                   && GASHelper.ValidateImpactTypes(impactData.SourcedModifier.Derivation.GetImpactType(), ImpactType)
+                   && GASHelper.ValidateImpactTargets(ImpactTarget, impactData.RealImpact)
+                   && GASHelper.ValidateSignPolicy(ImpactSign, ImpactTarget, impactData.RealImpact);
+
         }
 
         protected abstract void PerformImpactResponse(AbilityImpactData impactData);

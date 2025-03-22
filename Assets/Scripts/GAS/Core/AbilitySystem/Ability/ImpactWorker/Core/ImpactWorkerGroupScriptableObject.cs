@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -10,7 +11,16 @@ namespace FESGameplayAbilitySystem
         
         public override void InterpretImpact(AbilityImpactData impactData)
         {
-            foreach (AbstractImpactWorkerScriptableObject worker in Workers) worker.InterpretImpact(impactData);
+            foreach (AbstractImpactWorkerScriptableObject worker in Workers)
+            {
+                if (!worker.ValidateWorkFor(impactData)) continue;
+                worker.InterpretImpact(impactData);
+            }
+        }
+        
+        public override bool ValidateWorkFor(AbilityImpactData impactData)
+        {
+            return Workers.Any(worker => worker.ValidateWorkFor(impactData));
         }
     }
 }

@@ -27,6 +27,10 @@ namespace FESGameplayAbilitySystem
                 BaseValue + modifiedAttributeValue.DeltaBaseValue
             );
         }
+
+        public AttributeValue Combine(AttributeValue other) => this + other;
+
+        public AttributeValue Negate() => this * -1;
         
         public static AttributeValue operator +(AttributeValue a, AttributeValue b)
         {

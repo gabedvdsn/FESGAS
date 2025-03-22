@@ -21,7 +21,7 @@ MonoBehaviour:
     ImpactType: 2
     ReverseImpactOnRemoval: 0
     ReApplicationPolicy: 0
-    Magnitude: -18
+    Magnitude: -20
     MagnitudeCalculation: {fileID: 11400000, guid: 861d078e0167fbd4e9df97e5ecff5300, type: 2}
     MagnitudeCalculationOperation: 0
     ContainedEffect: {fileID: 0}

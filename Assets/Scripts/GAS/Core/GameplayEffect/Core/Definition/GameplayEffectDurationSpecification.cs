@@ -8,19 +8,20 @@ namespace FESGameplayAbilitySystem
     public class GameplayEffectDurationSpecification
     {
         public GameplayEffectDurationPolicy DurationPolicy;
+        [Tooltip("Naturally increases number of Ticks by 1")]
         public bool TickOnApplication;
 
         [Space] 
         
         public float Duration;
         public AbstractMagnitudeModifierScriptableObject DurationCalculation;
-        public MagnitudeOperation DurationCalculationOperation;
+        public EMagnitudeOperation DurationCalculationOperation;
 
         [Space] 
         
         public int Ticks;
         public AbstractMagnitudeModifierScriptableObject TickCalculation;
-        public MagnitudeOperation TickCalculationOperation;
+        public EMagnitudeOperation TickCalculationOperation;
         public TickCalculationRounding Rounding;
         public bool UseDefaultTickRate;
 
@@ -52,10 +53,10 @@ namespace FESGameplayAbilitySystem
             DurationCalculation.Initialize(spec);
             return DurationCalculationOperation switch
             {
-                MagnitudeOperation.Multiply => Duration * DurationCalculation.Evaluate(spec),
-                MagnitudeOperation.Add => Duration + DurationCalculation.Evaluate(spec),
-                MagnitudeOperation.UseMagnitude => Duration,
-                MagnitudeOperation.UseCalculation => DurationCalculation.Evaluate(spec),
+                EMagnitudeOperation.Multiply => Duration * DurationCalculation.Evaluate(spec),
+                EMagnitudeOperation.Add => Duration + DurationCalculation.Evaluate(spec),
+                EMagnitudeOperation.UseMagnitude => Duration,
+                EMagnitudeOperation.UseCalculation => DurationCalculation.Evaluate(spec),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -66,10 +67,10 @@ namespace FESGameplayAbilitySystem
             
             float floatTicks = TickCalculationOperation switch
             {
-                MagnitudeOperation.Multiply => Ticks * TickCalculation.Evaluate(spec),
-                MagnitudeOperation.Add => Ticks + TickCalculation.Evaluate(spec),
-                MagnitudeOperation.UseMagnitude => Ticks,
-                MagnitudeOperation.UseCalculation => TickCalculation.Evaluate(spec),
+                EMagnitudeOperation.Multiply => Ticks * TickCalculation.Evaluate(spec),
+                EMagnitudeOperation.Add => Ticks + TickCalculation.Evaluate(spec),
+                EMagnitudeOperation.UseMagnitude => Ticks,
+                EMagnitudeOperation.UseCalculation => TickCalculation.Evaluate(spec),
                 _ => throw new ArgumentOutOfRangeException()
             };
             int numTicks = Rounding switch

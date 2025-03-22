@@ -61,7 +61,7 @@ namespace FESGameplayAbilitySystem
             );
         }
 
-        public ESignPolicy SignPolicy => GASHelper.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
+        public ESignPolicy SignPolicy => GASHelper.SignPolicy(DeltaCurrentValue, DeltaBaseValue);
 
         public SourcedModifiedAttributeValue ToSourced(IAttributeDerivation derivation)
         {
@@ -89,16 +89,32 @@ namespace FESGameplayAbilitySystem
     public struct SourcedModifiedAttributeValue
     {
         public IAttributeDerivation Derivation;
+        public IAttributeDerivation BaseDerivation;
+        
         public float DeltaCurrentValue;
         public float DeltaBaseValue;
 
         public bool Workable;
 
-        public ESignPolicy SignPolicy => GASHelper.DeterminePolicy(DeltaCurrentValue, DeltaBaseValue);
+        public ESignPolicy SignPolicy => GASHelper.SignPolicy(DeltaCurrentValue, DeltaBaseValue);
         
         public SourcedModifiedAttributeValue(IAttributeDerivation derivation, float deltaCurrentValue, float deltaBaseValue, bool workable = true)
         {
             Derivation = derivation;
+            BaseDerivation = derivation;
+            
+            DeltaCurrentValue = deltaCurrentValue;
+            DeltaBaseValue = deltaBaseValue;
+
+            Workable = workable;
+        }
+
+        public SourcedModifiedAttributeValue(IAttributeDerivation derivation, IAttributeDerivation baseDerivation, float deltaCurrentValue, float deltaBaseValue,
+            bool workable = true)
+        {
+            Derivation = derivation;
+            BaseDerivation = baseDerivation;
+            
             DeltaCurrentValue = deltaCurrentValue;
             DeltaBaseValue = deltaBaseValue;
 
@@ -114,6 +130,7 @@ namespace FESGameplayAbilitySystem
             
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 DeltaCurrentValue + other.DeltaCurrentValue, 
                 DeltaBaseValue + other.DeltaBaseValue
             );
@@ -123,6 +140,7 @@ namespace FESGameplayAbilitySystem
         {
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 -DeltaCurrentValue,
                 -DeltaBaseValue
             );
@@ -132,6 +150,7 @@ namespace FESGameplayAbilitySystem
         {
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 DeltaCurrentValue * magnitude,
                 DeltaBaseValue * magnitude
             );
@@ -141,6 +160,7 @@ namespace FESGameplayAbilitySystem
         {
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 DeltaCurrentValue * attributeValue.CurrentValue,
                 DeltaBaseValue * attributeValue.BaseValue
             );
@@ -155,6 +175,7 @@ namespace FESGameplayAbilitySystem
         {
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 DeltaCurrentValue * magnitude,
                 DeltaBaseValue * magnitude
             );
@@ -164,6 +185,7 @@ namespace FESGameplayAbilitySystem
         {
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 DeltaCurrentValue * modifiedAttributeValue.DeltaCurrentValue,
                 DeltaBaseValue * modifiedAttributeValue.DeltaBaseValue
             );
@@ -173,6 +195,7 @@ namespace FESGameplayAbilitySystem
         {
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 currentMagnitude,
                 baseMagnitude
             );
@@ -182,6 +205,7 @@ namespace FESGameplayAbilitySystem
         {
             return new SourcedModifiedAttributeValue(
                 Derivation,
+                BaseDerivation,
                 modifiedAttributeValue.DeltaCurrentValue,
                 modifiedAttributeValue.DeltaBaseValue
             );

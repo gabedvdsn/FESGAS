@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace FESGameplayAbilitySystem
 {
-    public class AbilitySpec : IModifiesAttributes, IEffectDerivation
+    public class AbilitySpec : IEffectDerivation
     {
         public GASComponent Owner;
         public AbilityScriptableObject Base;

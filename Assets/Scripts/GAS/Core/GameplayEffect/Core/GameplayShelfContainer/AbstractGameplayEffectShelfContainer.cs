@@ -1,4 +1,6 @@
-﻿namespace FESGameplayAbilitySystem
+﻿using UnityEngine;
+
+namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractGameplayEffectShelfContainer : IAttributeDerivation
     {
@@ -15,19 +17,14 @@
         
         public abstract float TimeUntilPeriodTick { get; }
         
-        private SourcedModifiedAttributeValue TrackedImpact;
+        private AttributeValue TrackedImpact;
 
         protected AbstractGameplayEffectShelfContainer(GameplayEffectSpec spec, bool ongoing)
         {
             Spec = spec;
             Ongoing = ongoing;
-            
-            TrackedImpact = new SourcedModifiedAttributeValue(Spec, 0, 0);
-        }
-        
-        public void TrackImpact(SourcedModifiedAttributeValue smav)
-        {
-            TrackedImpact = TrackedImpact.Combine(smav);
+
+            TrackedImpact = default;
         }
 
         public void SetTotalDuration(float duration)
@@ -44,6 +41,8 @@
         }
         public abstract void SetTimeUntilPeriodTick(float duration);
 
+        public virtual int GetStacks() => 1;
+
         public abstract void UpdateTimeRemaining(float deltaTime);
         public abstract void TickPeriodic(float deltaTime, out int executeTicks);
         
@@ -56,10 +55,17 @@
             Valid = false;
             if (Spec.Base.ImpactSpecification.ReverseImpactOnRemoval)
             {
-                Spec.Target.AttributeSystem.ModifyAttribute(Spec.Base.ImpactSpecification.AttributeTarget, TrackedImpact.Negate());
+                AttributeValue negatedImpact = TrackedImpact.Negate();
+                Spec.Target.AttributeSystem.ModifyAttribute(
+                    Spec.Base.ImpactSpecification.AttributeTarget, 
+                    new SourcedModifiedAttributeValue(Spec, negatedImpact.CurrentValue, negatedImpact.BaseValue));
             }
         }
 
+        public AttributeScriptableObject GetAttribute()
+        {
+            return Spec.Base.ImpactSpecification.AttributeTarget;
+        }
         public IEffectDerivation GetEffectDerivation()
         {
             return Spec.GetEffectDerivation();
@@ -76,6 +82,15 @@
         {
             return false;
         }
-        
+        public void TrackImpact(AttributeValue impactValue)
+        {
+            TrackedImpact = TrackedImpact.Combine(impactValue);
+        }
+        public bool TryGetTrackedImpact(out AttributeValue impactValue)
+        {
+            impactValue = TrackedImpact;
+            return true;
+        }
+
     }
 }

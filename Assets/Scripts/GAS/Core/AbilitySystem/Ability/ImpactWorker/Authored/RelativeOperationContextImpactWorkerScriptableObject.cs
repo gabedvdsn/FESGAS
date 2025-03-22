@@ -3,17 +3,17 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "AEW_RelOpCntx", menuName = "FESGAS/Ability/Worker/Relative Operation Context Worker", order = 0)]
+    [CreateAssetMenu(fileName = "AIW_RelOpCntx", menuName = "FESGAS/Ability/Impact Worker/Relative Operation Context Worker", order = 0)]
     public class RelativeOperationContextImpactWorkerScriptableObject : AbstractContextImpactWorkerScriptableObject
     {
         [Header("Relative & Operation")]
         
         [Tooltip("The attribute to modify relative to the primary attribute and operation")]
         public AttributeScriptableObject RelativeAttribute;
-        public CalculationOperation Operation;
+        public ECalculationOperation Operation;
         
         [Header("Danger! [ KEEP FALSE ]")]
-        [Tooltip("Only adjust if you know what you are doing. Keeping this FALSE will ensure cycles are broken without recursing once.")]
+        [Tooltip("Only set TRUE if you know what you are doing. Keeping this FALSE will ensure cycles are broken without recursing once.\nExample: Receiving health via magic triggers worker to provide health via magic, resulting in endless cycle.")]
         public bool WorkerImpactWorkable = false;
         
         protected override void PerformImpactResponse(AbilityImpactData impactData)
@@ -24,13 +24,13 @@ namespace FESGameplayAbilitySystem
 
             switch (Operation)
             {
-                case CalculationOperation.Add:
+                case ECalculationOperation.Add:
                     attributeValue = relValue + impactData.RealImpact;
                     break;
-                case CalculationOperation.Multiply:
+                case ECalculationOperation.Multiply:
                     attributeValue = relValue * impactData.RealImpact;
                     break;
-                case CalculationOperation.Override:
+                case ECalculationOperation.Override:
                     attributeValue = relValue;
                     break;
                 default:
