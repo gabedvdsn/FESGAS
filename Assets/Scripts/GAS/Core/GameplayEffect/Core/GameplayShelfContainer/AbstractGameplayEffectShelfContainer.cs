@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class AbstractGameplayEffectShelfContainer : IAttributeDerivation
+    public abstract class AbstractGameplayEffectShelfContainer : IAttributeDerivation, ITaggable
     {
         public GameplayEffectSpec Spec;
         public bool Ongoing;
@@ -23,8 +24,10 @@ namespace FESGameplayAbilitySystem
         {
             Spec = spec;
             Ongoing = ongoing;
-
+    
             TrackedImpact = default;
+
+            Valid = true;
         }
 
         public void SetTotalDuration(float duration)
@@ -90,6 +93,15 @@ namespace FESGameplayAbilitySystem
         {
             impactValue = TrackedImpact;
             return true;
+        }
+
+        public override string ToString()
+        {
+            return Spec.Base.ToString();
+        }
+        public IEnumerable<GameplayTagScriptableObject> GetTags()
+        {
+            return Spec.GetTags();
         }
 
     }

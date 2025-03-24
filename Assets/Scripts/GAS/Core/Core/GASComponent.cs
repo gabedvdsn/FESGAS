@@ -11,9 +11,16 @@ namespace FESGameplayAbilitySystem
     [RequireComponent(typeof(AbilitySystemComponent))]
     public class GASComponent : MonoBehaviour
     {
+        [Header("GAS Data")]
         [HideInInspector] public AttributeSystemComponent AttributeSystem;
         [HideInInspector] public AbilitySystemComponent AbilitySystem;
         public GASComponentData Data;
+        
+        [Header("Tag Workers")]
+        
+        public List<AbstractTagWorkerScriptableObject> TagWorkers;
+        
+        [Header("TESTING")]
 
         public SerializedDictionary<KeyCode, AbilityScriptableObject> StartingAbilityMapping;
         private Dictionary<KeyCode, int> AbilityMap; 
@@ -22,7 +29,21 @@ namespace FESGameplayAbilitySystem
         private List<AbstractGameplayEffectShelfContainer> FinishedEffects;
         private bool needsCleaning;
 
+        public TagCache TagCache;
+
         private void Awake()
+        {
+            InitializeSystem();
+            
+            EffectShelf = new List<AbstractGameplayEffectShelfContainer>();
+            FinishedEffects = new List<AbstractGameplayEffectShelfContainer>();
+
+            TagCache = new TagCache(this, TagWorkers);
+            
+            Data.Initialize(this);
+        }
+
+        private void InitializeSystem()
         {
             AttributeSystem = GetComponent<AttributeSystemComponent>();
             AbilitySystem = GetComponent<AbilitySystemComponent>();
@@ -30,17 +51,9 @@ namespace FESGameplayAbilitySystem
             AbilitySystem.Initialize(this);
             AttributeSystem.Initialize(this);
             
-            EffectShelf = new List<AbstractGameplayEffectShelfContainer>();
-            FinishedEffects = new List<AbstractGameplayEffectShelfContainer>();
-            
-            Data.Initialize(this);
-        }
-
-        private void Start()
-        {
             InitializeAbilities();
         }
-
+        
         private void Update()
         {
             HandleInput();
@@ -190,6 +203,9 @@ namespace FESGameplayAbilitySystem
         {
             if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
 
+            // Apply tags
+            TagCache.AddTaggable(spec);
+            
             SourcedModifiedAttributeValue sourcedModifiedValue = spec.SourcedImpact(attributeValue);
             sourcedModifiedValue = spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
@@ -204,6 +220,9 @@ namespace FESGameplayAbilitySystem
         {
             if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
 
+            // Apply tags
+            TagCache.AddTaggable(container`);
+            
             SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.SourcedImpact(container, attributeValue);
             sourcedModifiedValue = container.Spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
@@ -224,7 +243,11 @@ namespace FESGameplayAbilitySystem
                     FinishedEffects.Add(container);
                     needsCleaning = true;
                 }
-                else container.Ongoing = ValidateEffectOngoingRequirements(container.Spec);
+                else
+                {
+                    // Debug.Log($"{container} {ValidateEffectOngoingRequirements(container.Spec)}");
+                    container.Ongoing = ValidateEffectOngoingRequirements(container.Spec);
+                }
             }
         }
 
@@ -262,16 +285,22 @@ namespace FESGameplayAbilitySystem
             {
                 container.OnRemove();
                 EffectShelf.Remove(container);
+                
+                TagCache.RemoveTaggable(container);
+                
+                if (container.RetainAttributeImpact()) AttributeSystem.RemoveAttributeDerivation(container);
             }
             
-            AttributeSystem.RemoveAttributeDerivations(FinishedEffects);
             FinishedEffects.Clear();
-            
             needsCleaning = false;
+            
+            HandleGameplayEffects();
         }
 
         public List<GameplayTagScriptableObject> GetAppliedTags()
         {
+            return TagCache.GetAppliedTags();
+            
             List<GameplayTagScriptableObject> appliedTags = new List<GameplayTagScriptableObject>();
             
             // Collect applied tags

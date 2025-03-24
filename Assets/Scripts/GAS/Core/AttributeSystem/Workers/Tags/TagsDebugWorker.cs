@@ -23,12 +23,14 @@ namespace FESGameplayAbilitySystem
 
             TagText.text = _tag.Name;
             SourceText.text = container.Spec.Base.Identifier.Name;
+
+            Canvas.alpha = 1f;
         }
 
         private void Update()
         {
             if (!initialized) return;
-            if (!(Container.DurationRemaining <= 0f) && Container.Valid) return;
+            if (Container.DurationRemaining > 0f && Container.Valid) return;
             
             initialized = false;
             TagsDebugManager.Instance.BackCommunicate(this);

@@ -49,6 +49,11 @@ namespace FESGameplayAbilitySystem
             }
         }
 
+        public override string ToString()
+        {
+            return $"GE-{Identifier.Name}";
+        }
+
     }
 
     public enum GameplayEffectApplicationPolicy
@@ -61,7 +66,7 @@ namespace FESGameplayAbilitySystem
         StackExtend  // Stacks and extend the duration of each stack
     }
 
-    public class GameplayEffectSpec : IAttributeDerivation
+    public class GameplayEffectSpec : IAttributeDerivation, ITaggable
     {
         public GameplayEffectScriptableObject Base;
         public float Level;
@@ -199,12 +204,16 @@ namespace FESGameplayAbilitySystem
         }
         public void TrackImpact(AttributeValue impactValue)
         {
-            // Specs do not track their own impact
+            // Specs do not track their own impact (tracked in effect containers)
         }
         public bool TryGetTrackedImpact(out AttributeValue impactValue)
         {
             impactValue = default;
             return false;
+        }
+        public IEnumerable<GameplayTagScriptableObject> GetTags()
+        {
+            return Base.GrantedTags;
         }
     }
 

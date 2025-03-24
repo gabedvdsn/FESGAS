@@ -15,6 +15,7 @@ MonoBehaviour:
   Identifier: {fileID: 11400000, guid: 37bc7c0914c70c147a2a31c3bf8db2fe, type: 2}
   GrantedTags:
   - {fileID: 11400000, guid: 37bc7c0914c70c147a2a31c3bf8db2fe, type: 2}
+  - {fileID: 11400000, guid: de2f91886af0eb24dbacc3b23c506c12, type: 2}
   ImpactSpecification:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     ValueTarget: 0

@@ -86,12 +86,18 @@ namespace FESGameplayAbilitySystem
             ApplyAttributeModifications(allowWorkers);
         }
 
-        public void RemoveAttributeDerivations(List<AbstractGameplayEffectShelfContainer> effectContainers)
+        public void RemoveAttributeDerivation(IAttributeDerivation derivation)
         {
-            foreach (AbstractGameplayEffectShelfContainer container in effectContainers)
+            if (!AttributeCache.ContainsKey(derivation.GetAttribute())) return;
+            AttributeCache[derivation.GetAttribute()].Remove(derivation);
+        }
+
+        public void RemoveAttributeDerivations(List<IAttributeDerivation> derivations)
+        {
+            foreach (IAttributeDerivation derivation in derivations)
             {
-                if (!AttributeCache.ContainsKey(container.Spec.Base.ImpactSpecification.AttributeTarget)) continue;
-                AttributeCache[container.Spec.Base.ImpactSpecification.AttributeTarget].Remove(container);
+                if (!AttributeCache.ContainsKey(derivation.GetAttribute())) continue;
+                AttributeCache[derivation.GetAttribute()].Remove(derivation);
             }
         }
         
