@@ -25,7 +25,7 @@ namespace FESGameplayAbilitySystem
         private GASComponent System;
         private Dictionary<int, AbilitySpecContainer> AbilityCache;
         private List<AbilityImpactData> FrameImpactData;
-        
+
         public void Initialize(GASComponent system)
         {
             System = system;
@@ -265,7 +265,6 @@ namespace FESGameplayAbilitySystem
             {
                 IsActive = true;
                 await Proxy.ActivateTargetingTask(Spec, cst.Token, data);
-                // Debug.Log($"{data}");
                 await Proxy.Activate(Spec, cst.Token, data);
                 IsActive = false;
             }

@@ -43,6 +43,7 @@ namespace FESGameplayAbilitySystem
         private void LateUpdate()
         {
             UpdateAttributes();
+            System.AttributeSystemFinished();
         }
 
         private void InitializeCaches()
@@ -113,7 +114,7 @@ namespace FESGameplayAbilitySystem
                 if (!ModifiedAttributeCache.TryGetCachedValue(attribute, out List<SourcedModifiedAttributeValue> sourcedModifiers)) continue;
                 foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
                 {
-                    AttributeCache[attribute].Add(sourcedModifier.Derivation, sourcedModifier.ToModified());
+                    AttributeCache[attribute].Add(sourcedModifier.BaseDerivation, sourcedModifier.ToModified());
                 }
             }
             

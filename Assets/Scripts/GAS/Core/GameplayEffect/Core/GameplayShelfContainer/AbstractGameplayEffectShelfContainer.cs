@@ -61,7 +61,7 @@ namespace FESGameplayAbilitySystem
                 AttributeValue negatedImpact = TrackedImpact.Negate();
                 Spec.Target.AttributeSystem.ModifyAttribute(
                     Spec.Base.ImpactSpecification.AttributeTarget, 
-                    new SourcedModifiedAttributeValue(Spec, negatedImpact.CurrentValue, negatedImpact.BaseValue));
+                    new SourcedModifiedAttributeValue(Spec, negatedImpact.CurrentValue, negatedImpact.BaseValue, false));
             }
         }
 

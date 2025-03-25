@@ -509,12 +509,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f6b18a315674d38aa9bb8351b470b45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  NoHealingTag: {fileID: 11400000, guid: 9e8ee0a9f320228428b36efc63184735, type: 2}
   AttributeSystem: {fileID: 0}
   AbilitySystem: {fileID: 0}
   Data:
     Level: 1
     MaxLevel: 15
     NameTag: {fileID: 11400000, guid: e2b0847fc4b69e2429cd462dc8c3099f, type: 2}
+  TagWorkers: []
   StartingAbilityMapping:
     _serializedList:
     - Key: 113
@@ -3615,12 +3617,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f6b18a315674d38aa9bb8351b470b45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  NoHealingTag: {fileID: 0}
   AttributeSystem: {fileID: 0}
   AbilitySystem: {fileID: 0}
   Data:
     Level: 1
     MaxLevel: 15
     NameTag: {fileID: 11400000, guid: 7fbc5468ddefc5f428a65750b3d9fa39, type: 2}
+  TagWorkers: []
   StartingAbilityMapping:
     _serializedList: []
 --- !u!114 &1585459085

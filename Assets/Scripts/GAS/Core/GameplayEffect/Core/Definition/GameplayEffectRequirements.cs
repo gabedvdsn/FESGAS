@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(menuName = "FESGAS/Requirements")]
+    [CreateAssetMenu(menuName = "FESGAS/Effect Requirements")]
     public class GameplayEffectRequirements : ScriptableObject
     {
         public AvoidRequireTagGroup ApplicationRequirements;  // These tags are required to apply the effect

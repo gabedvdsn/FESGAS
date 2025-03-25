@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using AYellowpaper.SerializedCollections;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -11,6 +12,8 @@ namespace FESGameplayAbilitySystem
     [RequireComponent(typeof(AbilitySystemComponent))]
     public class GASComponent : MonoBehaviour
     {
+        public GameplayTagScriptableObject NoHealingTag;
+        
         [Header("GAS Data")]
         [HideInInspector] public AttributeSystemComponent AttributeSystem;
         [HideInInspector] public AbilitySystemComponent AbilitySystem;
@@ -59,9 +62,6 @@ namespace FESGameplayAbilitySystem
             HandleInput();
             
             TickEffectShelf();
-            if (needsCleaning) ClearFinishedEffects();
-            
-            TagCache.TickTagWorkers();
         }
 
         private void InitializeAbilities()
@@ -85,6 +85,21 @@ namespace FESGameplayAbilitySystem
             {
                 if (Input.GetKeyDown(keyCode)) AbilitySystem.TryActivateAbility(AbilityMap[keyCode]);
             }
+
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                if (!NoHealingTag) return;
+                if (TagCache.HasTag(NoHealingTag)) TagCache.RemoveTag(NoHealingTag);
+                else TagCache.AddTag(NoHealingTag);
+                HandleGameplayEffects();
+            }
+        }
+
+        private void FinishFrame()
+        {
+            if (needsCleaning) ClearFinishedEffects();
+            
+            TagCache.TickTagWorkers();
         }
         
         #region Effect Handling
@@ -100,23 +115,20 @@ namespace FESGameplayAbilitySystem
             
             if (!ValidateEffectApplicationRequirements(spec)) return false;
             
-            // Debug.Log($"Applying gameplay effect: {spec.Base.name} ({spec.Level}) for {spec.Base.ImpactSpecification.GetMagnitude(spec)} {spec.Base.ImpactSpecification.AttributeTarget.Name} ({spec.Base.DurationSpecification.DurationPolicy})");
-            
             switch (spec.Base.DurationSpecification.DurationPolicy)
             {
                 case GameplayEffectDurationPolicy.Instant:
                     ApplyInstantGameplayEffect(spec);
-                    HandleGameplayEffects();
-                    TagCache.RemoveTaggable(spec);
                     break;
                 case GameplayEffectDurationPolicy.Infinite:
                 case GameplayEffectDurationPolicy.Durational:
                     ApplyDurationalGameplayEffect(spec);
-                    HandleGameplayEffects();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            
+            HandleGameplayEffects();
 
             return true;
         }
@@ -129,7 +141,6 @@ namespace FESGameplayAbilitySystem
 
         public void RemoveGameplayEffect(GameplayEffectScriptableObject GameplayEffect)
         {
-            Debug.Log($"Removing {GameplayEffect.Identifier.Name}");
             List<AbstractGameplayEffectShelfContainer> toRemove = EffectShelf.Where(container => container.Spec.Base == GameplayEffect).ToList();
             foreach (AbstractGameplayEffectShelfContainer container in toRemove)
             {
@@ -188,14 +199,14 @@ namespace FESGameplayAbilitySystem
             {
                 ApplyGameplayEffect(spec.Derivation, spec.Base.ImpactSpecification.ContainedEffect);
             }
+            
+            HandleGameplayEffects();
+            TagCache.RemoveTaggable(spec);
         }
         
         private void ApplyInstantGameplayEffect(AbstractGameplayEffectShelfContainer container)
         {
             if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
-
-            // Apply tags
-            TagCache.AddTaggable(container);
             
             SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.SourcedImpact(container, attributeValue);
             sourcedModifiedValue = container.Spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
@@ -249,7 +260,7 @@ namespace FESGameplayAbilitySystem
                 }
                 else
                 {
-                    // Debug.Log($"{container} {ValidateEffectOngoingRequirements(container.Spec)}");
+                    Debug.Log($"{container} => {ValidateEffectOngoingRequirements(container.Spec)}");
                     container.Ongoing = ValidateEffectOngoingRequirements(container.Spec);
                 }
             }
@@ -271,8 +282,6 @@ namespace FESGameplayAbilitySystem
                     for (int _ = 0; _ < executeTicks; _++)
                     {
                         ApplyInstantGameplayEffect(container);
-                        HandleGameplayEffects();
-                        TagCache.RemoveTaggable(container);
                     }
                 }
 
@@ -285,6 +294,11 @@ namespace FESGameplayAbilitySystem
                 FinishedEffects.Add(container);
                 needsCleaning = true;
             }
+        }
+
+        public void AttributeSystemFinished()
+        {
+            FinishFrame();
         }
 
         private void ClearFinishedEffects()
@@ -309,13 +323,6 @@ namespace FESGameplayAbilitySystem
         public List<GameplayTagScriptableObject> GetAppliedTags()
         {
             return TagCache.GetAppliedTags();
-            
-            List<GameplayTagScriptableObject> appliedTags = new List<GameplayTagScriptableObject>();
-            
-            // Collect applied tags
-            foreach (AbstractGameplayEffectShelfContainer container in EffectShelf) appliedTags.AddRange(container.Spec.Base.GrantedTags);
-
-            return appliedTags;
         }
 
         #endregion
