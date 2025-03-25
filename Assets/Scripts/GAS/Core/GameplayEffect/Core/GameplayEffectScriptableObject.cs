@@ -215,6 +215,10 @@ namespace FESGameplayAbilitySystem
         {
             return Base.GrantedTags;
         }
+        public bool PersistentTags()
+        {
+            return false;
+        }
     }
 
     public interface IEffectDerivation

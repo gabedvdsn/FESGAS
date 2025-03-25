@@ -103,6 +103,10 @@ namespace FESGameplayAbilitySystem
         {
             return Spec.GetTags();
         }
+        public bool PersistentTags()
+        {
+            return true;
+        }
 
     }
 }

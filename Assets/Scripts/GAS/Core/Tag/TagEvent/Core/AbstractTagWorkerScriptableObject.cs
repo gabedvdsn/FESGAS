@@ -11,8 +11,6 @@ namespace FESGameplayAbilitySystem
         [Header("Tag Worker")] 
         
         public TagWorkerRequirements Requirements;
-        [Tooltip("Allows this worker to handle tags that have already been worked on by other workers.")]
-        public bool AllowWorkedTags;
         [Tooltip("Allow multiple instances of this worker")]
         public bool AllowMultipleInstances;
         
@@ -25,7 +23,7 @@ namespace FESGameplayAbilitySystem
         public abstract void Tick(GASComponent component);
         public abstract void Resolve(GASComponent component);
 
-        public abstract AbstractTagWorker Generate(GASComponent system);
+        public abstract AbstractTagWorker Generate(GASComponent system, bool active = true);
         
         public bool ValidateWorkFor(GASComponent system)
         {
@@ -50,6 +48,11 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
+        public override string ToString()
+        {
+            return name;
+        }
+
         private void OnValidate()
         {
             for (int i = 0; i < Requirements.TagPackets.Count; i++)
@@ -71,21 +74,30 @@ namespace FESGameplayAbilitySystem
     {
         public AbstractTagWorkerScriptableObject Base;
         private GASComponent System;
+        public bool Active;
+        public bool NeedsInitializing;
 
         public int TicksRemaining;
 
-        protected AbstractTagWorker(AbstractTagWorkerScriptableObject workerBase, GASComponent system)
+        protected AbstractTagWorker(AbstractTagWorkerScriptableObject workerBase, GASComponent system, bool active = true)
         {
             Base = workerBase;
             System = system;
+            Active = active;
+            NeedsInitializing = !Active;
 
             TicksRemaining = 0;
         }
 
-        public void Initialize() => Base.Initialize(System);
+        public void Initialize()
+        {
+            if (!Active) return;
+            Base.Initialize(System);
+        }
         
         public void Tick()
         {
+            if (!Active) return;
             if (TicksRemaining <= 0)
             {
                 Base.Tick(System);
@@ -93,8 +105,12 @@ namespace FESGameplayAbilitySystem
             }
             else TicksRemaining -= 1;
         }
-        
-        public void Resolve() => Base.Resolve(System);
+
+        public void Resolve()
+        {
+            if (!Active) return;
+            Base.Resolve(System);
+        }
     }
 
     public class TagCache
@@ -117,15 +133,8 @@ namespace FESGameplayAbilitySystem
             TagWorkers = workers;
 
             ActiveWorkers = new Dictionary<AbstractTagWorkerScriptableObject, List<AbstractTagWorker>>();
-
-            Initialize();
         }
-
-        private void Initialize()
-        {
-
-        }
-
+        
         public void AddTagWorker(AbstractTagWorkerScriptableObject worker)
         {
             if (!TagWorkers.Contains(worker)) TagWorkers.Add(worker);
@@ -143,6 +152,8 @@ namespace FESGameplayAbilitySystem
             foreach (AbstractTagWorkerScriptableObject workerData in activeWorkers)
             {
                 if (workerData.ValidateWorkFor(System)) continue;
+                
+                Debug.Log($"\t[ TAG-WORKER ] Deactivate {workerData}");
 
                 foreach (AbstractTagWorker worker in ActiveWorkers[workerData]) worker.Resolve();
                 ActiveWorkers.Remove(workerData);
@@ -153,10 +164,18 @@ namespace FESGameplayAbilitySystem
             {
                 if (!workerData.ValidateWorkFor(System)) continue;
 
-                if (ActiveWorkers.ContainsKey(workerData)) ActiveWorkers[workerData].Add(workerData.Generate(System));
-                else ActiveWorkers[workerData] = new List<AbstractTagWorker>() { workerData.Generate(System) };
-                
-                ActiveWorkers[workerData][^1].Initialize();
+                if (ActiveWorkers.ContainsKey(workerData))
+                {
+                    ActiveWorkers[workerData].Add(workerData.Generate(System, workerData.AllowMultipleInstances));
+                    Debug.Log($"\t[ TAG-WORKER ] Activate {workerData}");
+                    ActiveWorkers[workerData][^1].Initialize();
+                }
+                else
+                {
+                    ActiveWorkers[workerData] = new List<AbstractTagWorker>() { workerData.Generate(System) };
+                    Debug.Log($"\t[ TAG-WORKER ] Activate {workerData}");
+                    ActiveWorkers[workerData][^1].Initialize();
+                }
             }
         }
 
@@ -167,7 +186,7 @@ namespace FESGameplayAbilitySystem
                 foreach (AbstractTagWorker worker in ActiveWorkers[workerData]) worker.Tick();
             }
         }
-
+        
         public void AddTaggable(ITaggable taggable)
         {
             // Handle tag weight resolution
@@ -177,11 +196,15 @@ namespace FESGameplayAbilitySystem
                 else TagWeights[tag] = 1;
             }
 
+            Debug.Log($"[ TAG-C ] Add {taggable}");
+
             HandleTagWorkers();
         }
 
         public void RemoveTaggable(ITaggable taggable)
         {
+            Debug.Log($"[ TAG-C ] Remove {taggable}");
+            
             // Handle tag weight resolution
             foreach (GameplayTagScriptableObject tag in taggable.GetTags())
             {
@@ -189,15 +212,23 @@ namespace FESGameplayAbilitySystem
                 
                 TagWeights[tag] -= 1;
                 if (GetWeight(tag) <= 0) TagWeights.Remove(tag);
+
+                Debug.Log($"\t[ TAG-{tag} ] {GetWeight(tag)}");
             }
 
             HandleTagWorkers();
         }
-
-
-
-        public int GetWeight(GameplayTagScriptableObject tag) => TagWeights.TryGetValue(tag, out int weight) ? weight : 0;
         
+        public int GetWeight(GameplayTagScriptableObject tag) => TagWeights.TryGetValue(tag, out int weight) ? weight : 0;
+
+        public void LogWeights()
+        {
+            Debug.Log($"[ LOG-WEIGHTS ]");
+            foreach (GameplayTagScriptableObject tag in TagWeights.Keys)
+            {
+                Debug.Log($"\t{tag} => {TagWeights[tag]}");
+            }
+        }
     }
 
     [Serializable]
@@ -232,6 +263,7 @@ namespace FESGameplayAbilitySystem
     public interface ITaggable
     {
         public IEnumerable<GameplayTagScriptableObject> GetTags();
+        public bool PersistentTags();
     }
     
 }

@@ -8,5 +8,10 @@ namespace FESGameplayAbilitySystem
     public class GameplayTagScriptableObject : ScriptableObject
     {
         public string Name;
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
