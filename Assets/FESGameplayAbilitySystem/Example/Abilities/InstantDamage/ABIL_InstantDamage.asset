@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a42dbe2415465689d11a1e8ae1fdbc, type: 3}
+  m_Name: ABIL_InstantDamage
+  m_EditorClassIdentifier: 
+  Definition:
+    Name: Instant Damage
+    Description: Immediately take damage
+    UnlearnedIcon: {fileID: 0}
+    NormalIcon: {fileID: 0}
+    QueuedIcon: {fileID: 0}
+    OnCooldownIcon: {fileID: 0}
+    Type: 0
+    ActivateImmediately: 1
+  Tags:
+    AssetTag: {fileID: 11400000, guid: 662020c5bc519b8478df2b6190178956, type: 2}
+    ContextTag: {fileID: 11400000, guid: 2f7ceda08a5c82b44a7c9be005000c05, type: 2}
+    PassivelyGrantedTags: []
+    ActiveGrantedTags: []
+    SourceRequirements:
+      AvoidTags: []
+      RequireTags: []
+    TargetRequirements:
+      AvoidTags: []
+      RequireTags: []
+  Proxy:
+    TargetingProxy: {fileID: 0}
+    UseImplicitInstructions: 1
+    OwnerAs: 2
+    Stages:
+    - TaskPolicy: 0
+      Tasks:
+      - {fileID: 11400000, guid: 3a265e219ac188f48b031d2f413cf011, type: 2}
+  StartingLevel: 1
+  MaxLevel: 4
+  IgnoreWhenLevelZero: 1
+  Cost: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
+  Cooldown: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}

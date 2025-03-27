@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c04f05362da3485b8ba7c1f91e0ee9f0, type: 3}
+  m_Name: DemoAttributeSet
+  m_EditorClassIdentifier: 
+  Attributes:
+  - Attribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+    Target: 0
+    CollisionPolicy: 0
+    Magnitude: 100
+    Overflow:
+      Policy: 0
+      Floor:
+        CurrentValue: 0
+        BaseValue: 0
+      Ceil:
+        CurrentValue: 0
+        BaseValue: 0
+  - Attribute: {fileID: 11400000, guid: 4bc5fbad1abf1da4da52afcb59b209d3, type: 2}
+    Target: 0
+    CollisionPolicy: 0
+    Magnitude: 0.2
+    Overflow:
+      Policy: 4
+      Floor:
+        CurrentValue: 0
+        BaseValue: 0
+      Ceil:
+        CurrentValue: 0
+        BaseValue: 0
+  - Attribute: {fileID: 11400000, guid: 3f1f46fc75e632240b3aba2bf54938cd, type: 2}
+    Target: 0
+    CollisionPolicy: 0
+    Magnitude: 0.15
+    Overflow:
+      Policy: 4
+      Floor:
+        CurrentValue: 0
+        BaseValue: 0
+      Ceil:
+        CurrentValue: 0
+        BaseValue: 0
+  - Attribute: {fileID: 11400000, guid: 7c2f5766cf91a2d4d9462437c2a71f6b, type: 2}
+    Target: 0
+    CollisionPolicy: 0
+    Magnitude: 0.25
+    Overflow:
+      Policy: 4
+      Floor:
+        CurrentValue: 0
+        BaseValue: 0
+      Ceil:
+        CurrentValue: 0
+        BaseValue: 0
+  - Attribute: {fileID: 11400000, guid: 7559454d968fcfe409c8075b7a685090, type: 2}
+    Target: 0
+    CollisionPolicy: 0
+    Magnitude: 0.15
+    Overflow:
+      Policy: 4
+      Floor:
+        CurrentValue: 0
+        BaseValue: 0
+      Ceil:
+        CurrentValue: 0
+        BaseValue: 0
+  - Attribute: {fileID: 11400000, guid: 084f73ccd805bbc409b2a5084d588b32, type: 2}
+    Target: 0
+    CollisionPolicy: 0
+    Magnitude: 0.2
+    Overflow:
+      Policy: 4
+      Floor:
+        CurrentValue: 0
+        BaseValue: 0
+      Ceil:
+        CurrentValue: 0
+        BaseValue: 0
+  SubSets: []
+  AttributeSetCollisionResolution: 0

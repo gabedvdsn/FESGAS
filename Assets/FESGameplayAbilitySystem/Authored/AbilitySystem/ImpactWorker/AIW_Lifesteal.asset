@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 509525d70ef14ecfb3793805b8a168ae, type: 3}
+  m_Name: AIW_Lifesteal
+  m_EditorClassIdentifier: 
+  ImpactedAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  ImpactType: 4
+  ImpactTarget: 0
+  ImpactSign: 0
+  AllowSelfImpact: 0
+  AnyContextTag: 1
+  ImpactAbilityContextTags: []
+  WorkAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  WorkImpactType: 2
+  WorkSignPolicy: 1
+  WorkSameFrame: 0
+  RelativeAttribute: {fileID: 11400000, guid: 4bc5fbad1abf1da4da52afcb59b209d3, type: 2}
+  Operation: 1
+  WorkerImpactWorkable: 0

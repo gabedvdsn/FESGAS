@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d34fc1f98f8a0b4c9b37da3e706e0e1, type: 3}
+  m_Name: GE_HealthOverTime
+  m_EditorClassIdentifier: 
+  Identifier: {fileID: 11400000, guid: 37bc7c0914c70c147a2a31c3bf8db2fe, type: 2}
+  GrantedTags:
+  - {fileID: 11400000, guid: 37bc7c0914c70c147a2a31c3bf8db2fe, type: 2}
+  - {fileID: 11400000, guid: de2f91886af0eb24dbacc3b23c506c12, type: 2}
+  ImpactSpecification:
+    AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+    ValueTarget: 0
+    ImpactOperation: 0
+    ImpactType: 2
+    ReverseImpactOnRemoval: 0
+    ReApplicationPolicy: 3
+    Magnitude: 3
+    MagnitudeCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
+    MagnitudeCalculationOperation: 0
+    ContainedEffect: {fileID: 0}
+  DurationSpecification:
+    DurationPolicy: 2
+    TickOnApplication: 0
+    Duration: 3
+    DurationCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
+    DurationCalculationOperation: 0
+    Ticks: 15
+    TickCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
+    TickCalculationOperation: 0
+    Rounding: 0
+    UseDefaultTickRate: 1
+  Workers: []
+  SourceRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
+  TargetRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
+  RemoveEffectsWithTag: []

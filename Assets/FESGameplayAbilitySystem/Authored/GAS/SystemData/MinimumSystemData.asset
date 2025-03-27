@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dac855327e524f0f9473752d46a88179, type: 3}
+  m_Name: MinimumSystemData
+  m_EditorClassIdentifier: 
+  TagWorkers: []
+  MaxAbilities: 0
+  StartingAbilities: []
+  ApplicationWorkers: []
+  ImpactWorkers: []
+  AttributeSet: {fileID: 11400000, guid: 28087fa599e6cc1429e7ec34c68f41d2, type: 2}
+  AttributeChangeEvents:
+  - {fileID: 11400000, guid: a1ad3d8513ee7f64c949ee03e37fca57, type: 2}
+  - {fileID: 11400000, guid: 07c64b1a57a6fdb498ea60303818f33d, type: 2}
