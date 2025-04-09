@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
@@ -47,28 +46,20 @@ namespace FESGameplayAbilitySystem
             StageIndex = -1;
         }
 
-        public async UniTask ActivateTargetingTask(AbilitySpec spec, CancellationToken token, ProxyDataPacket implicitData)
+        public async UniTask ActivateTargetingTask(CancellationToken token, ProxyDataPacket implicitData)
         {
-            /*ProxyDataPacket data = new ProxyDataPacket(spec);
-            if (implicitData is not null) data.CompileWith(implicitData);*/
-
             // If there is a targeting task assigned...
             if (Specification.TargetingProxy)
             {
-                await Specification.TargetingProxy.Prepare(implicitData, token);
+                Specification.TargetingProxy.Prepare(implicitData);
                 await Specification.TargetingProxy.Activate(implicitData, token);
-                await Specification.TargetingProxy.Clean(implicitData, token);
+                Specification.TargetingProxy.Clean(implicitData);
             }
-
-            // Debug.Log(data);
         }
 
-        public async UniTask Activate(AbilitySpec spec, CancellationToken token, ProxyDataPacket implicitData)
+        public async UniTask Activate(CancellationToken token, ProxyDataPacket implicitData)
         {
             Reset();
-            
-            /*ProxyDataPacket data = new ProxyDataPacket(spec);
-            if (implicitData is not null) data.CompileWith(implicitData);*/
             
             await ActivateNextStage(implicitData, token);
         }
@@ -76,36 +67,38 @@ namespace FESGameplayAbilitySystem
         private async UniTask ActivateNextStage(ProxyDataPacket data, CancellationToken token)
         {
             StageIndex += 1;
-            if (StageIndex < Specification.Stages.Count) await ActivateStage(Specification.Stages[StageIndex], data, token);
+            if (StageIndex < Specification.Stages.Count)
+            {
+                Specification.Stages[StageIndex].Tasks.ForEach(task => task.Prepare(data));
+                await ActivateStage(Specification.Stages[StageIndex], data, token);
+                Specification.Stages[StageIndex].Tasks.ForEach(task => task.Clean(data));
+            }
         }
 
         private async UniTask ActivateStage(AbilityProxyStage stage, ProxyDataPacket data, CancellationToken token)
         {
-            // Prepare all tasks
-            await UniTask.WhenAll(stage.Tasks.Select(task => task.Prepare(data, token)));
-            
             using (var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
                 CancellationToken stageToken = stageCts.Token;
                 
                 List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(data, stageToken)).ToList();
-                
-                switch (stage.TaskPolicy)
+
+                if (tasks.Count > 0)
                 {
-                    case EAnyAllPolicy.Any:
-                        await UniTask.WhenAny(tasks);
-                        stageCts.Cancel();
-                        break;
-                    case EAnyAllPolicy.All:
-                        await UniTask.WhenAll(tasks);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    switch (stage.TaskPolicy)
+                    {
+                        case EAnyAllPolicy.Any:
+                            await UniTask.WhenAny(tasks);
+                            stageCts.Cancel();
+                            break;
+                        case EAnyAllPolicy.All:
+                            await UniTask.WhenAll(tasks);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
             }
-            
-            // Clean all tasks
-            await UniTask.WhenAll(stage.Tasks.Select(task => task.Clean(data, token)));
             
             ActivateNextStage(data, token).Forget();
         }

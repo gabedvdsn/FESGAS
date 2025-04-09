@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b48fc50d3a94cbaa21fb8cfb191d731, type: 3}
   m_Name: ACE_DamageReduction_Magic
   m_EditorClassIdentifier: 
-  Priorities: 00000000
+  Timing: 0
   TargetAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  AnyContextTag: 1
+  ApplyAbilityContextTags: []
   RelativeTo: {fileID: 11400000, guid: 7c2f5766cf91a2d4d9462437c2a71f6b, type: 2}
   RelativeMultiplier: 1
   SignPolicy: 0
-  ImpactType: 2
+  Operation: 1
+  AllowSelfModification: 0
+  ModifyType: 2
+  ModifyTarget: 0
+  ModifyTargetExclusive: 0

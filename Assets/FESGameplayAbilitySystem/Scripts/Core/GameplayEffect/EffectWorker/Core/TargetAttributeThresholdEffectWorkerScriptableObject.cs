@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
         public AttributeScriptableObject TargetAttribute;
         public AttributeValue Threshold;
         public EEffectImpactTarget Target;
-        public EOverUnderEqual Policy;
+        public EComparisonOperator Policy;
         
         public override void OnEffectApplication(IAttributeImpactDerivation derivation)
         {
@@ -31,19 +31,19 @@ namespace FESGameplayAbilitySystem
             switch (Policy)
             {
 
-                case EOverUnderEqual.Over:
+                case EComparisonOperator.GreaterThan:
                     if (!MeetsThreshold(value, (v, a) => v > a)) return;
                     break;
-                case EOverUnderEqual.Under:
+                case EComparisonOperator.LessThan:
                     if (!MeetsThreshold(value, (v, a) => v < a)) return;
                     break;
-                case EOverUnderEqual.OverOrEqual:
+                case EComparisonOperator.GreaterOrEqualTo:
                     if (!MeetsThreshold(value, (v, a) => v >= a)) return;
                     break;
-                case EOverUnderEqual.UnderOrEqual:
+                case EComparisonOperator.LessOrEqualTo:
                     if (!MeetsThreshold(value, (v, a) => v <= a)) return;
                     break;
-                case EOverUnderEqual.Equal:
+                case EComparisonOperator.Equal:
                     if (!MeetsThreshold(value, Mathf.Approximately)) return;
                     break;
                 
@@ -68,12 +68,12 @@ namespace FESGameplayAbilitySystem
         protected abstract void OnThresholdMet(IAttributeImpactDerivation derivation);
     }
 
-    public enum EOverUnderEqual
+    public enum EComparisonOperator
     {
-        Over,
-        Under,
-        OverOrEqual,
-        UnderOrEqual,
+        GreaterThan,
+        LessThan,
+        GreaterOrEqualTo,
+        LessOrEqualTo,
         Equal
     }
 }

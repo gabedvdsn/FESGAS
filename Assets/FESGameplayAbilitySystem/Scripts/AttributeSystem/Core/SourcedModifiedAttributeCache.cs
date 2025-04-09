@@ -13,6 +13,8 @@ namespace FESGameplayAbilitySystem
 
         public Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>>.KeyCollection Attributes => cache.Keys;
         
+        #region Core
+        
         public void SubscribeModifiableAttribute(AttributeScriptableObject attribute)
         {
             cache[attribute] = new List<SourcedModifiedAttributeValue>();
@@ -53,72 +55,6 @@ namespace FESGameplayAbilitySystem
             cache[attribute].Add(sourcedModifiedValue);
         }
         
-        public void Multiply(AttributeScriptableObject attribute, AttributeValue attributeValue)
-        {
-            if (!ValidateAttribute(attribute)) return;
-            
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                cache[attribute][i] = cache[attribute][i].Multiply(attributeValue);
-            }
-        }
-        
-        public void Multiply(AttributeScriptableObject attribute, ESignPolicy signPolicy, AttributeValue multiplier)
-        {
-            if (!ValidateAttribute(attribute)) return;
-            
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (cache[attribute][i].SignPolicy != signPolicy) continue;
-                cache[attribute][i] = cache[attribute][i].Multiply(multiplier);
-            }
-        }
-
-        public void MultiplyAmplify(AttributeScriptableObject attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue multiplier)
-        {
-            if (!ValidateAttribute(attribute)) return;
-            
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (!ValidateImpactType(impactType, cache[attribute][i].Derivation.GetImpactType())) continue;
-                if (cache[attribute][i].SignPolicy != signPolicy) continue;
-                cache[attribute][i] = cache[attribute][i].Multiply(1 + multiplier);
-            }
-        }
-
-        public void MultiplyAttenuate(AttributeScriptableObject attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue multiplier)
-        {
-            if (!ValidateAttribute(attribute)) return;
-            
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                if (!ValidateImpactType(impactType, cache[attribute][i].Derivation.GetImpactType())) continue;
-                if (cache[attribute][i].SignPolicy != signPolicy) continue;
-                cache[attribute][i] = cache[attribute][i].Multiply(1 - multiplier);
-            }
-        }
-        
-        public void Add(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue, bool spread = false)
-        {
-            if (!ValidateAttribute(attribute)) return;
-
-            ModifiedAttributeValue addValue = spread ? modifiedAttributeValue : modifiedAttributeValue / cache[attribute].Count;
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                cache[attribute][i] = cache[attribute][i].Add(addValue);
-            }
-        }
-        
-        public void Override(AttributeScriptableObject attribute, ModifiedAttributeValue modifiedAttributeValue)
-        {
-            if (!ValidateAttribute(attribute)) return;
-            
-            for (int i = 0; i < cache[attribute].Count; i++)
-            {
-                cache[attribute][i] = cache[attribute][i].Override(modifiedAttributeValue);
-            }
-        }
-        
         public bool TryToModified(AttributeScriptableObject attribute, out ModifiedAttributeValue modifiedAttributeValue)
         {
             if (!active.Contains(attribute) || !TryGetSourcedModifiers(attribute, out var sourcedModifiers))
@@ -134,6 +70,113 @@ namespace FESGameplayAbilitySystem
         public bool TryGetSourcedModifiers(AttributeScriptableObject attribute, out List<SourcedModifiedAttributeValue> sourcedModifiers)
         {
             return cache.TryGetValue(attribute, out sourcedModifiers);
+        }
+        
+        #endregion
+        
+        public void Multiply(AttributeScriptableObject attribute, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        {
+            if (!ValidateAttribute(attribute)) return;
+            
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Multiply(operand);
+            }
+        }
+        
+        public void Multiply(AttributeScriptableObject attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        {
+            if (!ValidateAttribute(attribute)) return;
+            
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].SignPolicy != signPolicy) continue;
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Multiply(operand);
+            }
+        }
+
+        public void MultiplyAmplify(AttributeScriptableObject attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        {
+            if (!ValidateAttribute(attribute)) return;
+            
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (!ValidateImpactType(impactType, cache[attribute][i].Derivation.GetImpactType())) continue;
+                if (cache[attribute][i].SignPolicy != signPolicy) continue;
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Multiply(1 + operand);
+            }
+        }
+
+        public void MultiplyAttenuate(AttributeScriptableObject attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        {
+            if (!ValidateAttribute(attribute)) return;
+            
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (!ValidateImpactType(impactType, cache[attribute][i].Derivation.GetImpactType())) continue;
+                if (cache[attribute][i].SignPolicy != signPolicy) continue;
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Multiply(1 - operand);
+            }
+        }
+        
+        public void Add(AttributeScriptableObject attribute, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag, bool spread = false)
+        {
+            if (!ValidateAttribute(attribute)) return;
+
+            AttributeValue addValue = spread ? operand : operand / cache[attribute].Count;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Add(addValue);
+            }
+        }
+
+        public void Add(AttributeScriptableObject attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag, bool spread = false)
+        {
+            if (!ValidateAttribute(attribute)) return;
+            
+            AttributeValue addValue = spread ? operand : operand / cache[attribute].Count;
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].SignPolicy != signPolicy) continue;
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Add(addValue);
+            }
+        }
+        
+        public void Override(AttributeScriptableObject attribute, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        {
+            if (!ValidateAttribute(attribute)) return;
+            
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Override(operand);
+            }
+        }
+        
+        public void Override(AttributeScriptableObject attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        {
+            if (!ValidateAttribute(attribute)) return;
+            
+            for (int i = 0; i < cache[attribute].Count; i++)
+            {
+                if (cache[attribute][i].SignPolicy != signPolicy) continue;
+                if (cache[attribute][i].BaseDerivation.GetSource() == cache[attribute][i].BaseDerivation.GetTarget() && !allowSelfModify) continue;
+                if (!anyContextTag && !cache[attribute][i].BaseDerivation.GetContextTags().ContainsAll(contextTags)) continue;
+                cache[attribute][i] = cache[attribute][i].Override(operand);
+            }
         }
     }
 

@@ -1,10 +1,12 @@
-﻿using UnityEditor;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CustomEditor(typeof(GASComponent))]
-    public class GASComponentEditor : Editor
+    [CustomEditor(typeof(GASComponentManual))]
+    public class GASComponentManualEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
@@ -14,9 +16,9 @@ namespace FESGameplayAbilitySystem
 
             if (GUILayout.Button("Delete GAS Components"))
             {
-                GASComponent gasObj = (GASComponent)target;
+                GASComponentManual gasObj = (GASComponentManual)target;
                 GameObject obj = gasObj.gameObject;
-                DestroyImmediate(obj.GetComponent<GASComponent>());
+                DestroyImmediate(obj.GetComponent<GASComponentManual>());
                 DestroyImmediate(obj.GetComponent<AbilitySystemComponent>());
                 DestroyImmediate(obj.GetComponent<AttributeSystemComponent>());
             }

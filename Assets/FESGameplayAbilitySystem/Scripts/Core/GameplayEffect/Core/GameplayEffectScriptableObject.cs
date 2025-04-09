@@ -73,7 +73,7 @@ namespace FESGameplayAbilitySystem
     public interface IEffectDerivation
     {
         public GASComponentBase GetOwner();
-        public GameplayTagScriptableObject GetContextTag();
+        public List<GameplayTagScriptableObject> GetContextTags();
         public int GetLevel();
         public void SetLevel(int level);
         public float GetRelativeLevel();
@@ -98,9 +98,9 @@ namespace FESGameplayAbilitySystem
         {
             return Owner;
         }
-        public GameplayTagScriptableObject GetContextTag()
+        public List<GameplayTagScriptableObject> GetContextTags()
         {
-            return Owner.Identity.NameTag;
+            return new List<GameplayTagScriptableObject>() { Owner.Identity.NameTag };
         }
         public int GetLevel()
         {

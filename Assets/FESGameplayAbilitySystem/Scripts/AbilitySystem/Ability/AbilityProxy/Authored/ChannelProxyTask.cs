@@ -12,16 +12,14 @@ namespace FESGameplayAbilitySystem
     {
         public float ChannelDuration;
         
-        public override UniTask Prepare(ProxyDataPacket data, CancellationToken token)
+        public override void Prepare(ProxyDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(true);
-            return base.Prepare(data, token);
         }
 
-        public override UniTask Clean(ProxyDataPacket data, CancellationToken token)
+        public override void Clean(ProxyDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(false);
-            return base.Clean(data, token);
         }
 
         private void OnValidate()

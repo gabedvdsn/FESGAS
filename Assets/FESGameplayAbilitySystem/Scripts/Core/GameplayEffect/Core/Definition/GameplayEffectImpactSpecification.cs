@@ -66,4 +66,12 @@ namespace FESGameplayAbilitySystem
         Base,
         CurrentAndBase
     }
+
+    public enum EEffectImpactTargetExpanded
+    {
+        Current,
+        Base,
+        CurrentAndBase,
+        CurrentOrBase
+    }
 }

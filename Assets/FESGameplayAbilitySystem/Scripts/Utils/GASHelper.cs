@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 namespace FESGameplayAbilitySystem
@@ -122,7 +126,6 @@ namespace FESGameplayAbilitySystem
         {
             return impactTypeAny switch
             {
-
                 EImpactTypeAny.NotApplicable => impactType == EImpactType.NotApplicable,
                 EImpactTypeAny.Physical => impactType == EImpactType.Physical,
                 EImpactTypeAny.Magical => impactType == EImpactType.Magical,
@@ -132,28 +135,52 @@ namespace FESGameplayAbilitySystem
             };
         }
 
-        public static bool ValidateImpactTargets(EEffectImpactTarget impactTarget, AttributeValue attributeValue)
+        public static bool ValidateImpactTargets(EEffectImpactTargetExpanded impactTarget, AttributeValue attributeValue, bool exclusive)
         {
             return impactTarget switch
             {
-
-                EEffectImpactTarget.Current => attributeValue.CurrentValue != 0,
-                EEffectImpactTarget.Base => attributeValue.BaseValue != 0,
-                EEffectImpactTarget.CurrentAndBase => attributeValue.CurrentValue != 0 && attributeValue.BaseValue != 0,
+                EEffectImpactTargetExpanded.Current => attributeValue.CurrentValue != 0,
+                EEffectImpactTargetExpanded.Base => attributeValue.BaseValue != 0,
+                EEffectImpactTargetExpanded.CurrentAndBase => attributeValue.CurrentValue != 0 && attributeValue.BaseValue != 0,
+                EEffectImpactTargetExpanded.CurrentOrBase => ValidateImpactTargets(EEffectImpactTargetExpanded.Current, attributeValue, exclusive) || ValidateImpactTargets(EEffectImpactTargetExpanded.Base, attributeValue, exclusive),
                 _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
             };
         }
 
-        public static bool ValidateSignPolicy(ESignPolicy signPolicy, EEffectImpactTarget impactTarget, AttributeValue attributeValue)
+        public static bool ValidateSignPolicy(ESignPolicy signPolicy, EEffectImpactTargetExpanded impactTarget, AttributeValue attributeValue)
         {
             return impactTarget switch
             {
 
-                EEffectImpactTarget.Current => SignPolicy(attributeValue.CurrentValue) == signPolicy,
-                EEffectImpactTarget.Base => SignPolicy(attributeValue.BaseValue) == signPolicy,
-                EEffectImpactTarget.CurrentAndBase => SignPolicy(attributeValue.CurrentValue) == signPolicy && SignPolicy(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTargetExpanded.Current => SignPolicy(attributeValue.CurrentValue) == signPolicy,
+                EEffectImpactTargetExpanded.Base => SignPolicy(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTargetExpanded.CurrentAndBase => SignPolicy(attributeValue.CurrentValue) == signPolicy && SignPolicy(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTargetExpanded.CurrentOrBase => SignPolicy(attributeValue.CurrentValue) == signPolicy || SignPolicy(attributeValue.BaseValue) == signPolicy,
                 _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
             };
+        }
+        
+        #endregion
+        
+        #region UniTask Helpers
+
+        public static async UniTask WhileAsync(Func<bool> condition, CancellationToken token, PlayerLoopTiming timing = PlayerLoopTiming.Update)
+        {
+            while (condition())
+            {
+                token.ThrowIfCancellationRequested();
+                await UniTask.Yield(timing, token);
+            }
+        }
+
+        public static async UniTask DoWhileAsync(Func<UniTask> body, Func<bool> condition, CancellationToken token, PlayerLoopTiming timing = PlayerLoopTiming.Update)
+        {
+            do
+            {
+                token.ThrowIfCancellationRequested();
+                await body();
+                await UniTask.Yield(timing, token);
+            } while (condition());
         }
         
         #endregion
@@ -161,6 +188,18 @@ namespace FESGameplayAbilitySystem
         #region Utils
         
         public static T RandomChoice<T>(this List<T> list) => list is null ? default : list[Mathf.FloorToInt(Random.value * list.Count)];
+
+        public static void SafeAdd<K, V>(this Dictionary<K, List<V>> dict, K key, V value)
+        {
+            if (dict.ContainsKey(key)) dict[key].Add(value);
+            else dict[key] = new List<V>() { value };
+        }
+
+        public static void SafeAddRange<K, V>(this Dictionary<K, List<V>> dict, K key, List<V> values)
+        {
+            if (dict.ContainsKey(key)) dict[key].AddRange(values);
+            else dict[key] = values;
+        }
 
         public static void Shuffle<T>(this List<T> list)
         {
@@ -196,6 +235,11 @@ namespace FESGameplayAbilitySystem
             }
 
             return selected;
+        }
+
+        public static bool ContainsAll<T>(this List<T> list, List<T> match)
+        {
+            return match.All(list.Contains);
         }
         
         #endregion

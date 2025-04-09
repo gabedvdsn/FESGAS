@@ -36,7 +36,6 @@ namespace FESGameplayAbilitySystem
             
             AttributeSystem.Initialize(this);
             AbilitySystem.Initialize(this);
-            
         }
 
         protected abstract void PrepareSystem();

@@ -9,6 +9,7 @@ namespace FESGameplayAbilitySystem
         
         public AttributeScriptableObject RelativeAttribute;
         public ECalculationOperation Operation;
+        public ECaptureAttributeWhen ApplyWhen;
         
         protected AttributeValue ComputeModifiedImpact(AttributeValue relValue, AttributeValue impactValue)
         {

@@ -60,7 +60,10 @@ namespace FESGameplayAbilitySystem
         }
 
         public GASComponentBase GetOwner() => Owner;
-        public GameplayTagScriptableObject GetContextTag() => Base.Tags.ContextTag;
+        public List<GameplayTagScriptableObject> GetContextTags()
+        {
+            return Base.Tags.ContextTags;
+        }
         public int GetLevel() => Level;
         public void SetLevel(int level) => Level = level;
         public float GetRelativeLevel() => RelativeLevel;

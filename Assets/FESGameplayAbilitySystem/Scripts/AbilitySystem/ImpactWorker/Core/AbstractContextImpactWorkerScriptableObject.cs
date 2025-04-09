@@ -13,14 +13,16 @@ namespace FESGameplayAbilitySystem
         [Tooltip("The attribute must be the target attribute in the impact")]
         public AttributeScriptableObject ImpactedAttribute;
         public EImpactTypeAny ImpactType;
-        public EEffectImpactTarget ImpactTarget;
+        public EEffectImpactTargetExpanded ImpactTarget;
+        [Tooltip("Validate that exclusively the modify target is modified, as opposed to itself AND the alternative (e.g. target is Current when Current AND Base are modified would NOT pass validation.")]
+        public bool ImpactTargetExclusive;
         public ESignPolicy ImpactSign;
         public bool AllowSelfImpact;
         
         [Space(5)]
         
         public bool AnyContextTag;
-        [Tooltip("The sourced ability context tag must exist in this list")]
+        [Tooltip("The sourced ability context tags (all of them) must exist in this list")]
         public List<GameplayTagScriptableObject> ImpactAbilityContextTags;
         
         [Header("Work Context")] 
@@ -39,27 +41,11 @@ namespace FESGameplayAbilitySystem
             if (impactData.Attribute != ImpactedAttribute) return;  // If the context is not found
             if (!AllowSelfImpact && impactData.SourcedModifier.Derivation.GetSource() == impactData.Target) return;  // If self-inflicted impact is not allowed
             if (!GASHelper.ValidateImpactTypes(impactData.SourcedModifier.Derivation.GetImpactType(), ImpactType)) return;  // If the impact type is not applicable
-            if (!AnyContextTag && !ImpactAbilityContextTags.Contains(impactData.SourcedModifier.Derivation.GetEffectDerivation().GetContextTag())) return;
-            
-            /*switch (ImpactTarget)
+            if (!AnyContextTag)
             {
-                case EEffectImpactTarget.Current:
-                    if (impactData.RealImpact.CurrentValue == 0f) return;
-                    if (GASHelper.SignPolicy(impactData.RealImpact.CurrentValue) != ImpactSign) return;
-                    break;
-                case EEffectImpactTarget.Base:
-                    if (impactData.RealImpact.BaseValue == 0f) return;  
-                    if (GASHelper.SignPolicy(impactData.RealImpact.BaseValue) != ImpactSign) return;
-                    break;
-                case EEffectImpactTarget.CurrentAndBase:
-                    if (impactData.RealImpact is { CurrentValue: 0f, BaseValue: 0f }) return;
-                    if (GASHelper.SignPolicy(impactData.RealImpact.CurrentValue) != ImpactSign) return;
-                    if (GASHelper.SignPolicy(impactData.RealImpact.BaseValue) != ImpactSign) return;
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }*/
+                var cTags = impactData.SourcedModifier.Derivation.GetContextTags();
+                if (ImpactAbilityContextTags.Any(cTag => !cTags.Contains(cTag))) return;
+            }
             
             PerformImpactResponse(impactData);
         }
@@ -68,7 +54,7 @@ namespace FESGameplayAbilitySystem
         {
             return impactData.Attribute == ImpactedAttribute
                    && GASHelper.ValidateImpactTypes(impactData.SourcedModifier.Derivation.GetImpactType(), ImpactType)
-                   && GASHelper.ValidateImpactTargets(ImpactTarget, impactData.RealImpact)
+                   && GASHelper.ValidateImpactTargets(ImpactTarget, impactData.RealImpact, ImpactTargetExclusive)
                    && GASHelper.ValidateSignPolicy(ImpactSign, ImpactTarget, impactData.RealImpact);
 
         }

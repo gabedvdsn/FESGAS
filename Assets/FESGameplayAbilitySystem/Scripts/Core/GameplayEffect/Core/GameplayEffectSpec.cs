@@ -157,6 +157,10 @@ namespace FESGameplayAbilitySystem
             impactValue = default;
             return false;
         }
+        public List<GameplayTagScriptableObject> GetContextTags()
+        {
+            return Derivation.GetContextTags();
+        }
         public void RunEffectApplicationWorkers()
         {
             foreach (AbstractEffectWorkerScriptableObject worker in Base.Workers) worker.OnEffectApplication(this);

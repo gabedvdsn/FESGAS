@@ -6,16 +6,18 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractSelectTargetProxyTaskScriptableObject : AbstractAbilityProxyTaskScriptableObject
     {
-        public override UniTask Prepare(ProxyDataPacket data, CancellationToken token)
+        public override void Prepare(ProxyDataPacket data)
         {
+            // Hook into input handler here
+            
             EnableTargetingVisualization();
-            return base.Prepare(data, token);
         }
         
-        public override UniTask Clean(ProxyDataPacket data, CancellationToken token)
+        public override void Clean(ProxyDataPacket data)
         {
+            // Unhook from input handler here
+            
             DisableTargetingVisualization();
-            return base.Clean(data, token);
         }
 
         protected abstract void EnableTargetingVisualization();

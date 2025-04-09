@@ -4,12 +4,12 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CanEditMultipleObjects]
-    [CustomEditor(typeof(AbstractApplicationWorkerScriptableObject), true)]
-    public class ApplicationWorkerEditor : Editor
+    [CustomEditor(typeof(AbstractImpactWorkerScriptableObject), true)]
+    public class ImpactWorkerEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
-            AbstractApplicationWorkerScriptableObject script = (AbstractApplicationWorkerScriptableObject)target;
+            AbstractImpactWorkerScriptableObject script = (AbstractImpactWorkerScriptableObject)target;
             
             EditorGUILayout.LabelField($"Task Description");
             

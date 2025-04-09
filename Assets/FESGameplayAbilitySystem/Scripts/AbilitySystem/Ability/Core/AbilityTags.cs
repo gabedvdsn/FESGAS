@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -9,7 +10,7 @@ namespace FESGameplayAbilitySystem
         [Header("Base")] 
         
         public GameplayTagScriptableObject AssetTag;
-        public GameplayTagScriptableObject ContextTag;
+        public List<GameplayTagScriptableObject> ContextTags;
         
         [Header("Tags")]
         

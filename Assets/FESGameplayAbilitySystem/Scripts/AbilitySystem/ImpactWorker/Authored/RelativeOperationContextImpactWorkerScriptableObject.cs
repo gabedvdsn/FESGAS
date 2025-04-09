@@ -8,9 +8,10 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Relative & Operation")]
         
-        [Tooltip("The attribute to modify relative to the primary attribute and operation")]
+        [Tooltip("The attribute to use relative to the impact data (with respect to the primary attribute)")]
         public AttributeScriptableObject RelativeAttribute;
         public ECalculationOperation Operation;
+        public ESourceTarget WithRespectTo;
         
         [Header("Danger! [ KEEP FALSE ]")]
         [Tooltip("Only set TRUE if you know what you are doing. Keeping this FALSE will ensure cycles are broken without recursing once.\nExample: Receiving health via magic triggers worker to provide health via magic, resulting in endless cycle.")]
@@ -46,6 +47,17 @@ namespace FESGameplayAbilitySystem
             );
             if (WorkSameFrame) impactData.SourcedModifier.Derivation.GetSource().AttributeSystem.ModifyAttributeImmediate(WorkAttribute, sourcedModifier);
             else impactData.SourcedModifier.Derivation.GetSource().AttributeSystem.ModifyAttribute(WorkAttribute, sourcedModifier);
+        }
+
+        public override bool ValidateWorkFor(AbilityImpactData impactData)
+        {
+            if (!base.ValidateWorkFor(impactData)) return false;
+            return WithRespectTo switch
+            {
+                ESourceTarget.Target => impactData.Target.AttributeSystem.DefinesAttribute(RelativeAttribute),
+                ESourceTarget.Source => impactData.SourcedModifier.BaseDerivation.GetSource().AttributeSystem.DefinesAttribute(RelativeAttribute),
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
     }
 }

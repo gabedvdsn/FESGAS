@@ -19,7 +19,7 @@ namespace FESGameplayAbilitySystem
         public Sprite QueuedIcon;
         public Sprite OnCooldownIcon;
         
-        [Header("Type")]
+        [Header("Activation")]
         
         public EAbilityType Type;
         public bool ActivateImmediately; 

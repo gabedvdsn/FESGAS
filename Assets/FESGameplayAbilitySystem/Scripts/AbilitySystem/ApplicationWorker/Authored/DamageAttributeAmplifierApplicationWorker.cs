@@ -9,24 +9,20 @@ namespace FESGameplayAbilitySystem
         public override SourcedModifiedAttributeValue ModifyImpact(GASComponentBase target, SourcedModifiedAttributeValue smav)
         {
             if (!smav.BaseDerivation.GetSource().AttributeSystem.TryGetAttributeValue(RelativeAttribute, out AttributeValue _relValue)) return smav;
-
-            Debug.Log($"\t{name} {smav.BaseDerivation.GetSource()} {target}");
-
+            
             AttributeValue relValue = new AttributeValue(1 + _relValue.CurrentValue, 1 + _relValue.BaseValue);
-            AttributeValue impactValue = ComputeModifiedImpact(relValue, new AttributeValue(smav.DeltaCurrentValue, smav.DeltaBaseValue));
+            AttributeValue impactValue = ComputeModifiedImpact(relValue, new AttributeValue(smav.CurrentValue, smav.BaseValue));
             
             return ApplicationTarget switch
             {
-                EEffectImpactTarget.Current => new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, impactValue.CurrentValue, smav.DeltaBaseValue, smav.Workable),
-                EEffectImpactTarget.Base => new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, smav.DeltaCurrentValue, impactValue.BaseValue, smav.Workable),
-                EEffectImpactTarget.CurrentAndBase => new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, impactValue.CurrentValue, impactValue.BaseValue,
+                EEffectImpactTargetExpanded.Current => new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, impactValue.CurrentValue, smav.BaseValue, smav.Workable),
+                EEffectImpactTargetExpanded.Base => new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, smav.CurrentValue, impactValue.BaseValue, smav.Workable),
+                EEffectImpactTargetExpanded.CurrentAndBase => new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, impactValue.CurrentValue, impactValue.BaseValue,
                     smav.Workable),
+                EEffectImpactTargetExpanded.CurrentOrBase => GASHelper.ValidateImpactTargets(EEffectImpactTargetExpanded.Current, impactValue, ApplicationTargetExclusive) ? new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, impactValue.CurrentValue, smav.BaseValue, smav.Workable) : 
+                    GASHelper.ValidateImpactTargets(EEffectImpactTargetExpanded.Base, impactValue, ApplicationTargetExclusive) ? new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, smav.CurrentValue, impactValue.BaseValue, smav.Workable) : new SourcedModifiedAttributeValue(smav.Derivation, smav.BaseDerivation, impactValue.CurrentValue, impactValue.BaseValue),
                 _ => throw new ArgumentOutOfRangeException()
             };
-        }
-        public override bool ValidateWorkFor(GASComponentBase target, SourcedModifiedAttributeValue smav)
-        {
-            return base.ValidateWorkFor(target, smav);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractRelativeAttributeChangeEventScriptableObject : AbstractFocusedAttributeChangeEventScriptableObject
     {
-        [Header("Relative Attribute")]
+        [Header("Relative Attribute Event")]
         
         public AttributeScriptableObject RelativeTo;
         public float RelativeMultiplier = 1f;

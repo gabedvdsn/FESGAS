@@ -4,7 +4,7 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractApplicationWorkerScriptableObject : ScriptableObject
     {
-        [HideInInspector] public string ReadOnlyDescription = "Application workers are used to modify the values of impacting effects when they are applied to a target.";
+        [HideInInspector] public string ReadOnlyDescription = "Application workers are used to modify the values of impacting effects when they are applied to a target.\nE.g. amplification, attenuation, etc...";
         
         public abstract SourcedModifiedAttributeValue ModifyImpact(GASComponentBase target, SourcedModifiedAttributeValue smav);
 

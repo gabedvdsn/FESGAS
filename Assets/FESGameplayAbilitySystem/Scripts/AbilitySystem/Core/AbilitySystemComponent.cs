@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -16,8 +15,8 @@ namespace FESGameplayAbilitySystem
         protected List<AbilityScriptableObject> startingAbilities;
         
         private GASComponentBase System;
-        private Dictionary<int, AbilitySpecContainer> AbilityCache;
-        private List<AbilityImpactData> FrameImpactData;
+        private Dictionary<int, AbilitySpecContainer> AbilityCache = new();
+        private List<AbilityImpactData> FrameImpactData = new();
         
         public virtual void Initialize(GASComponentBase system)
         {
@@ -88,39 +87,73 @@ namespace FESGameplayAbilitySystem
             
             AbilitySpecContainer container = new AbilitySpecContainer(ability.Generate(System, Level));
             AbilityCache[index] = container;
-            
-            System.AddTags(ability.Tags.PassivelyGrantedTags, true);
 
-            switch (ability.Definition.Type)
-            {
-                case EAbilityType.Activated:
-                    if (ability.Definition.ActivateImmediately) TryActivateAbility(index);
-                    break;
-                case EAbilityType.AlwaysActive:
-                    TryActivateAbility(index);
-                    break;
-                case EAbilityType.Toggled:
-                    if (ability.Definition.ActivateImmediately) TryActivateAbility(index);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            InitializeNewAbility(index, ability);
             
             return true;
         }
 
         public bool RevokeAbility(AbilityScriptableObject ability)
         {
-            bool revoked = TryGetCacheIndexOf(ability, out int removeIndex) && AbilityCache.Remove(removeIndex);
-            if (revoked) System.RemoveTags(ability.Tags.PassivelyGrantedTags);
-            return revoked;
+            return TryGetCacheIndexOf(ability, out int index) && RevokeAbility(index);
+        }
+
+        public bool RevokeAbility(int index)
+        {
+            if (!AbilityCache.ContainsKey(index)) return false; 
+            
+            AbilityCache[index].CleanAllTokens();
+            System.RemoveTags(AbilityCache[index].Spec.Base.Tags.PassivelyGrantedTags);
+
+            return AbilityCache.Remove(index);
         }
 
         public bool SwapAbilityIndices(AbilityScriptableObject ability1, AbilityScriptableObject ability2)
         {
             if (!(TryGetCacheIndexOf(ability1, out int firstIndex) && TryGetCacheIndexOf(ability2, out int secondIndex))) return false;
+
+            return SwapAbilities(firstIndex, secondIndex);
+            /*(AbilityCache[firstIndex], AbilityCache[secondIndex]) = (AbilityCache[secondIndex], AbilityCache[firstIndex]);
+            return true;*/
+        }
+
+        public bool SwapAbilities(int index1, int index2)
+        {
+            if (AbilityCache.ContainsKey(index1))
+            {
+                if (AbilityCache.ContainsKey(index1)) (AbilityCache[index1], AbilityCache[index2]) = (AbilityCache[index2], AbilityCache[index1]);
+                else if (index2 < maxAbilities)
+                {
+                    AbilityCache[index2] = AbilityCache[index1];
+                    AbilityCache.Remove(index1);
+                }
+
+                return true;
+            }
+            if (AbilityCache.ContainsKey(index2))
+            {
+                if (index1 < maxAbilities)
+                {
+                    AbilityCache[index1] = AbilityCache[index2];
+                    AbilityCache.Remove(index2);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool ReplaceAbilityAtIndex(int replaceIndex, AbilityScriptableObject ability, int level)
+        {
+            if (HasAbility(ability)) return false;
+            if (AbilityCache.ContainsKey(replaceIndex)) RevokeAbility(replaceIndex);
             
-            (AbilityCache[firstIndex], AbilityCache[secondIndex]) = (AbilityCache[secondIndex], AbilityCache[firstIndex]);
+            AbilitySpecContainer container = new AbilitySpecContainer(ability.Generate(System, level));
+            AbilityCache[replaceIndex] = container;
+
+            InitializeNewAbility(replaceIndex, ability);
+
             return true;
         }
 
@@ -145,6 +178,26 @@ namespace FESGameplayAbilitySystem
             }
 
             return -1;
+        }
+
+        private void InitializeNewAbility(int abilityIndex, AbilityScriptableObject ability)
+        {
+            System.AddTags(ability.Tags.PassivelyGrantedTags, true);
+
+            switch (ability.Definition.Type)
+            {
+                case EAbilityType.Activated:
+                    if (ability.Definition.ActivateImmediately) TryActivateAbility(abilityIndex);
+                    break;
+                case EAbilityType.AlwaysActive:
+                    TryActivateAbility(abilityIndex);
+                    break;
+                case EAbilityType.Toggled:
+                    if (ability.Definition.ActivateImmediately) TryActivateAbility(abilityIndex);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         #endregion
@@ -174,7 +227,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (int index in AbilityCache.Keys)
             {
-                AbilityCache[index].CleanToken();
+                AbilityCache[index].CleanAllTokens();
             }
 
             AbilityCache.Clear();
@@ -207,21 +260,8 @@ namespace FESGameplayAbilitySystem
             // Allow the impact derivation to track its impact
             impactData.SourcedModifier.BaseDerivation.TrackImpact(impactData);
             impactData.SourcedModifier.BaseDerivation.RunEffectWorkers(impactData);
-
-            if (!ValidateWorkFor(impactData)) return false; 
             
             FrameImpactData.Add(impactData);
-            return true;
-        }
-
-        private bool ValidateWorkFor(AbilityImpactData impactData)
-        {
-            if (impactWorkers.Count == 0) return false;
-            foreach (AbstractImpactWorkerScriptableObject worker in impactWorkers)
-            {
-                if (!worker.ValidateWorkFor(impactData)) return false;
-            }
-
             return true;
         }
 
@@ -235,6 +275,7 @@ namespace FESGameplayAbilitySystem
                 if (!impactData.SourcedModifier.Workable) continue;
                 foreach (AbstractImpactWorkerScriptableObject worker in impactWorkers)
                 {
+                    if (!worker.ValidateWorkFor(impactData)) continue;
                     worker.InterpretImpact(impactData);
                 }
             }
@@ -256,10 +297,12 @@ namespace FESGameplayAbilitySystem
         private class AbilitySpecContainer
         {
             public AbilitySpec Spec;
-            public bool IsActive;
+            public bool IsActive { get; private set; }
+            public bool IsTargeting { get; private set; }
             
             public AbilityProxy Proxy;
-            private CancellationTokenSource cst;
+            private CancellationTokenSource cts;
+            private CancellationTokenSource targetingCts;
             
             public AbilitySpecContainer(AbilitySpec spec)
             {
@@ -267,12 +310,14 @@ namespace FESGameplayAbilitySystem
                 IsActive = false;
 
                 Proxy = Spec.Base.Proxy.GenerateProxy();
-                ResetToken();
+                ResetTokens();
             }
             
             public bool ActivateAbility(ProxyDataPacket implicitData)
             {
-                ResetToken();
+                if (IsActive || IsTargeting) return false;  // Prevent reactivation mid-use
+                
+                ResetTokens();
                 AwaitAbility(implicitData).Forget();
 
                 return true;
@@ -280,32 +325,79 @@ namespace FESGameplayAbilitySystem
 
             private async UniTaskVoid AwaitAbility(ProxyDataPacket data)
             {
-                IsActive = true;
-                Spec.Owner.AddTags(Spec.Base.Tags.ActiveGrantedTags, true);
+                try
+                {
+                    IsTargeting = true;
+                    await Proxy.ActivateTargetingTask(targetingCts.Token, data);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Targeting is cancelled
+                }
+                finally
+                {
+                    IsTargeting = false;
+                }
+
+                try
+                {
+                    IsActive = true;
+                    Spec.Owner.AddTags(Spec.Base.Tags.ActiveGrantedTags, true);
+
+                    await Proxy.Activate(cts.Token, data);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ability in execution is interrupted (cancelled)
+                }
+                finally
+                {
+                    IsActive = false;
+                    Spec.Owner.RemoveTags(Spec.Base.Tags.ActiveGrantedTags);
+                }
                 
-                await Proxy.ActivateTargetingTask(Spec, cst.Token, data);
-                await Proxy.Activate(Spec, cst.Token, data);
+                CleanAllTokens();
+            }
+
+            public void Interrupt()
+            {
+                if (IsTargeting) targetingCts.Cancel();
+                if (IsActive) cts.Cancel();
+            }
+
+            /// <summary>
+            /// Cancels the active execution of the ability
+            /// </summary>
+            public void CleanAllTokens()
+            {
+                CleanTargetingToken();
+                CleanActivationToken();
+            }
+
+            private void CleanTargetingToken()
+            {
+                if (targetingCts is null) return;
                 
-                IsActive = false;
-                Spec.Owner.RemoveTags(Spec.Base.Tags.ActiveGrantedTags);
+                if (!targetingCts.IsCancellationRequested) targetingCts?.Cancel();
+                targetingCts?.Dispose();
+                targetingCts = null;
             }
 
-            public void InterruptAbility()
+            private void CleanActivationToken()
             {
-                if (!IsActive) return;
-                cst?.Cancel();
+                if (cts is null) return;
+                
+                if (!cts.IsCancellationRequested) cts?.Cancel();
+                cts?.Dispose();
+                cts = null;
             }
 
-            public void CleanToken()
+            private void ResetTokens()
             {
-                InterruptAbility();
-                cst?.Dispose();
-            }
-
-            public void ResetToken()
-            {
-                CleanToken();
-                cst = new CancellationTokenSource();
+                CleanAllTokens();
+                
+                cts = new CancellationTokenSource();
+                targetingCts = new CancellationTokenSource();
             }
 
             public override string ToString()

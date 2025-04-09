@@ -5,7 +5,7 @@ namespace FESGameplayAbilitySystem
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(AbstractAbilityProxyTaskScriptableObject), true)]
-    public class ProxyTaskEditor : Editor
+    public class ProxyTaskEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
