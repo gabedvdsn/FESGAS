@@ -10,10 +10,11 @@ namespace FESGameplayAbilitySystem
     {
         public List<GameplayEffectScriptableObject> Effects;
 
-        public override void Prepare(ProxyDataPacket data)
+        public override UniTask Prepare(ProxyDataPacket data)
         {
             GASComponentBase target = data.Target().Primary;
             foreach (GameplayEffectScriptableObject effect in Effects) target.ApplyGameplayEffect(target.GenerateEffectSpec(data.Spec, effect));
+            return base.Prepare(data);
         }
 
         public override UniTask Activate(ProxyDataPacket data, CancellationToken token)
@@ -21,10 +22,11 @@ namespace FESGameplayAbilitySystem
             return UniTask.CompletedTask;
         }
         
-        public override void Clean(ProxyDataPacket data)
+        public override UniTask Clean(ProxyDataPacket data)
         {
             GASComponentBase target = data.Target().Primary;
             foreach (GameplayEffectScriptableObject effect in Effects) target.RemoveGameplayEffect(effect);
+            return base.Prepare(data);
         }
     }
 }

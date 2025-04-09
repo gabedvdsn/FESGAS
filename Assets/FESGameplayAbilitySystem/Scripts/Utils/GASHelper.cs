@@ -162,29 +162,6 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
-        #region UniTask Helpers
-
-        public static async UniTask WhileAsync(Func<bool> condition, CancellationToken token, PlayerLoopTiming timing = PlayerLoopTiming.Update)
-        {
-            while (condition())
-            {
-                token.ThrowIfCancellationRequested();
-                await UniTask.Yield(timing, token);
-            }
-        }
-
-        public static async UniTask DoWhileAsync(Func<UniTask> body, Func<bool> condition, CancellationToken token, PlayerLoopTiming timing = PlayerLoopTiming.Update)
-        {
-            do
-            {
-                token.ThrowIfCancellationRequested();
-                await body();
-                await UniTask.Yield(timing, token);
-            } while (condition());
-        }
-        
-        #endregion
-        
         #region Utils
         
         public static T RandomChoice<T>(this List<T> list) => list is null ? default : list[Mathf.FloorToInt(Random.value * list.Count)];

@@ -67,7 +67,7 @@ namespace FESGameplayAbilitySystem
         public override void TickPeriodic(float deltaTime, out int executeTicks)
         {
             executeTicks = 0;
-            if (Spec.Base.ImpactSpecification.ReApplicationPolicy is GameplayEffectApplicationPolicy.StackExtend or GameplayEffectApplicationPolicy.StackRefresh)
+            if (Spec.Base.ImpactSpecification.ReApplicationPolicy is EGameplayEffectApplicationPolicy.StackExtend or EGameplayEffectApplicationPolicy.StackRefresh)
             {
                 Packets[0].TickPeriodic(deltaTime, periodDuration, out bool execute);
                 if (execute) executeTicks += stacks;

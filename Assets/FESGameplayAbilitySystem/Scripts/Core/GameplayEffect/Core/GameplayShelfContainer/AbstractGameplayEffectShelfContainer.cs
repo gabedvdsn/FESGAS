@@ -64,6 +64,11 @@ namespace FESGameplayAbilitySystem
                     Spec.Base.ImpactSpecification.AttributeTarget, 
                     new SourcedModifiedAttributeValue(Spec, this, negatedImpact.CurrentValue, negatedImpact.BaseValue, false));
             }
+            
+            foreach (var containedEffect in Spec.Base.ImpactSpecification.GetContainedEffects(EApplyDuringRemove.OnRemove))
+            {
+                Spec.GetSource().ApplyGameplayEffect(Spec.Derivation, containedEffect);
+            }
         }
 
         public AttributeScriptableObject GetAttribute()

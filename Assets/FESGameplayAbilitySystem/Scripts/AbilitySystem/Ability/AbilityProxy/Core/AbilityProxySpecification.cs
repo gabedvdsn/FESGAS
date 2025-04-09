@@ -69,9 +69,12 @@ namespace FESGameplayAbilitySystem
             StageIndex += 1;
             if (StageIndex < Specification.Stages.Count)
             {
+                // Debug.Log($"{Specification.Stages.Count} {StageIndex} {Specification.Stages[StageIndex].Tasks[0]}");
                 Specification.Stages[StageIndex].Tasks.ForEach(task => task.Prepare(data));
                 await ActivateStage(Specification.Stages[StageIndex], data, token);
                 Specification.Stages[StageIndex].Tasks.ForEach(task => task.Clean(data));
+                
+                ActivateNextStage(data, token).Forget();
             }
         }
 
@@ -100,7 +103,7 @@ namespace FESGameplayAbilitySystem
                 }
             }
             
-            ActivateNextStage(data, token).Forget();
+            // ActivateNextStage(data, token).Forget();
         }
 
         public override string ToString()

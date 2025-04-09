@@ -99,8 +99,11 @@ namespace FESGameplayAbilitySystem
 
         public void Add(IAttributeImpactDerivation derivation, AttributeValue attributeValue)
         {
-            if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] += attributeValue;
-            else DerivedValues[derivation] = attributeValue;
+            if (derivation.RetainAttributeImpact())
+            {
+                if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] += attributeValue;
+                else DerivedValues[derivation] = attributeValue;
+            }
 
             Value += attributeValue;
         }

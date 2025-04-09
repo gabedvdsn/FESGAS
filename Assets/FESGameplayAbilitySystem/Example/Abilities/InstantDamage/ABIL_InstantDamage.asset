@@ -20,10 +20,10 @@ MonoBehaviour:
     QueuedIcon: {fileID: 0}
     OnCooldownIcon: {fileID: 0}
     Type: 0
-    ActivateImmediately: 1
+    ActivateImmediately: 0
   Tags:
     AssetTag: {fileID: 11400000, guid: 662020c5bc519b8478df2b6190178956, type: 2}
-    ContextTag: {fileID: 11400000, guid: 2f7ceda08a5c82b44a7c9be005000c05, type: 2}
+    ContextTags: []
     PassivelyGrantedTags: []
     ActiveGrantedTags: []
     SourceRequirements:

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -18,18 +19,17 @@ namespace FESGameplayAbilitySystem
         
         public EImpactType ImpactType;
         public bool ReverseImpactOnRemoval;
-        public GameplayEffectApplicationPolicy ReApplicationPolicy;
+        public EGameplayEffectApplicationPolicy ReApplicationPolicy;
         
         [Space]
         
         public float Magnitude;
         public AbstractMagnitudeModifierScriptableObject MagnitudeCalculation;
         public EMagnitudeOperation MagnitudeCalculationOperation;
+
+        [Space] [Header("Contained Effects")] 
         
-        [Space]
-        
-        [Header("Contained Effect")]
-        public GameplayEffectScriptableObject ContainedEffect;
+        public List<ContainedEffectPacket> Packets;
         
 
         public void ApplyImpactSpecifications(GameplayEffectSpec spec)
@@ -49,6 +49,18 @@ namespace FESGameplayAbilitySystem
                 EMagnitudeOperation.UseCalculation => calculatedMagnitude,
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+
+        public List<GameplayEffectScriptableObject> GetContainedEffects(EApplyDuringRemove policy)
+        {
+            return Packets.Where(packet => packet.Policy == policy).Select(p => p.ContainedEffect).ToList();
+        }
+
+        [Serializable]
+        public struct ContainedEffectPacket
+        {
+            public EApplyDuringRemove Policy;
+            public GameplayEffectScriptableObject ContainedEffect;
         }
     }
 
@@ -73,5 +85,12 @@ namespace FESGameplayAbilitySystem
         Base,
         CurrentAndBase,
         CurrentOrBase
+    }
+
+    public enum EApplyDuringRemove
+    {
+        OnApply,
+        OnTick,
+        OnRemove
     }
 }

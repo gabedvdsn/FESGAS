@@ -19,14 +19,14 @@ namespace FESGameplayAbilitySystem
         public void RunEffectRemovalWorkers();
         public void RunEffectWorkers(AbilityImpactData impactData);
         
-        public static SourceAttributeDerivation GenerateSourceDerivation(GASComponentBase source, AttributeScriptableObject attribute, EImpactType impactType = EImpactType.NotApplicable)
+        public static SourceAttributeDerivation GenerateSourceDerivation(GASComponentBase source, AttributeScriptableObject attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
         {
-            return new SourceAttributeDerivation(source, attribute, impactType);
+            return new SourceAttributeDerivation(source, attribute, impactType, retainImpact);
         }
 
-        public static SourceAttributeDerivation GenerateSourceDerivation(SourcedModifiedAttributeValue sourceModifier, EImpactType impactType)
+        public static SourceAttributeDerivation GenerateSourceDerivation(SourcedModifiedAttributeValue sourceModifier, EImpactType impactType, bool retainImpact = true)
         {
-            return GenerateSourceDerivation(sourceModifier.Derivation.GetSource(), sourceModifier.Derivation.GetAttribute(), impactType);
+            return GenerateSourceDerivation(sourceModifier.Derivation.GetSource(), sourceModifier.Derivation.GetAttribute(), impactType, retainImpact);
         }
     }
 
@@ -35,12 +35,14 @@ namespace FESGameplayAbilitySystem
         private GASComponentBase Source;
         public AttributeScriptableObject Attribute;
         private EImpactType ImpactType;
+        private bool RetainImpact;
 
-        public SourceAttributeDerivation(GASComponentBase source, AttributeScriptableObject attribute, EImpactType impactType)
+        public SourceAttributeDerivation(GASComponentBase source, AttributeScriptableObject attribute, EImpactType impactType, bool retainImpact = true)
         {
             Source = source;
             Attribute = attribute;
             ImpactType = impactType;
+            RetainImpact = retainImpact;
         }
 
         public AttributeScriptableObject GetAttribute()
@@ -66,7 +68,7 @@ namespace FESGameplayAbilitySystem
 
         public bool RetainAttributeImpact()
         {
-            return true;
+            return RetainImpact;
         }
         
         public void TrackImpact(AbilityImpactData impactData)

@@ -12,6 +12,14 @@ namespace FESGameplayAbilitySystem
         {
             throw new System.NotImplementedException();
         }
+        protected override bool ConnectInputHandler()
+        {
+            throw new System.NotImplementedException();
+        }
+        protected override void DisconnectInputHandler()
+        {
+            throw new System.NotImplementedException();
+        }
         protected override void EnableTargetingVisualization()
         {
             throw new System.NotImplementedException();

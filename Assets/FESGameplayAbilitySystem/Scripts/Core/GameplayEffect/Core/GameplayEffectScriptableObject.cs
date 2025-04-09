@@ -60,7 +60,7 @@ namespace FESGameplayAbilitySystem
 
     }
 
-    public enum GameplayEffectApplicationPolicy
+    public enum EGameplayEffectApplicationPolicy
     {
         Append,  // Create another instance of the effect independent of the existing one(s)
         Refresh,  // Refresh the duration of the effect

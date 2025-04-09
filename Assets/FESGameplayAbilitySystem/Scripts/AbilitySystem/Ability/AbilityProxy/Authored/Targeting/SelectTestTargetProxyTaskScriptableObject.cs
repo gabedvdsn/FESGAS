@@ -24,6 +24,16 @@ namespace FESGameplayAbilitySystem
             
             return UniTask.CompletedTask;
         }
+
+        protected override bool ConnectInputHandler()
+        {
+            return true;
+        }
+        
+        protected override void DisconnectInputHandler()
+        {
+            
+        }
         
         protected override void EnableTargetingVisualization()
         {

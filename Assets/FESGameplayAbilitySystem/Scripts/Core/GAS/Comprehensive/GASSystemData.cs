@@ -9,9 +9,10 @@ namespace FESGameplayAbilitySystem
         [Header("GAS Components")]
         
         public List<AbstractTagWorkerScriptableObject> TagWorkers;
+
+        [Header("Ability Components")] 
         
-        [Header("Ability Components")]
-        
+        public EAbilityActivationPolicy ActivationPolicy;
         public int MaxAbilities;
         public List<AbilityScriptableObject> StartingAbilities;
         

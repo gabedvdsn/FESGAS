@@ -16,13 +16,17 @@ namespace FESGameplayAbilitySystem
         private bool modifiedCacheDirty;
 
         private Dictionary<AttributeScriptableObject, AttributeValue> HoldAttributeCache;
-
-        // Order of events should be considered (e.g. clamping before damage numbers)
-        // Pre: changing modified attribute values to reflect weakness, amplification, etc...
-        // Post: clamping max values, damage numbers, etc...
-
+        
         private GASComponentBase System;
+        
+        private void LateUpdate()
+        {
+            UpdateAttributes();
+            System.AttributeSystemFinished();
+        }
 
+        #region Initialization
+        
         public virtual void Initialize(GASComponentBase system)
         {
             System = system;
@@ -39,12 +43,6 @@ namespace FESGameplayAbilitySystem
             attributeChangeEvents = systemData.AttributeChangeEvents;
         }
         
-        private void LateUpdate()
-        {
-            UpdateAttributes();
-            System.AttributeSystemFinished();
-        }
-
         private void InitializeCaches()
         {
             AttributeCache = new Dictionary<AttributeScriptableObject, CachedAttributeValue>();
@@ -69,7 +67,11 @@ namespace FESGameplayAbilitySystem
             ChangeEventHandler = new AttributeChangeEventHandler();
             foreach (AbstractAttributeChangeEventScriptableObject changeEvent in attributeChangeEvents) changeEvent.RegisterWithHandler(ChangeEventHandler);
         }
-
+        
+        #endregion
+        
+        #region Management
+        
         public bool ProvideChangeEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
         {
             return changeEvent.RegisterWithHandler(ChangeEventHandler);
@@ -88,27 +90,37 @@ namespace FESGameplayAbilitySystem
             AttributeCache[attribute].Add(IAttributeImpactDerivation.GenerateSourceDerivation(System, attribute), defaultValue.ToAttributeValue());
             ModifiedAttributeCache.SubscribeModifiableAttribute(attribute);
         }
-
+        
+        #endregion
+        
+        #region Helpers
+        
         public bool DefinesAttribute(AttributeScriptableObject attribute) => AttributeCache.ContainsKey(attribute);
+        
+        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out CachedAttributeValue attributeValue)
+        {
+            return AttributeCache.TryGetValue(attribute, out attributeValue);
+        }
+
+        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out AttributeValue attributeValue)
+        {
+            if (AttributeCache.TryGetValue(attribute, out var cachedValue))
+            {
+                attributeValue = cachedValue.Value;
+                return true;
+            }
+
+            attributeValue = default;
+            return false;
+        }
+        
+        #endregion
+        
+        #region Attribute Modification
 
         private void UpdateAttributes(bool allowWorkers = true)
         {
             ApplyAttributeModifications(allowWorkers);
-        }
-
-        public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)
-        {
-            if (!AttributeCache.ContainsKey(derivation.GetAttribute())) return;
-            AttributeCache[derivation.GetAttribute()].Remove(derivation);
-        }
-
-        public void RemoveAttributeDerivations(List<IAttributeImpactDerivation> derivations)
-        {
-            foreach (IAttributeImpactDerivation derivation in derivations)
-            {
-                if (!AttributeCache.ContainsKey(derivation.GetAttribute())) continue;
-                AttributeCache[derivation.GetAttribute()].Remove(derivation);
-            }
         }
         
         private void ApplyAttributeModifications(bool allowWorkers = true)
@@ -170,23 +182,22 @@ namespace FESGameplayAbilitySystem
             UpdateAttributes(allowWorkers);
         }
 
-        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out CachedAttributeValue attributeValue)
+        public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)
         {
-            return AttributeCache.TryGetValue(attribute, out attributeValue);
+            if (!AttributeCache.ContainsKey(derivation.GetAttribute())) return;
+            AttributeCache[derivation.GetAttribute()].Remove(derivation);
         }
 
-        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out AttributeValue attributeValue)
+        public void RemoveAttributeDerivations(List<IAttributeImpactDerivation> derivations)
         {
-            if (AttributeCache.TryGetValue(attribute, out var cachedValue))
+            foreach (IAttributeImpactDerivation derivation in derivations)
             {
-                attributeValue = cachedValue.Value;
-                return true;
+                if (!AttributeCache.ContainsKey(derivation.GetAttribute())) continue;
+                AttributeCache[derivation.GetAttribute()].Remove(derivation);
             }
-
-            attributeValue = default;
-            return false;
         }
 
+        #endregion
         
     }
 }

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
     public class AbilitySystemComponent : MonoBehaviour
     {
+        protected EAbilityActivationPolicy activationPolicy;
         protected int maxAbilities;
         protected List<AbstractApplicationWorkerScriptableObject> applicationWorkers;
         protected List<AbstractImpactWorkerScriptableObject> impactWorkers;
@@ -17,6 +19,11 @@ namespace FESGameplayAbilitySystem
         private GASComponentBase System;
         private Dictionary<int, AbilitySpecContainer> AbilityCache = new();
         private List<AbilityImpactData> FrameImpactData = new();
+
+        public bool Executing => abilityActive && activeContainer is not null;
+        private bool abilityActive;
+        private AbilitySpecContainer activeContainer = null;
+        private Queue<int> activationQueue = new();
         
         public virtual void Initialize(GASComponentBase system)
         {
@@ -32,6 +39,7 @@ namespace FESGameplayAbilitySystem
 
         public void ProvidePrerequisiteData(GASSystemData systemData)
         {
+            activationPolicy = systemData.ActivationPolicy;
             maxAbilities = systemData.MaxAbilities;
             applicationWorkers = systemData.ApplicationWorkers;
             impactWorkers = systemData.ImpactWorkers;
@@ -102,7 +110,7 @@ namespace FESGameplayAbilitySystem
         {
             if (!AbilityCache.ContainsKey(index)) return false; 
             
-            AbilityCache[index].CleanAllTokens();
+            AbilityCache[index].ReleaseAndClean();
             System.RemoveTags(AbilityCache[index].Spec.Base.Tags.PassivelyGrantedTags);
 
             return AbilityCache.Remove(index);
@@ -212,13 +220,33 @@ namespace FESGameplayAbilitySystem
         public bool TryActivateAbility(int abilityIndex)
         {
             if (!CanActivateAbility(abilityIndex)) return false;
-            AbilitySpecContainer container = AbilityCache[abilityIndex];
+            return ProcessActivationRequest(abilityIndex);
+        }
 
+        private bool ProcessActivationRequest(int abilityIndex)
+        {
+            return activationPolicy switch
+            {
+                EAbilityActivationPolicy.NoRestrictions => ActivateAbility(AbilityCache[abilityIndex]),
+                EAbilityActivationPolicy.SingleActive => !Executing && ActivateAbility(AbilityCache[abilityIndex]),
+                EAbilityActivationPolicy.QueueSingleActive => Executing ? ActivateAbility(AbilityCache[abilityIndex]) : QueueAbilityActivation(abilityIndex),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
+
+        private bool ActivateAbility(AbilitySpecContainer container)
+        {
             container.Spec.ApplyUsageEffects();
-            
             return container.Spec.Base.Proxy.UseImplicitInstructions 
                 ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, container.Spec.Base.Proxy.OwnerAs)) 
                 : container.ActivateAbility(null);
+        }
+
+        private bool QueueAbilityActivation(int abilityIndex)
+        {
+            activationQueue.Enqueue(abilityIndex);
+
+            return true;
         }
 
         private void ClearAbilityCache()
@@ -227,10 +255,42 @@ namespace FESGameplayAbilitySystem
             
             foreach (int index in AbilityCache.Keys)
             {
-                AbilityCache[index].CleanAllTokens();
+                AbilityCache[index].ReleaseAndClean();
             }
 
             AbilityCache.Clear();
+        }
+
+        public bool InjectInterrupt()
+        {
+            if (!Executing) return false;
+            activeContainer.Interrupt();
+            return true;
+        }
+
+        private void ClaimActive(AbilitySpecContainer container)
+        {
+            switch (activationPolicy)
+            {
+
+                case EAbilityActivationPolicy.NoRestrictions:
+                    break;
+                case EAbilityActivationPolicy.SingleActive:
+                    if (activeContainer is not null) activeContainer.Interrupt();
+                    activeContainer = container;
+                    break;
+                case EAbilityActivationPolicy.QueueSingleActive:
+                    if (activeContainer is null) activeContainer = container;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void ReleaseClaim(AbilitySpecContainer container)
+        {
+            if (activeContainer == container) activeContainer = null;
+            if (activationPolicy == EAbilityActivationPolicy.QueueSingleActive && activationQueue.Count > 0) TryActivateAbility(activationQueue.Dequeue());
         }
         
         #endregion
@@ -299,8 +359,9 @@ namespace FESGameplayAbilitySystem
             public AbilitySpec Spec;
             public bool IsActive { get; private set; }
             public bool IsTargeting { get; private set; }
+            public bool IsClaiming => IsTargeting || IsActive;
             
-            public AbilityProxy Proxy;
+            private AbilityProxy Proxy;
             private CancellationTokenSource cts;
             private CancellationTokenSource targetingCts;
             
@@ -317,6 +378,8 @@ namespace FESGameplayAbilitySystem
             {
                 if (IsActive || IsTargeting) return false;  // Prevent reactivation mid-use
                 
+                Spec.Owner.AbilitySystem.ClaimActive(this);
+                
                 ResetTokens();
                 AwaitAbility(implicitData).Forget();
 
@@ -325,6 +388,7 @@ namespace FESGameplayAbilitySystem
 
             private async UniTaskVoid AwaitAbility(ProxyDataPacket data)
             {
+                bool targetingCancelled = false;
                 try
                 {
                     IsTargeting = true;
@@ -333,30 +397,34 @@ namespace FESGameplayAbilitySystem
                 catch (OperationCanceledException)
                 {
                     // Targeting is cancelled
+                    targetingCancelled = true;
                 }
                 finally
                 {
                     IsTargeting = false;
                 }
 
-                try
+                if (!targetingCancelled)
                 {
-                    IsActive = true;
-                    Spec.Owner.AddTags(Spec.Base.Tags.ActiveGrantedTags, true);
+                    try
+                    {
+                        IsActive = true;
+                        Spec.Owner.AddTags(Spec.Base.Tags.ActiveGrantedTags, true);
 
-                    await Proxy.Activate(cts.Token, data);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ability in execution is interrupted (cancelled)
-                }
-                finally
-                {
-                    IsActive = false;
-                    Spec.Owner.RemoveTags(Spec.Base.Tags.ActiveGrantedTags);
+                        await Proxy.Activate(cts.Token, data);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Ability in execution is interrupted (cancelled)
+                    }
+                    finally
+                    {
+                        IsActive = false;
+                        Spec.Owner.RemoveTags(Spec.Base.Tags.ActiveGrantedTags);
+                    }
                 }
                 
-                CleanAllTokens();
+                ReleaseAndClean();
             }
 
             public void Interrupt()
@@ -368,10 +436,12 @@ namespace FESGameplayAbilitySystem
             /// <summary>
             /// Cancels the active execution of the ability
             /// </summary>
-            public void CleanAllTokens()
+            public void ReleaseAndClean()
             {
                 CleanTargetingToken();
                 CleanActivationToken();
+                
+                Spec.Owner.AbilitySystem.ReleaseClaim(this);
             }
 
             private void CleanTargetingToken()
@@ -394,7 +464,7 @@ namespace FESGameplayAbilitySystem
 
             private void ResetTokens()
             {
-                CleanAllTokens();
+                ReleaseAndClean();
                 
                 cts = new CancellationTokenSource();
                 targetingCts = new CancellationTokenSource();
@@ -405,5 +475,12 @@ namespace FESGameplayAbilitySystem
                 return $"{Spec} ({IsActive})";
             }
         }
+    }
+
+    public enum EAbilityActivationPolicy
+    {
+        NoRestrictions,  // Always able to activate any available ability
+        SingleActive,  // Only able to activate one ability at a time
+        QueueSingleActive  // Only able to activate one ability at a time, but subsequent activations are queued (queue is cleared in the same moment that targeting tasks are cancelled)
     }
 }

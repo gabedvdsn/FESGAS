@@ -78,6 +78,11 @@ namespace FESGameplayAbilitySystem
                     throw new ArgumentOutOfRangeException();
             }
             
+            foreach (var containedEffect in spec.Base.ImpactSpecification.GetContainedEffects(EApplyDuringRemove.OnApply))
+            {
+                ApplyGameplayEffect(spec.Derivation, containedEffect);
+            }
+            
             HandleGameplayEffects();
 
             return true;
@@ -119,14 +124,14 @@ namespace FESGameplayAbilitySystem
             AbstractGameplayEffectShelfContainer container;
             switch (spec.Base.ImpactSpecification.ReApplicationPolicy)
             {
-                case GameplayEffectApplicationPolicy.Refresh:
-                case GameplayEffectApplicationPolicy.Extend:
-                case GameplayEffectApplicationPolicy.Append:
+                case EGameplayEffectApplicationPolicy.Refresh:
+                case EGameplayEffectApplicationPolicy.Extend:
+                case EGameplayEffectApplicationPolicy.Append:
                     container = GameplayEffectShelfContainer.Generate(spec, ValidateEffectOngoingRequirements(spec));
                     break;
-                case GameplayEffectApplicationPolicy.Stack:
-                case GameplayEffectApplicationPolicy.StackRefresh:
-                case GameplayEffectApplicationPolicy.StackExtend:
+                case EGameplayEffectApplicationPolicy.Stack:
+                case EGameplayEffectApplicationPolicy.StackRefresh:
+                case EGameplayEffectApplicationPolicy.StackExtend:
                     container = StackableGameplayShelfContainer.Generate(spec, ValidateEffectOngoingRequirements(spec));
                     break;
                 default:
@@ -162,10 +167,6 @@ namespace FESGameplayAbilitySystem
             sourcedModifiedValue = spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
             AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
-            if (spec.Base.ImpactSpecification.ContainedEffect)
-            {
-                ApplyGameplayEffect(spec.Derivation, spec.Base.ImpactSpecification.ContainedEffect);
-            }
             
             spec.RunEffectApplicationWorkers();
             spec.RunEffectRemovalWorkers();
@@ -186,12 +187,13 @@ namespace FESGameplayAbilitySystem
             sourcedModifiedValue = container.Spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
             AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
-            if (container.Spec.Base.ImpactSpecification.ContainedEffect)
-            {
-                ApplyGameplayEffect(container.Spec.Derivation, container.Spec.Base.ImpactSpecification.ContainedEffect);
-            }
             
             container.RunEffectApplicationWorkers();
+            
+            foreach (var containedEffect in container.Spec.Base.ImpactSpecification.GetContainedEffects(EApplyDuringRemove.OnTick))
+            {
+                ApplyGameplayEffect(container.Spec.Derivation, containedEffect);
+            }
         }
         
         private bool TryHandleExistingDurationalGameplayEffect(GameplayEffectSpec spec)
@@ -200,21 +202,21 @@ namespace FESGameplayAbilitySystem
             
             switch (spec.Base.ImpactSpecification.ReApplicationPolicy)
             {
-                case GameplayEffectApplicationPolicy.Refresh:
+                case EGameplayEffectApplicationPolicy.Refresh:
                     container.Refresh();
                     return true;
-                case GameplayEffectApplicationPolicy.Extend:
+                case EGameplayEffectApplicationPolicy.Extend:
                     container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
                     return true;
-                case GameplayEffectApplicationPolicy.Append:
+                case EGameplayEffectApplicationPolicy.Append:
                     return false;
-                case GameplayEffectApplicationPolicy.Stack:
+                case EGameplayEffectApplicationPolicy.Stack:
                     container.Stack();
                     return true;
-                case GameplayEffectApplicationPolicy.StackRefresh:
+                case EGameplayEffectApplicationPolicy.StackRefresh:
                     container.Refresh();
                     return true;
-                case GameplayEffectApplicationPolicy.StackExtend:
+                case EGameplayEffectApplicationPolicy.StackExtend:
                     container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
                     return true;
                 default:

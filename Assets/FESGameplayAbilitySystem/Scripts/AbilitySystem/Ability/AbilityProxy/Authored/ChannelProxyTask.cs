@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -11,15 +8,18 @@ namespace FESGameplayAbilitySystem
     public class ChannelProxyTask : AbstractAbilityProxyTaskScriptableObject
     {
         public float ChannelDuration;
+        public PlayerLoopTiming Timing = PlayerLoopTiming.Update;
         
-        public override void Prepare(ProxyDataPacket data)
+        public override UniTask Prepare(ProxyDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(true);
+            return base.Prepare(data);
         }
 
-        public override void Clean(ProxyDataPacket data)
+        public override UniTask Clean(ProxyDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(false);
+            return base.Prepare(data);
         }
 
         private void OnValidate()
@@ -29,13 +29,24 @@ namespace FESGameplayAbilitySystem
         public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
         {
             float elapsedDuration = 0f;
-            while (elapsedDuration < ChannelDuration)
+
+            await TaskUtil.DoWhileAsync(
+                body: async () =>
+                {
+                    elapsedDuration += Time.deltaTime;
+                    SliderManager.Instance.SetValue(elapsedDuration / ChannelDuration);
+                    await UniTask.Yield(Timing, token);
+                },
+                condition: () => elapsedDuration < ChannelDuration,
+                token: token
+            );
+            /*while (elapsedDuration < ChannelDuration)
             {
                 elapsedDuration += Time.deltaTime;
                 SliderManager.Instance.SetValue(elapsedDuration / ChannelDuration);
 
                 await UniTask.NextFrame(token);
-            }
+            }*/
         }
     }
 }
