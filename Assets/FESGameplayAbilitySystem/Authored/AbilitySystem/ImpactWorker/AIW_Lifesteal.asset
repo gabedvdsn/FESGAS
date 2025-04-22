@@ -12,17 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 509525d70ef14ecfb3793805b8a168ae, type: 3}
   m_Name: AIW_Lifesteal
   m_EditorClassIdentifier: 
+  ReadOnlyDescription: 'Impact workers are used to interpret and execute with respect
+    to impact data.
+
+    E.g. lifesteal, damage numbers, etc...'
   ImpactedAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-  ImpactType: 4
+  ImpactType: 1
   ImpactTarget: 0
+  ImpactTargetExclusive: 0
   ImpactSign: 0
   AllowSelfImpact: 0
   AnyContextTag: 1
   ImpactAbilityContextTags: []
   WorkAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-  WorkImpactType: 2
+  WorkImpactType: 0
   WorkSignPolicy: 1
-  WorkSameFrame: 0
+  WorkSameFrame: 1
   RelativeAttribute: {fileID: 11400000, guid: 4bc5fbad1abf1da4da52afcb59b209d3, type: 2}
   Operation: 1
+  WithRespectTo: 1
   WorkerImpactWorkable: 0

@@ -45,7 +45,7 @@ namespace FESGameplayAbilitySystem
                 attributeValue.CurrentValue, attributeValue.BaseValue,
                 WorkerImpactWorkable
             );
-            if (WorkSameFrame) impactData.SourcedModifier.Derivation.GetSource().AttributeSystem.ModifyAttributeImmediate(WorkAttribute, sourcedModifier);
+            if (WorkSameFrame) impactData.SourcedModifier.Derivation.GetSource().AttributeSystem.ModifyAttributeImmediate(WorkAttribute, sourcedModifier, WorkerImpactWorkable);
             else impactData.SourcedModifier.Derivation.GetSource().AttributeSystem.ModifyAttribute(WorkAttribute, sourcedModifier);
         }
 

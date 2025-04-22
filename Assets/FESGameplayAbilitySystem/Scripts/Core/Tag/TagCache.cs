@@ -39,20 +39,14 @@ namespace FESGameplayAbilitySystem
 
         private void HandleTagWorkers()
         {
-            bool changesMade = false;
-            
             // Handle deactivating active workers if applicable
             IEnumerable<AbstractTagWorkerScriptableObject> activeWorkers = ActiveWorkers.Keys;
             foreach (AbstractTagWorkerScriptableObject workerData in activeWorkers)
             {
                 if (workerData.ValidateWorkFor(System)) continue;
                 
-                // Debug.Log($"\t[ TAG-WORKER ] Deactivate {workerData}");
-
                 foreach (AbstractTagWorker worker in ActiveWorkers[workerData]) worker.Resolve();
                 ActiveWorkers.Remove(workerData);
-
-                changesMade = true;
             }
 
             // Handle activating new workers if applicable
@@ -60,25 +54,10 @@ namespace FESGameplayAbilitySystem
             {
                 if (!workerData.ValidateWorkFor(System)) continue;
 
-                if (ActiveWorkers.ContainsKey(workerData) && workerData.AllowMultipleInstances)
-                {
-                    ActiveWorkers[workerData].Add(workerData.Generate(System));
-                    // Debug.Log($"\t[ TAG-WORKER ] Activate duplicate {workerData}");
-                    ActiveWorkers[workerData][^1].Initialize();
-                }
-                else
-                {
-                    ActiveWorkers[workerData] = new List<AbstractTagWorker>() { workerData.Generate(System) };
-                    // Debug.Log($"\t[ TAG-WORKER ] Activate {workerData}");
-                    ActiveWorkers[workerData][^1].Initialize();
-                }
-
-                changesMade = true;
+                if (ActiveWorkers.ContainsKey(workerData) && workerData.AllowMultipleInstances) ActiveWorkers[workerData].Add(workerData.Generate(System));
+                else ActiveWorkers[workerData] = new List<AbstractTagWorker>() { workerData.Generate(System) };
+                ActiveWorkers[workerData][^1].Initialize();
             }
-            
-            if (changesMade) HandleTagWorkers();
-            
-            // LogWeights();
         }
 
         public void TickTagWorkers()
@@ -88,34 +67,8 @@ namespace FESGameplayAbilitySystem
                 foreach (AbstractTagWorker worker in ActiveWorkers[workerData]) worker.Tick();
             }
         }
-        
-        public void AddTaggable(ITaggable taggable)
-        {
-            // Handle tag weight resolution
-            foreach (GameplayTagScriptableObject tag in taggable.GetTags())
-            {
-                AddTag(tag);
-            }
 
-            // Debug.Log($"[ TAG-C ] Add {taggable}");
-
-            HandleTagWorkers();
-        }
-
-        public void RemoveTaggable(ITaggable taggable)
-        {
-            // Debug.Log($"[ TAG-C ] Remove {taggable}");
-            
-            // Handle tag weight resolution
-            foreach (GameplayTagScriptableObject tag in taggable.GetTags())
-            {
-                RemoveTag(tag);
-            }
-            
-            HandleTagWorkers();
-        }
-
-        public void AddTag(GameplayTagScriptableObject tag, bool noDuplicates = false)
+        public void AddTag(GameplayTagScriptableObject tag, bool noDuplicates = false, bool handle = true)
         {
             if (TagWeights.ContainsKey(tag))
             {
@@ -123,17 +76,37 @@ namespace FESGameplayAbilitySystem
             }
             else TagWeights[tag] = 1;
             
-            // LogWeights();
+            if (handle) HandleTagWorkers();
         }
 
-        public void RemoveTag(GameplayTagScriptableObject tag)
+        public void AddTags(IEnumerable<GameplayTagScriptableObject> tags, bool noDuplicates = false)
+        {
+            foreach (var tag in tags)
+            {
+                AddTag(tag, noDuplicates, false);
+            }
+            
+            HandleTagWorkers();
+        }
+
+        public void RemoveTag(GameplayTagScriptableObject tag, bool handle = true)
         {
             if (!TagWeights.ContainsKey(tag)) return;
                 
             TagWeights[tag] -= 1;
             if (GetWeight(tag) <= 0) TagWeights.Remove(tag);
             
-            // LogWeights();
+            if (handle) HandleTagWorkers();
+        }
+
+        public void RemoveTags(IEnumerable<GameplayTagScriptableObject> tags)
+        {
+            foreach (var tag in tags)
+            {
+                RemoveTag(tag, false);
+            }
+            
+            HandleTagWorkers();
         }
         
         public int GetWeight(GameplayTagScriptableObject tag) => TagWeights.TryGetValue(tag, out int weight) ? weight : 0;
@@ -177,11 +150,5 @@ namespace FESGameplayAbilitySystem
     {
         Require,
         Avoid
-    }
-
-    public interface ITaggable
-    {
-        public IEnumerable<GameplayTagScriptableObject> GetTags();
-        public bool PersistentTags();
     }
 }

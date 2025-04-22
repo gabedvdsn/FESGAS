@@ -111,7 +111,7 @@ namespace FESGameplayAbilitySystem
             if (!AbilityCache.ContainsKey(index)) return false; 
             
             AbilityCache[index].ReleaseAndClean();
-            System.RemoveTags(AbilityCache[index].Spec.Base.Tags.PassivelyGrantedTags);
+            System.TagCache.RemoveTags(AbilityCache[index].Spec.Base.Tags.PassivelyGrantedTags);
 
             return AbilityCache.Remove(index);
         }
@@ -190,7 +190,7 @@ namespace FESGameplayAbilitySystem
 
         private void InitializeNewAbility(int abilityIndex, AbilityScriptableObject ability)
         {
-            System.AddTags(ability.Tags.PassivelyGrantedTags, true);
+            System.TagCache.AddTags(ability.Tags.PassivelyGrantedTags);
 
             switch (ability.Definition.Type)
             {
@@ -409,7 +409,7 @@ namespace FESGameplayAbilitySystem
                     try
                     {
                         IsActive = true;
-                        Spec.Owner.AddTags(Spec.Base.Tags.ActiveGrantedTags, true);
+                        Spec.Owner.TagCache.AddTags(Spec.Base.Tags.ActiveGrantedTags);
 
                         await Proxy.Activate(cts.Token, data);
                     }
@@ -420,7 +420,7 @@ namespace FESGameplayAbilitySystem
                     finally
                     {
                         IsActive = false;
-                        Spec.Owner.RemoveTags(Spec.Base.Tags.ActiveGrantedTags);
+                        Spec.Owner.TagCache.RemoveTags(Spec.Base.Tags.ActiveGrantedTags);
                     }
                 }
                 

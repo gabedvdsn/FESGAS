@@ -26,7 +26,7 @@ namespace FESGameplayAbilitySystem
             Container = container;
             initialized = true;
             
-            EffectNameText.text = Container.Spec.Base.name;
+            EffectNameText.text = Container.Spec.Base.GetIdentifier().Name;
             DurationText.text = Container.DurationRemaining.ToString("F1");
             
             /*float impactMagnitude = Container.Spec.Base.ImpactSpecification.GetMagnitude(Container.Spec);

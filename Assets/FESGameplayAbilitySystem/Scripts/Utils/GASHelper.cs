@@ -108,41 +108,38 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public static EImpactType FromImpactTypeAny(EImpactTypeAny impactType)
-        {
-            return impactType switch
-            {
-
-                EImpactTypeAny.NotApplicable => EImpactType.NotApplicable,
-                EImpactTypeAny.Physical => EImpactType.Physical,
-                EImpactTypeAny.Magical => EImpactType.Magical,
-                EImpactTypeAny.Pure => EImpactType.Pure,
-                EImpactTypeAny.Any => EImpactType.NotApplicable,
-                _ => throw new ArgumentOutOfRangeException(nameof(impactType), impactType, null)
-            };
-        }
-
         public static bool ValidateImpactTypes(EImpactType impactType, EImpactTypeAny impactTypeAny)
         {
+            if (impactType == EImpactType.NotApplicable && impactTypeAny == EImpactTypeAny.Any) return false;
+            
             return impactTypeAny switch
             {
-                EImpactTypeAny.NotApplicable => impactType == EImpactType.NotApplicable,
+                EImpactTypeAny.Any => true,
                 EImpactTypeAny.Physical => impactType == EImpactType.Physical,
                 EImpactTypeAny.Magical => impactType == EImpactType.Magical,
                 EImpactTypeAny.Pure => impactType == EImpactType.Pure,
-                EImpactTypeAny.Any => true,
                 _ => throw new ArgumentOutOfRangeException(nameof(impactTypeAny), impactTypeAny, null)
             };
         }
 
         public static bool ValidateImpactTargets(EEffectImpactTargetExpanded impactTarget, AttributeValue attributeValue, bool exclusive)
         {
+            if (exclusive && impactTarget is EEffectImpactTargetExpanded.Current or EEffectImpactTargetExpanded.Base)
+            {
+                return impactTarget switch
+                {
+                    EEffectImpactTargetExpanded.Current => attributeValue.CurrentValue != 0 && attributeValue.BaseValue == 0,
+                    EEffectImpactTargetExpanded.Base => attributeValue.CurrentValue == 0 && attributeValue.BaseValue != 0,
+                    _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
+                };
+            }
+            
             return impactTarget switch
             {
                 EEffectImpactTargetExpanded.Current => attributeValue.CurrentValue != 0,
                 EEffectImpactTargetExpanded.Base => attributeValue.BaseValue != 0,
                 EEffectImpactTargetExpanded.CurrentAndBase => attributeValue.CurrentValue != 0 && attributeValue.BaseValue != 0,
-                EEffectImpactTargetExpanded.CurrentOrBase => ValidateImpactTargets(EEffectImpactTargetExpanded.Current, attributeValue, exclusive) || ValidateImpactTargets(EEffectImpactTargetExpanded.Base, attributeValue, exclusive),
+                EEffectImpactTargetExpanded.CurrentOrBase => attributeValue.CurrentValue != 0 || attributeValue.BaseValue != 0,
                 _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
             };
         }

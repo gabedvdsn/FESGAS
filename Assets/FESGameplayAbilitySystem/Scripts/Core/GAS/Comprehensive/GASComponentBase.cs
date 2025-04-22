@@ -54,7 +54,7 @@ namespace FESGameplayAbilitySystem
         
         #region Effect Handling
         
-        public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, GameplayEffectScriptableObject GameplayEffect)
+        public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, IEffectBase GameplayEffect)
         {
             return GameplayEffect.Generate(derivation, this);
         }
@@ -65,20 +65,20 @@ namespace FESGameplayAbilitySystem
             
             if (!ValidateEffectApplicationRequirements(spec)) return false;
             
-            switch (spec.Base.DurationSpecification.DurationPolicy)
+            switch (spec.Base.GetDurationPolicy())
             {
-                case GameplayEffectDurationPolicy.Instant:
+                case EEffectDurationPolicy.Instant:
                     ApplyInstantGameplayEffect(spec);
                     break;
-                case GameplayEffectDurationPolicy.Infinite:
-                case GameplayEffectDurationPolicy.Durational:
+                case EEffectDurationPolicy.Infinite:
+                case EEffectDurationPolicy.Durational:
                     ApplyDurationalGameplayEffect(spec);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
             
-            foreach (var containedEffect in spec.Base.ImpactSpecification.GetContainedEffects(EApplyDuringRemove.OnApply))
+            foreach (var containedEffect in spec.Base.GetContainedEffects(EApplyDuringRemove.OnApply))
             {
                 ApplyGameplayEffect(spec.Derivation, containedEffect);
             }
@@ -94,7 +94,7 @@ namespace FESGameplayAbilitySystem
          /// <param name="derivation"></param>
          /// <param name="GameplayEffect"></param>
          /// <returns></returns>
-        public bool ApplyGameplayEffect(IEffectDerivation derivation, GameplayEffectScriptableObject GameplayEffect)
+        public bool ApplyGameplayEffect(IEffectDerivation derivation, IEffectBase GameplayEffect)
         {
             GameplayEffectSpec spec = GenerateEffectSpec(derivation, GameplayEffect);
             return ApplyGameplayEffect(spec);
@@ -117,21 +117,21 @@ namespace FESGameplayAbilitySystem
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private void ApplyDurationalGameplayEffect(GameplayEffectSpec spec)
         {
-            if (!AttributeSystem.DefinesAttribute(spec.Base.ImpactSpecification.AttributeTarget)) return;
+            if (!AttributeSystem.DefinesAttribute(spec.Base.GetAttributeTarget())) return;
 
             if (TryHandleExistingDurationalGameplayEffect(spec)) return;
 
             AbstractGameplayEffectShelfContainer container;
-            switch (spec.Base.ImpactSpecification.ReApplicationPolicy)
+            switch (spec.Base.GetReApplicationPolicy())
             {
-                case EGameplayEffectApplicationPolicy.Refresh:
-                case EGameplayEffectApplicationPolicy.Extend:
-                case EGameplayEffectApplicationPolicy.Append:
+                case EEffectReApplicationPolicy.Refresh:
+                case EEffectReApplicationPolicy.Extend:
+                case EEffectReApplicationPolicy.Append:
                     container = GameplayEffectShelfContainer.Generate(spec, ValidateEffectOngoingRequirements(spec));
                     break;
-                case EGameplayEffectApplicationPolicy.Stack:
-                case EGameplayEffectApplicationPolicy.StackRefresh:
-                case EGameplayEffectApplicationPolicy.StackExtend:
+                case EEffectReApplicationPolicy.Stack:
+                case EEffectReApplicationPolicy.StackRefresh:
+                case EEffectReApplicationPolicy.StackExtend:
                     container = StackableGameplayShelfContainer.Generate(spec, ValidateEffectOngoingRequirements(spec));
                     break;
                 default:
@@ -142,11 +142,11 @@ namespace FESGameplayAbilitySystem
             TagsDebugManager.Instance.CreateDebugFor(ref container);
             
             EffectShelf.Add(container);
-            TagCache.AddTaggable(container);
+            TagCache.AddTags(container.Spec.Base.GetGrantedTags());
             
             container.RunEffectApplicationWorkers();
                 
-            if (spec.Base.DurationSpecification.TickOnApplication)
+            if (spec.Base.GetTickOnApplication())
             {
                 ApplyInstantGameplayEffect(container);
             }
@@ -158,21 +158,21 @@ namespace FESGameplayAbilitySystem
         /// <param name="spec"></param>
         private void ApplyInstantGameplayEffect(GameplayEffectSpec spec)
         {
-            if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
+            if (!AttributeSystem.TryGetAttributeValue(spec.Base.GetAttributeTarget(), out AttributeValue attributeValue)) return;
 
             // Apply tags
-            TagCache.AddTaggable(spec);
+            TagCache.AddTags(spec.Base.GetGrantedTags());
             
             SourcedModifiedAttributeValue sourcedModifiedValue = spec.SourcedImpact(attributeValue);
             sourcedModifiedValue = spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
-            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
+            AttributeSystem.ModifyAttribute(spec.Base.GetAttributeTarget(), sourcedModifiedValue);
             
             spec.RunEffectApplicationWorkers();
             spec.RunEffectRemovalWorkers();
             
             HandleGameplayEffects();
-            TagCache.RemoveTaggable(spec);
+            TagCache.RemoveTags(spec.Base.GetGrantedTags());
         }
         
         /// <summary>
@@ -181,16 +181,16 @@ namespace FESGameplayAbilitySystem
         /// <param name="container"></param>
         private void ApplyInstantGameplayEffect(AbstractGameplayEffectShelfContainer container)
         {
-            if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
+            if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.GetAttributeTarget(), out AttributeValue attributeValue)) return;
             
             SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.SourcedImpact(container, attributeValue);
             sourcedModifiedValue = container.Spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
-            AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
+            AttributeSystem.ModifyAttribute(container.Spec.Base.GetAttributeTarget(), sourcedModifiedValue);
             
             container.RunEffectApplicationWorkers();
             
-            foreach (var containedEffect in container.Spec.Base.ImpactSpecification.GetContainedEffects(EApplyDuringRemove.OnTick))
+            foreach (var containedEffect in container.Spec.Base.GetContainedEffects(EApplyDuringRemove.OnTick))
             {
                 ApplyGameplayEffect(container.Spec.Derivation, containedEffect);
             }
@@ -200,24 +200,24 @@ namespace FESGameplayAbilitySystem
         {
             if (!TryGetEffectContainer(spec.Base, out AbstractGameplayEffectShelfContainer container)) return false;
             
-            switch (spec.Base.ImpactSpecification.ReApplicationPolicy)
+            switch (spec.Base.GetReApplicationPolicy())
             {
-                case EGameplayEffectApplicationPolicy.Refresh:
+                case EEffectReApplicationPolicy.Refresh:
                     container.Refresh();
                     return true;
-                case EGameplayEffectApplicationPolicy.Extend:
-                    container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
+                case EEffectReApplicationPolicy.Extend:
+                    container.Extend(spec.Base.GetTotalDuration(spec));
                     return true;
-                case EGameplayEffectApplicationPolicy.Append:
+                case EEffectReApplicationPolicy.Append:
                     return false;
-                case EGameplayEffectApplicationPolicy.Stack:
+                case EEffectReApplicationPolicy.Stack:
                     container.Stack();
                     return true;
-                case EGameplayEffectApplicationPolicy.StackRefresh:
+                case EEffectReApplicationPolicy.StackRefresh:
                     container.Refresh();
                     return true;
-                case EGameplayEffectApplicationPolicy.StackExtend:
-                    container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
+                case EEffectReApplicationPolicy.StackExtend:
+                    container.Extend(spec.Base.GetTotalDuration(spec));
                     return true;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -241,24 +241,13 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void AddTags(IEnumerable<GameplayTagScriptableObject> tags, bool noDuplicates = false)
-        {
-            foreach (GameplayTagScriptableObject _tag in tags) TagCache.AddTag(_tag, noDuplicates);
-            HandleGameplayEffects();
-        }
-
-        public void RemoveTags(IEnumerable<GameplayTagScriptableObject> tags)
-        {
-            foreach (GameplayTagScriptableObject _tag in tags) TagCache.RemoveTag(_tag);
-        }
-
         private void TickEffectShelf()
         {
             foreach (AbstractGameplayEffectShelfContainer container in EffectShelf)
             {
-                GameplayEffectDurationPolicy durationPolicy = container.Spec.Base.DurationSpecification.DurationPolicy;
+                EEffectDurationPolicy durationPolicy = container.Spec.Base.GetDurationPolicy();
                 
-                if (durationPolicy == GameplayEffectDurationPolicy.Instant) continue;
+                if (durationPolicy == EEffectDurationPolicy.Instant) continue;
                 
                 float deltaTime = Time.deltaTime;
                 
@@ -271,7 +260,7 @@ namespace FESGameplayAbilitySystem
                     }
                 }
 
-                if (durationPolicy == GameplayEffectDurationPolicy.Infinite) continue;
+                if (durationPolicy == EEffectDurationPolicy.Infinite) continue;
                 
                 container.UpdateTimeRemaining(deltaTime);
 
@@ -289,14 +278,14 @@ namespace FESGameplayAbilitySystem
 
         private void ClearFinishedEffects()
         {
-            //EffectShelf.RemoveAll(container => container.DurationRemaining <= 0 && container.Spec.Base.DurationSpecification.DurationPolicy != GameplayEffectDurationPolicy.Infinite);
+            //EffectShelf.RemoveAll(container => container.DurationRemaining <= 0 && container.Spec.Base.DurationSpecification.DurationPolicy != EEffectDurationPolicy.Infinite);
             foreach (AbstractGameplayEffectShelfContainer container in FinishedEffects)
             {
                 container.OnRemove();
                 EffectShelf.Remove(container);
                 container.RunEffectRemovalWorkers();
                 
-                TagCache.RemoveTaggable(container);
+                TagCache.RemoveTags(container.Spec.Base.GetGrantedTags());
                 
                 if (container.RetainAttributeImpact()) AttributeSystem.RemoveAttributeDerivation(container);
             }
@@ -305,11 +294,6 @@ namespace FESGameplayAbilitySystem
             needsCleaning = false;
             
             HandleGameplayEffects();
-        }
-
-        public List<GameplayTagScriptableObject> GetAppliedTags()
-        {
-            return TagCache.GetAppliedTags();
         }
 
         #endregion
@@ -323,14 +307,16 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectApplicationRequirements(GameplayEffectSpec spec)
         {
-            List<GameplayTagScriptableObject> appliedTags = GetAppliedTags();
+            return spec.Base.ValidateApplicationRequirements(spec);
+            
+            /*List<GameplayTagScriptableObject> appliedTags = GetAppliedTags();
 
             // Validate target (this) application requirements
             return spec.Base.TargetRequirements.CheckApplicationRequirements(appliedTags) &&
                    !spec.Base.TargetRequirements.CheckRemovalRequirements(appliedTags) &&
                    // Validate source application requirements
                    spec.Source.ValidateEffectApplicationRequirements(spec.Base.SourceRequirements) &&
-                   !spec.Source.ValidateEffectRemovalRequirements(spec.Base.SourceRequirements);
+                   !spec.Source.ValidateEffectRemovalRequirements(spec.Base.SourceRequirements);*/
         }
         
         /// <summary>
@@ -340,7 +326,8 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectApplicationRequirements(GameplayEffectRequirements requirements)
         {
-            return requirements.CheckApplicationRequirements(GetAppliedTags());
+            return true;
+            // return requirements.CheckApplicationRequirements(GetAppliedTags());
         }
         
         /// <summary>
@@ -350,10 +337,12 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectOngoingRequirements(GameplayEffectSpec spec)
         {
-            // Validate source application requirements
+            return spec.Base.ValidateOngoingRequirements(spec);
+            
+            /*// Validate source application requirements
             return spec.Base.TargetRequirements.CheckOngoingRequirements(GetAppliedTags()) &&
                    // Validate target application requirements
-                   spec.Source.ValidateEffectOngoingRequirements(spec.Base.SourceRequirements);
+                   spec.Source.ValidateEffectOngoingRequirements(spec.Base.SourceRequirements);*/
         }
         
         /// <summary>
@@ -363,7 +352,8 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectOngoingRequirements(GameplayEffectRequirements requirements)
         {
-            return requirements.CheckOngoingRequirements(GetAppliedTags());
+            return true;
+            // return requirements.CheckOngoingRequirements(GetAppliedTags());
         }
         
         /// <summary>
@@ -373,10 +363,12 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectRemovalRequirements(GameplayEffectSpec spec)
         {
-            // Validate source application requirements
+            return spec.Base.ValidateRemovalRequirements(spec);
+            
+            /*// Validate source application requirements
             return spec.Base.TargetRequirements.CheckRemovalRequirements(GetAppliedTags()) ||
                    // Validate target application requirements
-                   spec.Source.ValidateEffectRemovalRequirements(spec.Base.SourceRequirements);
+                   spec.Source.ValidateEffectRemovalRequirements(spec.Base.SourceRequirements);*/
         }
 
         /// <summary>
@@ -386,15 +378,15 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectRemovalRequirements(GameplayEffectRequirements requirements)
         {
-            
-            return requirements.CheckRemovalRequirements(GetAppliedTags());
+            return true;
+            // return requirements.CheckRemovalRequirements(TagCache.GetAppliedTags());
         }
         
         #endregion
         
         #region Effect Helpers
 
-        public bool TryGetEffectContainer(GameplayEffectScriptableObject effectBase, out AbstractGameplayEffectShelfContainer container)
+        public bool TryGetEffectContainer(IEffectBase effectBase, out AbstractGameplayEffectShelfContainer container)
         {
             foreach (AbstractGameplayEffectShelfContainer _container in EffectShelf.Where(_container => _container.Spec.Base == effectBase))
             {
@@ -412,10 +404,10 @@ namespace FESGameplayAbilitySystem
             float longestRemaining = float.MinValue;
             foreach (AbstractGameplayEffectShelfContainer container in EffectShelf)
             {
-                foreach (GameplayTagScriptableObject specTag in container.Spec.Base.GrantedTags)
+                foreach (GameplayTagScriptableObject specTag in container.Spec.Base.GetGrantedTags())
                 {
                     if (!lookForTags.Contains(specTag)) continue;
-                    if (container.Spec.Base.DurationSpecification.DurationPolicy == GameplayEffectDurationPolicy.Infinite)
+                    if (container.Spec.Base.GetDurationPolicy() == EEffectDurationPolicy.Infinite)
                     {
                         return new GameplayEffectDuration(float.MaxValue, float.MaxValue);
                     }

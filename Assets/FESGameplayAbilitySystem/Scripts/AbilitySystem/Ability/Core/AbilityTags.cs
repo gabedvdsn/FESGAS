@@ -28,12 +28,12 @@ namespace FESGameplayAbilitySystem
 
         public bool ValidateSourceRequirements(GASComponentBase source)
         {
-            return SourceRequirements.Validate(source.GetAppliedTags());
+            return SourceRequirements.Validate(source.TagCache.GetAppliedTags());
         }
 
         public bool ValidateTargetRequirements(GASComponentBase target)
         {
-            return TargetRequirements.Validate(target.GetAppliedTags());
+            return TargetRequirements.Validate(target.TagCache.GetAppliedTags());
         }
     }
 }

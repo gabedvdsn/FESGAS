@@ -7,32 +7,32 @@ using UnityEngine.Serialization;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(menuName = "FESGAS/Effect/Effect Requirements")]
-    public class GameplayEffectRequirements : ScriptableObject
+    public class GameplayEffectRequirements : ScriptableObject, IEffectRequirements
     {
         public AvoidRequireTagGroup ApplicationRequirements;  // These tags are required to apply the effect
         public AvoidRequireTagGroup OngoingRequirements;  // These tags are required to keep the effect ongoing
         public AvoidRequireTagGroup RemovalRequirements;  // These tags are required to remove the effect
 
-        public bool CheckApplicationRequirements(List<GameplayTagScriptableObject> appliedTags)
+        public bool CheckApplicationRequirements(List<GameplayTagScriptableObject> tags)
         {
-            return !ApplicationRequirements.AvoidTags.Any(appliedTags.Contains) && ApplicationRequirements.RequireTags.All(appliedTags.Contains);
+            return !ApplicationRequirements.AvoidTags.Any(tags.Contains) && ApplicationRequirements.RequireTags.All(tags.Contains);
         }
 
-        public bool CheckOngoingRequirements(List<GameplayTagScriptableObject> appliedTags)
+        public bool CheckOngoingRequirements(List<GameplayTagScriptableObject> tags)
         {
-            if (OngoingRequirements.AvoidTags.Length == 0)
+            if (OngoingRequirements.AvoidTags.Count == 0)
             {
-                return OngoingRequirements.RequireTags.Length == 0 || OngoingRequirements.RequireTags.All(appliedTags.Contains);
+                return OngoingRequirements.RequireTags.Count == 0 || OngoingRequirements.RequireTags.All(tags.Contains);
             }
 
-            return !OngoingRequirements.AvoidTags.Any(appliedTags.Contains) &&
-                   (OngoingRequirements.RequireTags.Length == 0 || OngoingRequirements.RequireTags.All(appliedTags.Contains));
+            return !OngoingRequirements.AvoidTags.Any(tags.Contains) &&
+                   (OngoingRequirements.RequireTags.Count == 0 || OngoingRequirements.RequireTags.All(tags.Contains));
         }
         
-        public bool CheckRemovalRequirements(List<GameplayTagScriptableObject> appliedTags)
+        public bool CheckRemovalRequirements(List<GameplayTagScriptableObject> tags)
         {
-            return RemovalRequirements.AvoidTags.Any(appliedTags.Contains) 
-                   || RemovalRequirements.RequireTags.Length != 0 && RemovalRequirements.RequireTags.All(appliedTags.Contains);
+            return RemovalRequirements.AvoidTags.Any(tags.Contains) 
+                   || RemovalRequirements.RequireTags.Count != 0 && RemovalRequirements.RequireTags.All(tags.Contains);
         }
     }
 }

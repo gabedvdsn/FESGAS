@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79796d95664d41e7afbbdd5b5cbab1f5, type: 3}
   m_Name: ACE_ScaleRelativeHealth
   m_EditorClassIdentifier: 
-  Timing: 1
+  Timing: 0
   TargetAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
+  AnyContextTag: 1
+  ApplyAbilityContextTags: []

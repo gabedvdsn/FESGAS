@@ -15,7 +15,7 @@ namespace FESGameplayAbilitySystem
         private StackableGameplayShelfContainer(GameplayEffectSpec spec, bool ongoing) : base(spec, ongoing)
         {
             Packets = new List<StackableContainerPacket>();
-            Spec.Base.DurationSpecification.ApplyDurationSpecifications(this);
+            Spec.Base.ApplyDurationSpecifications(this);
         }
 
         public static AbstractGameplayEffectShelfContainer Generate(GameplayEffectSpec spec, bool ongoing)
@@ -67,7 +67,7 @@ namespace FESGameplayAbilitySystem
         public override void TickPeriodic(float deltaTime, out int executeTicks)
         {
             executeTicks = 0;
-            if (Spec.Base.ImpactSpecification.ReApplicationPolicy is EGameplayEffectApplicationPolicy.StackExtend or EGameplayEffectApplicationPolicy.StackRefresh)
+            if (Spec.Base.GetReApplicationPolicy() is EEffectReApplicationPolicy.StackExtend or EEffectReApplicationPolicy.StackRefresh)
             {
                 Packets[0].TickPeriodic(deltaTime, periodDuration, out bool execute);
                 if (execute) executeTicks += stacks;

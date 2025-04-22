@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
 
         protected GameplayEffectShelfContainer(GameplayEffectSpec spec, bool ongoing) : base(spec, ongoing)
         {
-            Spec.Base.DurationSpecification.ApplyDurationSpecifications(this);
+            Spec.Base.ApplyDurationSpecifications(this);
         }
 
         public static GameplayEffectShelfContainer Generate(GameplayEffectSpec spec, bool ongoing)

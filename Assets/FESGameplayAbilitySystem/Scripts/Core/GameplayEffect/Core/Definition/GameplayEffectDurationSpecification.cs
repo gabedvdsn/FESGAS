@@ -7,7 +7,7 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public class GameplayEffectDurationSpecification
     {
-        public GameplayEffectDurationPolicy DurationPolicy;
+        public EEffectDurationPolicy DurationPolicy;
         [Tooltip("Naturally increases number of Ticks by 1")]
         public bool TickOnApplication;
 
@@ -27,7 +27,7 @@ namespace FESGameplayAbilitySystem
 
         public void ApplyDurationSpecifications(AbstractGameplayEffectShelfContainer container)
         {
-            if (DurationPolicy == GameplayEffectDurationPolicy.Instant) return;
+            if (DurationPolicy == EEffectDurationPolicy.Instant) return;
             
             // Apply duration
             container.SetTotalDuration(GetTotalDuration(container.Spec));
@@ -87,7 +87,7 @@ namespace FESGameplayAbilitySystem
     
     
     
-    public enum GameplayEffectDurationPolicy
+    public enum EEffectDurationPolicy
     {
         Instant,
         Infinite,

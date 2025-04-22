@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace FESGameplayAbilitySystem
 {
-    public class GameplayEffectSpec : IAttributeImpactDerivation, ITaggable
+    public class GameplayEffectSpec : IAttributeImpactDerivation
     {
-        public GameplayEffectScriptableObject Base;
+        public IEffectBase Base;
         public float Level;
         public float RelativeLevel;
 
@@ -15,7 +15,7 @@ namespace FESGameplayAbilitySystem
 
         public Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?> SourceCapturedAttributes;
 
-        public GameplayEffectSpec(GameplayEffectScriptableObject GameplayEffect, IEffectDerivation derivation, GASComponentBase target)
+        public GameplayEffectSpec(IEffectBase GameplayEffect, IEffectDerivation derivation, GASComponentBase target)
         {
             Base = GameplayEffect;
             Derivation = derivation;
@@ -28,6 +28,8 @@ namespace FESGameplayAbilitySystem
 
             SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
         }
+        
+        
         
         public SourcedModifiedAttributeValue SourcedImpact(AttributeValue attributeValue)
         {
@@ -52,14 +54,14 @@ namespace FESGameplayAbilitySystem
         
         private AttributeValue AttributeImpact(AttributeValue attributeValue)
         {
-            float magnitude = Base.ImpactSpecification.GetMagnitude(this);
+            float magnitude = Base.GetMagnitude(this);
             float currValue = attributeValue.CurrentValue;
             float baseValue = attributeValue.BaseValue;
             
-            switch (Base.ImpactSpecification.ImpactOperation)
+            switch (Base.GetImpactOperation())
             {
                 case ECalculationOperation.Add:
-                    switch (Base.ImpactSpecification.ValueTarget)
+                    switch (Base.GetTargetImpact())
                     {
                         case EEffectImpactTarget.Current:
                             currValue += magnitude;
@@ -76,7 +78,7 @@ namespace FESGameplayAbilitySystem
                     }
                     break;
                 case ECalculationOperation.Multiply:
-                    switch (Base.ImpactSpecification.ValueTarget)
+                    switch (Base.GetTargetImpact())
                     {
                         case EEffectImpactTarget.Current:
                             currValue *= magnitude;
@@ -93,7 +95,7 @@ namespace FESGameplayAbilitySystem
                     }
                     break;
                 case ECalculationOperation.Override:
-                    switch (Base.ImpactSpecification.ValueTarget)
+                    switch (Base.GetTargetImpact())
                     {
                         case EEffectImpactTarget.Current:
                             currValue = magnitude;
@@ -121,7 +123,7 @@ namespace FESGameplayAbilitySystem
 
         public AttributeScriptableObject GetAttribute()
         {
-            return Base.ImpactSpecification.AttributeTarget;
+            return Base.GetAttributeTarget();
         }
         public IEffectDerivation GetEffectDerivation()
         {
@@ -137,7 +139,7 @@ namespace FESGameplayAbilitySystem
         }
         public EImpactType GetImpactType()
         {
-            return Base.ImpactSpecification.ImpactType;
+            return Base.GetImpactType();
         }
         public bool RetainAttributeImpact()
         {
@@ -163,23 +165,15 @@ namespace FESGameplayAbilitySystem
         }
         public void RunEffectApplicationWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Base.Workers) worker.OnEffectApplication(this);
+            foreach (AbstractEffectWorkerScriptableObject worker in Base.GetEffectWorkers()) worker.OnEffectApplication(this);
         }
         public void RunEffectRemovalWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Base.Workers) worker.OnEffectRemoval(this);
+            foreach (AbstractEffectWorkerScriptableObject worker in Base.GetEffectWorkers()) worker.OnEffectRemoval(this);
         }
         public void RunEffectWorkers(AbilityImpactData impactData)
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Base.Workers) worker.OnEffectImpact(impactData);
-        }
-        public IEnumerable<GameplayTagScriptableObject> GetTags()
-        {
-            return Base.GrantedTags;
-        }
-        public bool PersistentTags()
-        {
-            return false;
+            foreach (AbstractEffectWorkerScriptableObject worker in Base.GetEffectWorkers()) worker.OnEffectImpact(impactData);
         }
 
         public override string ToString()

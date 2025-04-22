@@ -22,7 +22,7 @@ namespace FESGameplayAbilitySystem
             initialized = true;
 
             TagText.text = _tag.Name;
-            SourceText.text = container.Spec.Base.Identifier.Name;
+            SourceText.text = container.Spec.Base.GetIdentifier().Name;
 
             Canvas.alpha = 1f;
         }

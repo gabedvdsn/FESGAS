@@ -528,6 +528,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e550daa92bf44990a7067042bece1c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ActivationPolicy: 0
   MaxAbilities: 5
   StartingAbilities:
   - {fileID: 11400000, guid: 2f4f962a331e64346ad51ca233b4c6d6, type: 2}
@@ -2603,6 +2604,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 934672006}
   m_CullTransparentMesh: 1
+--- !u!1 &947189366
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 947189367}
+  - component: {fileID: 947189368}
+  m_Layer: 0
+  m_Name: AttributeLibrary
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &947189367
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 947189366}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &947189368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 947189366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f00a3c6e98030947b5accaf3d31a4df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AttributeSets:
+  - {fileID: 11400000, guid: c52c168a807980d42b5222f7b24722ac, type: 2}
+  Attributes: []
 --- !u!1 &956190132
 GameObject:
   m_ObjectHideFlags: 0
@@ -3983,6 +4031,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e550daa92bf44990a7067042bece1c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ActivationPolicy: 0
   MaxAbilities: 5
   StartingAbilities: []
   ApplicationWorkers: []
@@ -4992,3 +5041,4 @@ SceneRoots:
   - {fileID: 318116905}
   - {fileID: 1417627984}
   - {fileID: 165822436}
+  - {fileID: 947189367}

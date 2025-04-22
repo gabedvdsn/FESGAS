@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class AbstractGameplayEffectShelfContainer : IAttributeImpactDerivation, ITaggable
+    public abstract class AbstractGameplayEffectShelfContainer : IAttributeImpactDerivation
     {
         public GameplayEffectSpec Spec;
         public bool Ongoing;
@@ -57,15 +57,15 @@ namespace FESGameplayAbilitySystem
         public virtual void OnRemove()
         {
             Valid = false;
-            if (Spec.Base.ImpactSpecification.ReverseImpactOnRemoval)
+            if (Spec.Base.GetReverseImpactOnRemoval())
             {
                 AttributeValue negatedImpact = TrackedImpact.Negate();
                 Spec.Target.AttributeSystem.ModifyAttribute(
-                    Spec.Base.ImpactSpecification.AttributeTarget, 
+                    Spec.Base.GetAttributeTarget(), 
                     new SourcedModifiedAttributeValue(Spec, this, negatedImpact.CurrentValue, negatedImpact.BaseValue, false));
             }
             
-            foreach (var containedEffect in Spec.Base.ImpactSpecification.GetContainedEffects(EApplyDuringRemove.OnRemove))
+            foreach (var containedEffect in Spec.Base.GetContainedEffects(EApplyDuringRemove.OnRemove))
             {
                 Spec.GetSource().ApplyGameplayEffect(Spec.Derivation, containedEffect);
             }
@@ -73,7 +73,7 @@ namespace FESGameplayAbilitySystem
 
         public AttributeScriptableObject GetAttribute()
         {
-            return Spec.Base.ImpactSpecification.AttributeTarget;
+            return Spec.Base.GetAttributeTarget();
         }
         public IEffectDerivation GetEffectDerivation()
         {
@@ -118,11 +118,11 @@ namespace FESGameplayAbilitySystem
         }
         public void RunEffectApplicationWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Spec.Base.Workers) worker.OnEffectApplication(this);
+            foreach (AbstractEffectWorkerScriptableObject worker in Spec.Base.GetEffectWorkers()) worker.OnEffectApplication(this);
         }
         public void RunEffectRemovalWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Spec.Base.Workers) worker.OnEffectRemoval(this);
+            foreach (AbstractEffectWorkerScriptableObject worker in Spec.Base.GetEffectWorkers()) worker.OnEffectRemoval(this);
         }
         public void RunEffectWorkers(AbilityImpactData impactData)
         {
@@ -132,14 +132,6 @@ namespace FESGameplayAbilitySystem
         public override string ToString()
         {
             return Spec.Base.ToString();
-        }
-        public IEnumerable<GameplayTagScriptableObject> GetTags()
-        {
-            return Spec.GetTags();
-        }
-        public bool PersistentTags()
-        {
-            return true;
         }
 
     }

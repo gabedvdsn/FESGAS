@@ -12,14 +12,14 @@ namespace FESGameplayAbilitySystem
         [Header("Attribute Impact")]
         
         public AttributeScriptableObject AttributeTarget;
-        public EEffectImpactTarget ValueTarget;
+        public EEffectImpactTarget TargetImpact;
         public ECalculationOperation ImpactOperation;
 
         [Space] 
         
         public EImpactType ImpactType;
         public bool ReverseImpactOnRemoval;
-        public EGameplayEffectApplicationPolicy ReApplicationPolicy;
+        public EEffectReApplicationPolicy ReApplicationPolicy;
         
         [Space]
         
@@ -27,7 +27,9 @@ namespace FESGameplayAbilitySystem
         public AbstractMagnitudeModifierScriptableObject MagnitudeCalculation;
         public EMagnitudeOperation MagnitudeCalculationOperation;
 
-        [Space] [Header("Contained Effects")] 
+        [Space] 
+        
+        [Header("Contained Effects")] 
         
         public List<ContainedEffectPacket> Packets;
         
@@ -55,13 +57,13 @@ namespace FESGameplayAbilitySystem
         {
             return Packets.Where(packet => packet.Policy == policy).Select(p => p.ContainedEffect).ToList();
         }
-
-        [Serializable]
-        public struct ContainedEffectPacket
-        {
-            public EApplyDuringRemove Policy;
-            public GameplayEffectScriptableObject ContainedEffect;
-        }
+    }
+    
+    [Serializable]
+    public struct ContainedEffectPacket
+    {
+        public EApplyDuringRemove Policy;
+        public GameplayEffectScriptableObject ContainedEffect;
     }
 
     public enum EMagnitudeOperation
