@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
         
         private GASComponentBase System;
         private Dictionary<int, AbilitySpecContainer> AbilityCache = new();
-        private List<AbilityImpactData> FrameImpactData = new();
+        private ImpactWorkerCache ImpactWorkerCache;
 
         public bool Executing => abilityActive && activeContainer is not null;
         private bool abilityActive;
@@ -29,7 +29,7 @@ namespace FESGameplayAbilitySystem
         {
             System = system;
             AbilityCache = new Dictionary<int, AbilitySpecContainer>();
-            FrameImpactData = new List<AbilityImpactData>();
+            if (ImpactWorkerCache is null) ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
             
             foreach (AbilityScriptableObject ability in startingAbilities)
             {
@@ -44,6 +44,8 @@ namespace FESGameplayAbilitySystem
             applicationWorkers = systemData.ApplicationWorkers;
             impactWorkers = systemData.ImpactWorkers;
             startingAbilities = systemData.StartingAbilities;
+            
+            ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
         }
         
         public void SetAbilitiesLevel(int level)
@@ -312,35 +314,10 @@ namespace FESGameplayAbilitySystem
         #endregion
         
         #region Impact Workers
-        
-        public bool CommunicateAbilityImpact(AbilityImpactData impactData)
+
+        public void ProvideFrameImpact(List<AbilityImpactData> impactData)
         {
-            Debug.Log($"Communicated impact: {impactData}");
-            
-            // Allow the impact derivation to track its impact
-            impactData.SourcedModifier.BaseDerivation.TrackImpact(impactData);
-            impactData.SourcedModifier.BaseDerivation.RunEffectWorkers(impactData);
-            
-            FrameImpactData.Add(impactData);
-            return true;
-        }
-
-        public void ActivateAbilityImpactWorkers()
-        {
-            if (FrameImpactData.Count == 0) return;
-
-            foreach (AbilityImpactData impactData in FrameImpactData)
-            {
-                // Skip non-workable impact (avoids cycles)
-                if (!impactData.SourcedModifier.Workable) continue;
-                foreach (AbstractImpactWorkerScriptableObject worker in impactWorkers)
-                {
-                    if (!worker.ValidateWorkFor(impactData)) continue;
-                    worker.InterpretImpact(impactData);
-                }
-            }
-
-            FrameImpactData.Clear();
+            ImpactWorkerCache.RunImpactData(impactData);
         }
         
         #endregion

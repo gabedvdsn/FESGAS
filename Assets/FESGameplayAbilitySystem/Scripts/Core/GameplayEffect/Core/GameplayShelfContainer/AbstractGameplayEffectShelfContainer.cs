@@ -99,8 +99,6 @@ namespace FESGameplayAbilitySystem
         {
             TrackedImpact = TrackedImpact.Combine(impactData.RealImpact);
             LastTrackedImpact = impactData.RealImpact;
-            
-            RunEffectWorkers(impactData);
         }
         public bool TryGetTrackedImpact(out AttributeValue impactValue)
         {

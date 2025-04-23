@@ -38,20 +38,17 @@ namespace FESGameplayAbilitySystem
         
         public override void InterpretImpact(AbilityImpactData impactData)
         {
-            if (impactData.Attribute != ImpactedAttribute) return;  // If the context is not found
-            if (!AllowSelfImpact && impactData.SourcedModifier.Derivation.GetSource() == impactData.Target) return;  // If self-inflicted impact is not allowed
-            if (!GASHelper.ValidateImpactTypes(impactData.SourcedModifier.Derivation.GetImpactType(), ImpactType)) return;  // If the impact type is not applicable
-            if (!AnyContextTag)
-            {
-                var cTags = impactData.SourcedModifier.Derivation.GetContextTags();
-                if (ImpactAbilityContextTags.Any(cTag => !cTags.Contains(cTag))) return;
-            }
-            
             PerformImpactResponse(impactData);
         }
 
         public override bool ValidateWorkFor(AbilityImpactData impactData)
         {
+            if (!AnyContextTag)
+            {
+                var cTags = impactData.SourcedModifier.Derivation.GetContextTags();
+                if (ImpactAbilityContextTags.Any(cTag => !cTags.Contains(cTag))) return false;
+            }
+            if (!AllowSelfImpact && impactData.SourcedModifier.Derivation.GetSource() == impactData.Target) return false;  // If self-inflicted impact is not allowed
             return impactData.Attribute == ImpactedAttribute
                    && GASHelper.ValidateImpactTypes(impactData.SourcedModifier.Derivation.GetImpactType(), ImpactType)
                    && GASHelper.ValidateImpactTargets(ImpactTarget, impactData.RealImpact, ImpactTargetExclusive)
@@ -60,6 +57,11 @@ namespace FESGameplayAbilitySystem
         }
 
         protected abstract void PerformImpactResponse(AbilityImpactData impactData);
+
+        public override AttributeScriptableObject GetTargetedAttribute()
+        {
+            return ImpactedAttribute;
+        }
     }
     
 }

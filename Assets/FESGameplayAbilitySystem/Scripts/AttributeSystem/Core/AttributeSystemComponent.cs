@@ -141,7 +141,7 @@ namespace FESGameplayAbilitySystem
             
             ChangeEventHandler.RunPostChangeEvents(System, ref AttributeCache, ModifiedAttributeCache);
             
-            HashSet<GASComponentBase> communicateComps = new HashSet<GASComponentBase>();
+            Dictionary<GASComponentBase, List<AbilityImpactData>> frameImpactData = new Dictionary<GASComponentBase, List<AbilityImpactData>>();
             
             // Communicate the impact of the modification back to the source
             foreach (AttributeScriptableObject attribute in HoldAttributeCache.Keys)
@@ -149,12 +149,17 @@ namespace FESGameplayAbilitySystem
                 if (!ModifiedAttributeCache.TryGetSourcedModifiers(attribute, out var sourcedModifiers)) continue;
                 foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
                 {
-                    sourcedModifier.BaseDerivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
+                    var impactData = AbilityImpactData.Generate(
+                        System, attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
+                    );
+                    frameImpactData.SafeAdd(sourcedModifier.BaseDerivation.GetSource(), impactData);
+                    /*sourcedModifier.BaseDerivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
                         AbilityImpactData.Generate(
                             System, attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
                         )
                     );
-                    communicateComps.Add(sourcedModifier.BaseDerivation.GetSource());
+                    if (!sourcedModifier.Workable) continue;
+                    communicateComps.Add(sourcedModifier.BaseDerivation.GetSource());*/
                 }
                 
                 AttributeCache[attribute].Clean();
@@ -165,7 +170,8 @@ namespace FESGameplayAbilitySystem
             ModifiedAttributeCache.Clear();
 
             if (!allowWorkers) return;
-            foreach (GASComponentBase comp in communicateComps) comp.AbilitySystem.ActivateAbilityImpactWorkers();
+            foreach (GASComponentBase comp in frameImpactData.Keys) comp.AbilitySystem.ProvideFrameImpact(frameImpactData[comp]);
+            // foreach (GASComponentBase comp in communicateComps) comp.AbilitySystem.ActivateAbilityImpactWorkers();
         }
 
         public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)

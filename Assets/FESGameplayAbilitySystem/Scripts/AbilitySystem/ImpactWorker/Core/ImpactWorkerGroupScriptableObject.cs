@@ -22,5 +22,18 @@ namespace FESGameplayAbilitySystem
         {
             return Workers.Any(worker => worker.ValidateWorkFor(impactData));
         }
+        public override AttributeScriptableObject GetTargetedAttribute()
+        {
+            return null;
+        }
+        public override void SubscribeToCache(ImpactWorkerCache cache)
+        {
+            foreach (var worker in Workers) worker.SubscribeToCache(cache);
+        }
+
+        public override void UnsubscribeFromCache(ImpactWorkerCache cache)
+        {
+            foreach (var worker in Workers) worker.UnsubscribeFromCache(cache);
+        }
     }
 }

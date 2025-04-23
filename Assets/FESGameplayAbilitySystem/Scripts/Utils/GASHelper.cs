@@ -163,6 +163,12 @@ namespace FESGameplayAbilitySystem
         
         public static T RandomChoice<T>(this List<T> list) => list is null ? default : list[Mathf.FloorToInt(Random.value * list.Count)];
 
+        public static void SafeAdd<K, V>(this Dictionary<K, V> dict, K key, V value, bool overrideValue)
+        {
+            if (!dict.ContainsKey(key)) dict[key] = value;
+            else if (overrideValue) dict[key] = value;
+        }
+        
         public static void SafeAdd<K, V>(this Dictionary<K, List<V>> dict, K key, V value)
         {
             if (dict.ContainsKey(key)) dict[key].Add(value);
@@ -173,6 +179,11 @@ namespace FESGameplayAbilitySystem
         {
             if (dict.ContainsKey(key)) dict[key].AddRange(values);
             else dict[key] = values;
+        }
+
+        public static bool SafeRemove<K, V>(this Dictionary<K, V> dict, K key)
+        {
+            return dict.Remove(key);
         }
 
         public static void Shuffle<T>(this List<T> list)

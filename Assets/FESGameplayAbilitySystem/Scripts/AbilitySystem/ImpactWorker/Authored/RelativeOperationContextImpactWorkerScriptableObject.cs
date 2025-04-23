@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         public ESourceTarget WithRespectTo;
         
         [Header("Danger! [ KEEP FALSE ]")]
-        [Tooltip("Only set TRUE if you know what you are doing. Keeping this FALSE will ensure cycles are broken without recursing once.\nExample: Receiving health via magic triggers worker to provide health via magic, resulting in endless cycle.")]
+        [Tooltip("Only set TRUE if you know what you are doing. Keeping this FALSE will ensure cycles are broken without recursing once.\nFor Example:\nA) Player receives health via magic\nB) Worker provides Player health via magic\nC) Cycle repeats infinitely")]
         public bool WorkerImpactWorkable = false;
         
         protected override void PerformImpactResponse(AbilityImpactData impactData)
