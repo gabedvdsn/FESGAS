@@ -19,10 +19,6 @@ namespace FESGameplayAbilitySystem
         
         public int MaxAbilities = 99;
         public List<AbilityScriptableObject> StartingAbilities;
-
-        [Header("Application Workers")] 
-        
-        public List<AbstractApplicationWorkerScriptableObject> ApplicationWorkers;
         
         [Header("Impact Workers")]
         
@@ -32,7 +28,6 @@ namespace FESGameplayAbilitySystem
         {
             activationPolicy = ActivationPolicy;
             maxAbilities = MaxAbilities;
-            applicationWorkers = ApplicationWorkers;
             impactWorkers = ImpactWorkers;
             startingAbilities = StartingAbilities;
             

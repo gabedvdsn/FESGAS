@@ -6,10 +6,6 @@ namespace FESGameplayAbilitySystem
     [CreateAssetMenu(menuName = "FESGAS/GAS System Data", fileName = "GSD_")]
     public class GASSystemData : ScriptableObject
     {
-        [Header("GAS Components")]
-        
-        public List<AbstractTagWorkerScriptableObject> TagWorkers;
-
         [Header("Ability Components")] 
         
         public EAbilityActivationPolicy ActivationPolicy;
@@ -18,13 +14,16 @@ namespace FESGameplayAbilitySystem
         
         [Space(5)]
         
-        public List<AbstractApplicationWorkerScriptableObject> ApplicationWorkers;
         public List<AbstractImpactWorkerScriptableObject> ImpactWorkers;
         
         [Header("Attribute Components")]
         
         public AttributeSetScriptableObject AttributeSet;
         public List<AbstractAttributeChangeEventScriptableObject> AttributeChangeEvents;
+        
+        [Header("Tag Workers")]
+        
+        public List<AbstractTagWorkerScriptableObject> TagWorkers;
 
     }
 }

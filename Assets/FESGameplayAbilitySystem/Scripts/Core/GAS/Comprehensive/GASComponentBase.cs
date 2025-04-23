@@ -164,7 +164,6 @@ namespace FESGameplayAbilitySystem
             TagCache.AddTags(spec.Base.GetGrantedTags());
             
             SourcedModifiedAttributeValue sourcedModifiedValue = spec.SourcedImpact(attributeValue);
-            sourcedModifiedValue = spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
             AttributeSystem.ModifyAttribute(spec.Base.GetAttributeTarget(), sourcedModifiedValue);
             
@@ -184,7 +183,6 @@ namespace FESGameplayAbilitySystem
             if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.GetAttributeTarget(), out AttributeValue attributeValue)) return;
             
             SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.SourcedImpact(container, attributeValue);
-            sourcedModifiedValue = container.Spec.Source.AbilitySystem.ApplyApplicationModifications(this, sourcedModifiedValue);
             
             AttributeSystem.ModifyAttribute(container.Spec.Base.GetAttributeTarget(), sourcedModifiedValue);
             

@@ -12,7 +12,6 @@ namespace FESGameplayAbilitySystem
     {
         protected EAbilityActivationPolicy activationPolicy;
         protected int maxAbilities;
-        protected List<AbstractApplicationWorkerScriptableObject> applicationWorkers;
         protected List<AbstractImpactWorkerScriptableObject> impactWorkers;
         protected List<AbilityScriptableObject> startingAbilities;
         
@@ -41,7 +40,6 @@ namespace FESGameplayAbilitySystem
         {
             activationPolicy = systemData.ActivationPolicy;
             maxAbilities = systemData.MaxAbilities;
-            applicationWorkers = systemData.ApplicationWorkers;
             impactWorkers = systemData.ImpactWorkers;
             startingAbilities = systemData.StartingAbilities;
             
@@ -293,22 +291,6 @@ namespace FESGameplayAbilitySystem
         {
             if (activeContainer == container) activeContainer = null;
             if (activationPolicy == EAbilityActivationPolicy.QueueSingleActive && activationQueue.Count > 0) TryActivateAbility(activationQueue.Dequeue());
-        }
-        
-        #endregion
-        
-        #region Application Workers
-
-        public SourcedModifiedAttributeValue ApplyApplicationModifications(GASComponentBase target, SourcedModifiedAttributeValue smav)
-        {
-            SourcedModifiedAttributeValue newValue = smav;
-            foreach (AbstractApplicationWorkerScriptableObject worker in applicationWorkers)
-            {
-                if (!worker.ValidateWorkFor(target, newValue)) continue;
-                newValue = worker.ModifyImpact(target, newValue);
-            }
-
-            return newValue;
         }
         
         #endregion
