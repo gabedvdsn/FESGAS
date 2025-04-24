@@ -16,6 +16,10 @@ namespace FESGameplayAbilitySystem
         {
             // PerformThresholdWork(derivation);
         }
+        public override void OnEffectTick(IAttributeImpactDerivation derivation)
+        {
+            // PerformThresholdWork(derivation);
+        }
         public override void OnEffectRemoval(IAttributeImpactDerivation derivation)
         {
             // PerformThresholdWork(derivation);

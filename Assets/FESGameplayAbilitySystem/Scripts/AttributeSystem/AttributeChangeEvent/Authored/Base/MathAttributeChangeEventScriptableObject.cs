@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -8,33 +10,20 @@ namespace FESGameplayAbilitySystem
     /// <summary>
     /// Multiplies the SMAVs under the primary attribute by the current value
     /// </summary>
-    [CreateAssetMenu(menuName = "FESGAS/Attribute/Change Event/Multiply Relative", fileName = "ACE_MultiplyRelative_")]
+    [CreateAssetMenu(menuName = "FESGAS/Attribute/Change Event/Basic Math", fileName = "ACE_LogicalMath_")]
     public class MathAttributeChangeEventScriptableObject : AbstractRelativeAttributeChangeEventScriptableObject
     {
         [Header("Math Event")]
         
-        public ESignPolicy SignPolicy;
         public ECalculationOperation Operation = ECalculationOperation.Multiply;
-        public bool AllowSelfModification;
+        public EEffectImpactTarget OperationTarget;
+        public EMathApplicationPolicy OperationPolicy;
         
-        public override void AttributeChangeEvent(GASComponentBase system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
-            SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+            ChangeValue change)
         {
-            if (!modifiedAttributeCache.AttributeIsActive(TargetAttribute)) return;
-            switch (Operation)
-            {
-                case ECalculationOperation.Add:
-                    modifiedAttributeCache.Add(TargetAttribute, SignPolicy, attributeCache[RelativeTo].Value * RelativeMultiplier, AllowSelfModification, ApplyAbilityContextTags, AnyContextTag);
-                    break;
-                case ECalculationOperation.Multiply:
-                    modifiedAttributeCache.Multiply(TargetAttribute, SignPolicy, attributeCache[RelativeTo].Value * RelativeMultiplier, AllowSelfModification, ApplyAbilityContextTags, AnyContextTag);
-                    break;
-                case ECalculationOperation.Override:
-                    modifiedAttributeCache.Override(TargetAttribute, SignPolicy, attributeCache[RelativeTo].Value * RelativeMultiplier, AllowSelfModification, ApplyAbilityContextTags, AnyContextTag);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var result = GASHelper.AttributeMathEvent(change.Value.ToAttributeValue(), attributeCache[RelativeTo].Value * RelativeMultiplier, Operation, OperationTarget, OperationPolicy);
+            change.Override(result);
         }
 
         public override int GetPriority()
@@ -56,5 +45,21 @@ namespace FESGameplayAbilitySystem
         Positive,
         ZeroBiased,
         ZeroNeutral
+    }
+
+    public enum ESignPolicyExtended
+    {
+        Negative,
+        Positive,
+        ZeroBiased,
+        ZeroNeutral,
+        Any
+    }
+
+    public enum EMathApplicationPolicy
+    {
+        AsIs,
+        OnePlus,
+        OneMinus
     }
 }

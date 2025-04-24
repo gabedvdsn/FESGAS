@@ -10,9 +10,10 @@ namespace FESGameplayAbilitySystem
         public AttributeScriptableObject RelativeTo;
         public float RelativeMultiplier = 1f;
 
-        public override bool ValidateWorkFor(GASComponentBase system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+            ChangeValue change)
         {
-            return attributeCache.ContainsKey(RelativeTo) && base.ValidateWorkFor(system, ref attributeCache, modifiedAttributeCache);
+            return attributeCache.ContainsKey(RelativeTo) && base.ValidateWorkFor(system, attributeCache, change);
         }
     }
 }

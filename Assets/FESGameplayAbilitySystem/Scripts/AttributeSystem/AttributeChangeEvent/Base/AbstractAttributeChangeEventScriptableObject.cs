@@ -6,15 +6,15 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractAttributeChangeEventScriptableObject : ScriptableObject
     {
-        public abstract void AttributeChangeEvent(GASComponentBase system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
-            SourcedModifiedAttributeCache modifiedAttributeCache);
+        public abstract void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+            ChangeValue change);
 
-        public abstract bool ValidateWorkFor(GASComponentBase system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
-            SourcedModifiedAttributeCache modifiedAttributeCache);
+        public abstract bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+            ChangeValue change);
 
-        public abstract bool RegisterWithHandler(AttributeChangeEventHandler handler);
+        public abstract bool RegisterWithHandler(AttributeChangeMomentHandler preChange, AttributeChangeMomentHandler postChange);
 
-        public abstract bool DeRegisterFromHandler(AttributeChangeEventHandler handler);
+        public abstract bool DeRegisterFromHandler(AttributeChangeMomentHandler preChange, AttributeChangeMomentHandler postChange);
 
         public virtual int GetPriority() => 0;
 

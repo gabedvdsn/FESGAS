@@ -26,6 +26,18 @@ namespace FESGameplayAbilitySystem
             };
         }
         
+        public static ESignPolicyExtended SignPolicyExtended(params float[] magnitudes)
+        {
+            float sum = magnitudes.Sum();
+            return sum switch
+            {
+                > 0 => ESignPolicyExtended.Positive,
+                < 0 => ESignPolicyExtended.Negative,
+                0 when magnitudes.Any(mag => mag != 0) => ESignPolicyExtended.ZeroBiased,
+                _ => ESignPolicyExtended.ZeroNeutral
+            };
+        }
+        
         public static int SignInt(ESignPolicy signPolicy)
         {
             return signPolicy switch
@@ -108,17 +120,21 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public static bool ValidateImpactTypes(EImpactType impactType, EImpactTypeAny impactTypeAny)
+        #endregion
+        
+        #region Validation Utils
+        
+        public static bool ValidateImpactTypes(EImpactType impactType, EImpactTypeAny validation)
         {
-            if (impactType == EImpactType.NotApplicable && impactTypeAny == EImpactTypeAny.Any) return false;
+            if (impactType == EImpactType.NotApplicable) return false;
             
-            return impactTypeAny switch
+            return validation switch
             {
                 EImpactTypeAny.Any => true,
                 EImpactTypeAny.Physical => impactType == EImpactType.Physical,
                 EImpactTypeAny.Magical => impactType == EImpactType.Magical,
                 EImpactTypeAny.Pure => impactType == EImpactType.Pure,
-                _ => throw new ArgumentOutOfRangeException(nameof(impactTypeAny), impactTypeAny, null)
+                _ => throw new ArgumentOutOfRangeException(nameof(validation), validation, null)
             };
         }
 
@@ -148,7 +164,6 @@ namespace FESGameplayAbilitySystem
         {
             return impactTarget switch
             {
-
                 EEffectImpactTargetExpanded.Current => SignPolicy(attributeValue.CurrentValue) == signPolicy,
                 EEffectImpactTargetExpanded.Base => SignPolicy(attributeValue.BaseValue) == signPolicy,
                 EEffectImpactTargetExpanded.CurrentAndBase => SignPolicy(attributeValue.CurrentValue) == signPolicy && SignPolicy(attributeValue.BaseValue) == signPolicy,
@@ -157,9 +172,103 @@ namespace FESGameplayAbilitySystem
             };
         }
         
+        public static bool ValidateSignPolicy(ESignPolicy signPolicy, EEffectImpactTarget impactTarget, AttributeValue attributeValue)
+        {
+            return impactTarget switch
+            {
+
+                EEffectImpactTarget.Current => SignPolicy(attributeValue.CurrentValue) == signPolicy,
+                EEffectImpactTarget.Base => SignPolicy(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTarget.CurrentAndBase => SignPolicy(attributeValue.CurrentValue) == signPolicy && SignPolicy(attributeValue.BaseValue) == signPolicy,
+                _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
+            };
+        }
+        
+        public static bool ValidateSignPolicy(ESignPolicyExtended signPolicy, EEffectImpactTarget impactTarget, AttributeValue attributeValue)
+        {
+            if (signPolicy == ESignPolicyExtended.Any) return true;
+            return impactTarget switch
+            {
+
+                EEffectImpactTarget.Current => SignPolicyExtended(attributeValue.CurrentValue) == signPolicy,
+                EEffectImpactTarget.Base => SignPolicyExtended(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTarget.CurrentAndBase => SignPolicyExtended(attributeValue.CurrentValue) == signPolicy && SignPolicyExtended(attributeValue.BaseValue) == signPolicy,
+                _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
+            };
+        }
+        
+        public static bool ValidateSignPolicy(ESignPolicyExtended signPolicy, EEffectImpactTargetExpanded impactTarget, AttributeValue attributeValue)
+        {
+            if (signPolicy == ESignPolicyExtended.Any) return true;
+            return impactTarget switch
+            {
+
+                EEffectImpactTargetExpanded.Current => SignPolicyExtended(attributeValue.CurrentValue) == signPolicy,
+                EEffectImpactTargetExpanded.Base => SignPolicyExtended(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTargetExpanded.CurrentAndBase => SignPolicyExtended(attributeValue.CurrentValue) == signPolicy && SignPolicyExtended(attributeValue.BaseValue) == signPolicy,
+                EEffectImpactTargetExpanded.CurrentOrBase => SignPolicyExtended(attributeValue.CurrentValue) == signPolicy || SignPolicyExtended(attributeValue.BaseValue) == signPolicy,
+                _ => throw new ArgumentOutOfRangeException(nameof(impactTarget), impactTarget, null)
+            };
+        }
+        
         #endregion
         
-        #region Utils
+        #region Math Utils
+
+        /// <summary>
+        /// Performs logical operations on Attribute Values
+        /// </summary>
+        /// <param name="value">The left operand</param>
+        /// <param name="operand">The right operand</param>
+        /// <param name="operation"> The operation to apply</param>
+        /// <param name="target"></param>
+        /// <param name="policy"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public static AttributeValue AttributeMathEvent(AttributeValue value, AttributeValue operand, ECalculationOperation operation, EEffectImpactTarget target,
+            EMathApplicationPolicy policy)
+        {
+            AttributeValue _operand;
+            switch (policy)
+            {
+                case EMathApplicationPolicy.AsIs:
+                    _operand = operand;
+                    break;
+                case EMathApplicationPolicy.OnePlus:
+                    _operand = 1 + operand;
+                    break;
+                case EMathApplicationPolicy.OneMinus:
+                    _operand = 1 - operand;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(policy), policy, null);
+            }
+
+            AttributeValue result = PerformOperation(value, _operand);
+            return target switch
+            {
+                EEffectImpactTarget.Current => new AttributeValue(result.CurrentValue, 0f),
+                EEffectImpactTarget.Base => new AttributeValue(0, result.BaseValue),
+                EEffectImpactTarget.CurrentAndBase => new AttributeValue(result.CurrentValue, result.BaseValue),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            AttributeValue PerformOperation(AttributeValue a, AttributeValue b)
+            {
+                return operation switch
+                {
+
+                    ECalculationOperation.Add => a + b,
+                    ECalculationOperation.Multiply => a * b,
+                    ECalculationOperation.Override => b,
+                    _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
+                };
+            }
+        }
+        
+        #endregion
+        
+        #region Extension Utils
         
         public static T RandomChoice<T>(this List<T> list) => list is null ? default : list[Mathf.FloorToInt(Random.value * list.Count)];
 

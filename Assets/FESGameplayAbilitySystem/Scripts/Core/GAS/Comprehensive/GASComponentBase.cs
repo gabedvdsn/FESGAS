@@ -43,10 +43,7 @@ namespace FESGameplayAbilitySystem
         private void Update()
         {
             TickEffectShelf();
-        }
-
-        private void FinishFrame()
-        {
+            
             if (needsCleaning) ClearFinishedEffects();
             
             TagCache.TickTagWorkers();
@@ -249,6 +246,7 @@ namespace FESGameplayAbilitySystem
                 
                 float deltaTime = Time.deltaTime;
                 
+                container.RunEffectTickWorkers();
                 container.TickPeriodic(deltaTime, out int executeTicks);
                 if (executeTicks > 0 && container.Ongoing)
                 {
@@ -268,12 +266,7 @@ namespace FESGameplayAbilitySystem
                 needsCleaning = true;
             }
         }
-
-        public void AttributeSystemFinished()
-        {
-            FinishFrame();
-        }
-
+        
         private void ClearFinishedEffects()
         {
             //EffectShelf.RemoveAll(container => container.DurationRemaining <= 0 && container.Spec.Base.DurationSpecification.DurationPolicy != EEffectDurationPolicy.Infinite);

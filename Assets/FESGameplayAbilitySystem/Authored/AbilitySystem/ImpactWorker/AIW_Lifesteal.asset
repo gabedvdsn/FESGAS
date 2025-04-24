@@ -27,7 +27,7 @@ MonoBehaviour:
   WorkAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
   WorkImpactType: 0
   WorkSignPolicy: 1
-  WorkSameFrame: 1
+  WorkSameFrame: 0
   RelativeAttribute: {fileID: 11400000, guid: 4bc5fbad1abf1da4da52afcb59b209d3, type: 2}
   Operation: 1
   WithRespectTo: 1

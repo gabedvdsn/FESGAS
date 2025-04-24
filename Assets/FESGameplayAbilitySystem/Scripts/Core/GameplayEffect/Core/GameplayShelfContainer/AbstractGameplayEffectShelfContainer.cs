@@ -21,11 +21,14 @@ namespace FESGameplayAbilitySystem
         private AttributeValue TrackedImpact;
         private AttributeValue LastTrackedImpact;
 
+        private List<AbstractEffectWorkerScriptableObject> Workers;
+
         protected AbstractGameplayEffectShelfContainer(GameplayEffectSpec spec, bool ongoing)
         {
             Spec = spec;
             Ongoing = ongoing;
-    
+
+            Workers = spec.Base.GetEffectWorkers();
             TrackedImpact = default;
 
             Valid = true;
@@ -116,15 +119,19 @@ namespace FESGameplayAbilitySystem
         }
         public void RunEffectApplicationWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Spec.Base.GetEffectWorkers()) worker.OnEffectApplication(this);
+            foreach (var worker in Workers) worker.OnEffectApplication(this);
+        }
+        public void RunEffectTickWorkers()
+        {
+            foreach (var worker in Workers) worker.OnEffectTick(this);
         }
         public void RunEffectRemovalWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Spec.Base.GetEffectWorkers()) worker.OnEffectRemoval(this);
+            foreach (var worker in Workers) worker.OnEffectRemoval(this);
         }
-        public void RunEffectWorkers(AbilityImpactData impactData)
+        public void RunEffectImpactWorkers(AbilityImpactData impactData)
         {
-            Spec.RunEffectWorkers(impactData);
+            foreach (var worker in Workers) worker.OnEffectImpact(impactData);
         }
 
         public override string ToString()

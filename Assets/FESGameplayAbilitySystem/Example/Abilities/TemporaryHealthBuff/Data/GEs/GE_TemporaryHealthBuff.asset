@@ -17,7 +17,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4350d06b418fe0e4eaaa3b4143051ab1, type: 2}
   ImpactSpecification:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-    ValueTarget: 1
+    TargetImpact: 1
     ImpactOperation: 0
     ImpactType: 3
     ReverseImpactOnRemoval: 1
@@ -25,7 +25,7 @@ MonoBehaviour:
     Magnitude: 75
     MagnitudeCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     MagnitudeCalculationOperation: 0
-    ContainedEffect: {fileID: 0}
+    Packets: []
   DurationSpecification:
     DurationPolicy: 2
     TickOnApplication: 1
@@ -37,6 +37,7 @@ MonoBehaviour:
     TickCalculationOperation: 0
     Rounding: 0
     UseDefaultTickRate: 0
+  Workers: []
   SourceRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   TargetRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   RemoveEffectsWithTag: []

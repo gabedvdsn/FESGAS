@@ -11,35 +11,35 @@ namespace FESGameplayAbilitySystem
     {
         public List<AbstractAttributeChangeEventScriptableObject> ChangeEvents;
         
-        public override void AttributeChangeEvent(GASComponentBase system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
-            SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+            ChangeValue change)
         {
             foreach (AbstractAttributeChangeEventScriptableObject fEvent in ChangeEvents)
             {
-                if (!fEvent.ValidateWorkFor(system, ref attributeCache, modifiedAttributeCache)) continue;
-                fEvent.AttributeChangeEvent(system, ref attributeCache, modifiedAttributeCache);
+                if (!fEvent.ValidateWorkFor(system, attributeCache, change)) continue;
+                fEvent.AttributeChangeEvent(system, attributeCache, change);
             }
         }
 
-        public override bool ValidateWorkFor(GASComponentBase system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
-            SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+            ChangeValue change)
         {
             foreach (var changeEvent in ChangeEvents)
             {
                 // If any of the events are valid return true
-                if (changeEvent.ValidateWorkFor(system, ref attributeCache, modifiedAttributeCache)) return true;
+                if (changeEvent.ValidateWorkFor(system, attributeCache, change)) return true;
             }
 
             return false;
         }
 
-        public override bool RegisterWithHandler(AttributeChangeEventHandler handler)
+        public override bool RegisterWithHandler(AttributeChangeMomentHandler preChange, AttributeChangeMomentHandler postChange)
         {
-            return ChangeEvents.Any(changeEvent => changeEvent.RegisterWithHandler(handler));
+            return ChangeEvents.Any(changeEvent => changeEvent.RegisterWithHandler(preChange, postChange));
         }
-        public override bool DeRegisterFromHandler(AttributeChangeEventHandler handler)
+        public override bool DeRegisterFromHandler(AttributeChangeMomentHandler preChange, AttributeChangeMomentHandler postChange)
         {
-            return ChangeEvents.Any(changeEvent => changeEvent.DeRegisterFromHandler(handler));
+            return ChangeEvents.Any(changeEvent => changeEvent.DeRegisterFromHandler(preChange, postChange));
         }
     }
 }

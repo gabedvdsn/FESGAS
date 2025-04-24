@@ -297,8 +297,10 @@ namespace FESGameplayAbilitySystem
         
         #region Impact Workers
 
-        public void ProvideFrameImpact(List<AbilityImpactData> impactData)
+        public void ProvideFrameImpact(AbilityImpactData impactData)
         {
+            impactData.SourcedModifier.BaseDerivation.TrackImpact(impactData);
+            impactData.SourcedModifier.BaseDerivation.RunEffectImpactWorkers(impactData);
             ImpactWorkerCache.RunImpactData(impactData);
         }
         

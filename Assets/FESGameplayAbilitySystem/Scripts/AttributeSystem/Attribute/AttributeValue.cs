@@ -14,6 +14,8 @@ namespace FESGameplayAbilitySystem
         public float CurrentValue;
         public float BaseValue;
 
+        public float Ratio => CurrentValue / BaseValue;
+
         public AttributeValue(float currentValue, float baseValue)
         {
             CurrentValue = currentValue;

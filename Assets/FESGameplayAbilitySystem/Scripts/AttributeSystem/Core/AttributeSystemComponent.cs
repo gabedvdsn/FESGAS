@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -8,8 +9,9 @@ namespace FESGameplayAbilitySystem
     {
         protected AttributeSetScriptableObject attributeSet;
         protected List<AbstractAttributeChangeEventScriptableObject> attributeChangeEvents;
-        
-        private AttributeChangeEventHandler ChangeEventHandler;
+
+        private AttributeChangeMomentHandler PreChangeHandler;
+        private AttributeChangeMomentHandler PostChangeHandler;
         
         private Dictionary<AttributeScriptableObject, CachedAttributeValue> AttributeCache;
         private SourcedModifiedAttributeCache ModifiedAttributeCache;
@@ -19,19 +21,12 @@ namespace FESGameplayAbilitySystem
         
         private GASComponentBase System;
         
-        private void LateUpdate()
-        {
-            UpdateAttributes();
-            System.AttributeSystemFinished();
-        }
-
         #region Initialization
         
         public virtual void Initialize(GASComponentBase system)
         {
             System = system;
-            ChangeEventHandler = new AttributeChangeEventHandler();
-            
+
             InitializeCaches();
             InitializePriorityChangeEvents();
             InitializeAttributeSets();
@@ -58,14 +53,13 @@ namespace FESGameplayAbilitySystem
             {
                 ModifyAttribute(attribute, new SourcedModifiedAttributeValue(IAttributeImpactDerivation.GenerateSourceDerivation(System, attribute), 0f, 0f, false));
             }
-            
-            UpdateAttributes();
         }
 
         private void InitializePriorityChangeEvents()
         {
-            ChangeEventHandler = new AttributeChangeEventHandler();
-            foreach (AbstractAttributeChangeEventScriptableObject changeEvent in attributeChangeEvents) changeEvent.RegisterWithHandler(ChangeEventHandler);
+            PreChangeHandler = new AttributeChangeMomentHandler();
+            PostChangeHandler = new AttributeChangeMomentHandler();
+            foreach (AbstractAttributeChangeEventScriptableObject changeEvent in attributeChangeEvents) changeEvent.RegisterWithHandler(PreChangeHandler, PostChangeHandler);
         }
         
         #endregion
@@ -74,12 +68,12 @@ namespace FESGameplayAbilitySystem
         
         public bool ProvideChangeEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
         {
-            return changeEvent.RegisterWithHandler(ChangeEventHandler);
+            return changeEvent.RegisterWithHandler(PreChangeHandler, PostChangeHandler);
         }
 
         public bool RescindChangeEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
         {
-            return changeEvent.DeRegisterFromHandler(ChangeEventHandler);
+            return changeEvent.DeRegisterFromHandler(PreChangeHandler, PostChangeHandler);
         }
 
         public void ProvideAttribute(AttributeScriptableObject attribute, DefaultAttributeValue defaultValue)
@@ -117,75 +111,28 @@ namespace FESGameplayAbilitySystem
         #endregion
         
         #region Attribute Modification
-
-        private void UpdateAttributes(bool allowWorkers = true)
-        {
-            ApplyAttributeModifications(allowWorkers);
-        }
         
-        private void ApplyAttributeModifications(bool allowWorkers = true)
+        public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool runEvents = true)
         {
-            if (!modifiedCacheDirty) return;
+            Debug.Log($"Modifying attribute {attribute} by {sourcedModifiedValue}");
             
-            ChangeEventHandler.RunPreChangeEvents(System, ref AttributeCache, ModifiedAttributeCache);
-
-            foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.GetModified())
-            {
-                HoldAttributeCache[attribute] = AttributeCache[attribute].Value;
-                if (!ModifiedAttributeCache.TryGetSourcedModifiers(attribute, out List<SourcedModifiedAttributeValue> sourcedModifiers)) continue;
-                foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
-                {
-                    AttributeCache[attribute].Add(sourcedModifier.BaseDerivation, sourcedModifier.ToModified());
-                }
-            }
-            
-            ChangeEventHandler.RunPostChangeEvents(System, ref AttributeCache, ModifiedAttributeCache);
-            
-            Dictionary<GASComponentBase, List<AbilityImpactData>> frameImpactData = new Dictionary<GASComponentBase, List<AbilityImpactData>>();
-            
-            // Communicate the impact of the modification back to the source
-            foreach (AttributeScriptableObject attribute in HoldAttributeCache.Keys)
-            {
-                if (!ModifiedAttributeCache.TryGetSourcedModifiers(attribute, out var sourcedModifiers)) continue;
-                foreach (SourcedModifiedAttributeValue sourcedModifier in sourcedModifiers)
-                {
-                    var impactData = AbilityImpactData.Generate(
-                        System, attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
-                    );
-                    frameImpactData.SafeAdd(sourcedModifier.BaseDerivation.GetSource(), impactData);
-                    /*sourcedModifier.BaseDerivation.GetSource().AbilitySystem.CommunicateAbilityImpact(
-                        AbilityImpactData.Generate(
-                            System, attribute, sourcedModifier, AttributeCache[attribute].Value - HoldAttributeCache[attribute]
-                        )
-                    );
-                    if (!sourcedModifier.Workable) continue;
-                    communicateComps.Add(sourcedModifier.BaseDerivation.GetSource());*/
-                }
-                
-                AttributeCache[attribute].Clean();
-            }
-            
-            modifiedCacheDirty = false;
-            HoldAttributeCache.Clear();
-            ModifiedAttributeCache.Clear();
-
-            if (!allowWorkers) return;
-            foreach (GASComponentBase comp in frameImpactData.Keys) comp.AbilitySystem.ProvideFrameImpact(frameImpactData[comp]);
-            // foreach (GASComponentBase comp in communicateComps) comp.AbilitySystem.ActivateAbilityImpactWorkers();
-        }
-
-        public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
-        {
             if (!AttributeCache.ContainsKey(attribute)) return;
-            
-            modifiedCacheDirty = true;
-            ModifiedAttributeCache.Register(attribute, sourcedModifiedValue);
-        }
 
-        public void ModifyAttributeImmediate(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool allowWorkers = true)
-        {
-            ModifyAttribute(attribute, sourcedModifiedValue);
-            UpdateAttributes(allowWorkers);
+            // Create a temp value to track during change events
+            ChangeValue change = new ChangeValue(sourcedModifiedValue);
+            if (runEvents) PreChangeHandler.RunEvents(attribute, System, AttributeCache, change);
+            
+            // Hold version of previous attribute value & apply changes
+            AttributeValue holdValue = AttributeCache[attribute].Value;
+            AttributeCache[attribute].Add(sourcedModifiedValue.BaseDerivation, change.Value.ToModified());
+
+            // Override the temp value to reflect real impact (note that all post-change events will receive this version of impact)
+            change.Override(AttributeCache[attribute].Value - holdValue);
+            if (runEvents) PostChangeHandler.RunEvents(attribute, System, AttributeCache, change);
+
+            // Relay impact to source
+            var impactData = AbilityImpactData.Generate(System, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
+            sourcedModifiedValue.BaseDerivation.GetSource().AbilitySystem.ProvideFrameImpact(impactData);
         }
 
         public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)

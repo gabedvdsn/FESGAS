@@ -13,6 +13,8 @@ namespace FESGameplayAbilitySystem
         public GASComponentBase Source;
         public GASComponentBase Target;
 
+        private List<AbstractEffectWorkerScriptableObject> Workers;
+
         public Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?> SourceCapturedAttributes;
 
         public GameplayEffectSpec(IEffectBase GameplayEffect, IEffectDerivation derivation, GASComponentBase target)
@@ -26,10 +28,10 @@ namespace FESGameplayAbilitySystem
             Level = Derivation.GetLevel();
             RelativeLevel = Derivation.GetRelativeLevel();
 
+            Workers = Base.GetEffectWorkers();
+
             SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
         }
-        
-        
         
         public SourcedModifiedAttributeValue SourcedImpact(AttributeValue attributeValue)
         {
@@ -165,15 +167,20 @@ namespace FESGameplayAbilitySystem
         }
         public void RunEffectApplicationWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Base.GetEffectWorkers()) worker.OnEffectApplication(this);
+            foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectApplication(this);
+        }
+        public void RunEffectTickWorkers()
+        {
+            // Specs never run this method (because non-durational specs, i.e. without containers, are never ticked)
+            // foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectTick(this);
         }
         public void RunEffectRemovalWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Base.GetEffectWorkers()) worker.OnEffectRemoval(this);
+            foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectRemoval(this);
         }
-        public void RunEffectWorkers(AbilityImpactData impactData)
+        public void RunEffectImpactWorkers(AbilityImpactData impactData)
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Base.GetEffectWorkers()) worker.OnEffectImpact(impactData);
+            foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectImpact(impactData);
         }
 
         public override string ToString()

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dac855327e524f0f9473752d46a88179, type: 3}
   m_Name: DemoPlayerSystemData
   m_EditorClassIdentifier: 
-  TagWorkers: []
+  ActivationPolicy: 0
   MaxAbilities: 99
   StartingAbilities:
   - {fileID: 11400000, guid: 2f4f962a331e64346ad51ca233b4c6d6, type: 2}
@@ -20,14 +20,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 92dc1764b69317a468e5beb024d1f57d, type: 2}
   - {fileID: 11400000, guid: 2591653c2045c3544a18675e2cc7d2f7, type: 2}
   - {fileID: 11400000, guid: ae68ad506f713414690a31085e8f5432, type: 2}
-  ApplicationWorkers:
-  - {fileID: 11400000, guid: 840220a9afddff546a5fd210c9aeae0c, type: 2}
-  - {fileID: 11400000, guid: 1866bc0ddfc59c6479ccc36b23f1f526, type: 2}
   ImpactWorkers:
   - {fileID: 11400000, guid: 9773e0e3e1fad234b907aa25057730ef, type: 2}
   AttributeSet: {fileID: 11400000, guid: c52c168a807980d42b5222f7b24722ac, type: 2}
   AttributeChangeEvents:
   - {fileID: 11400000, guid: a1ad3d8513ee7f64c949ee03e37fca57, type: 2}
   - {fileID: 11400000, guid: 07c64b1a57a6fdb498ea60303818f33d, type: 2}
-  - {fileID: 11400000, guid: eb798ded65ab3994896b7d3397cc0230, type: 2}
-  - {fileID: 11400000, guid: c40ecfe52d504f24fb794bb43f5bf784, type: 2}
+  TagWorkers: []

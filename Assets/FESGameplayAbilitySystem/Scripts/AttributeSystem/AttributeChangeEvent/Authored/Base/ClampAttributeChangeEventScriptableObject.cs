@@ -5,13 +5,13 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     /// <summary>
-    /// Clamps an attributes current value based on its base value
+    /// Clamps an attributes current value with respect to its overflow policy (e.g. 0 to BaseValue)
     /// </summary>
     [CreateAssetMenu(menuName = "FESGAS/Attribute/Change Event/Clamp", fileName = "ACE_Clamp")]
     public class ClampAttributeChangeEventScriptableObject : AbstractFocusedAttributeChangeEventScriptableObject
     {
-        public override void AttributeChangeEvent(GASComponentBase system, ref Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
-            SourcedModifiedAttributeCache modifiedAttributeCache)
+        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+            ChangeValue change)
         {
             AttributeValue clampValue = attributeCache[TargetAttribute].Value;
             AttributeValue baseAligned = clampValue.BaseAligned();

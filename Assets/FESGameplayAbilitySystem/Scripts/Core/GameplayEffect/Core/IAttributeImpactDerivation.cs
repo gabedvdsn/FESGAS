@@ -16,8 +16,9 @@ namespace FESGameplayAbilitySystem
         public bool TryGetLastTrackedImpact(out AttributeValue impactValue);
         public List<GameplayTagScriptableObject> GetContextTags();
         public void RunEffectApplicationWorkers();
+        public void RunEffectTickWorkers();
         public void RunEffectRemovalWorkers();
-        public void RunEffectWorkers(AbilityImpactData impactData);
+        public void RunEffectImpactWorkers(AbilityImpactData impactData);
         
         public static SourceAttributeDerivation GenerateSourceDerivation(GASComponentBase source, AttributeScriptableObject attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
         {
@@ -94,11 +95,15 @@ namespace FESGameplayAbilitySystem
         {
             // Nothing to do here!
         }
+        public void RunEffectTickWorkers()
+        {
+            // Nothing to do here!
+        }
         public void RunEffectRemovalWorkers()
         {
             // Nothing to do here!
         }
-        public void RunEffectWorkers(AbilityImpactData impactData)
+        public void RunEffectImpactWorkers(AbilityImpactData impactData)
         {
             // Nothing to do here!
         }

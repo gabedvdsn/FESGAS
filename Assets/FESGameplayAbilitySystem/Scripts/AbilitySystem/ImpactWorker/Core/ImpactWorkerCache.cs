@@ -38,16 +38,14 @@ namespace FESGameplayAbilitySystem
             Cache[attribute].Remove(worker);
         }
         
-        public void RunImpactData(List<AbilityImpactData> impactData)
+        public void RunImpactData(AbilityImpactData impactData)
         {
-            foreach (var data in impactData)
+            if (!Cache.ContainsKey(impactData.Attribute)) return;
+            foreach (var worker in Cache[impactData.Attribute])
             {
-                if (!Cache.ContainsKey(data.Attribute)) continue;
-                foreach (var worker in Cache[data.Attribute])
-                {
-                    if (!worker.ValidateWorkFor(data)) continue;
-                    worker.InterpretImpact(data);
-                }
+                if (!impactData.SourcedModifier.Workable && !worker.AcceptUnworkableImpact) continue;
+                if (!worker.ValidateWorkFor(impactData)) continue;
+                worker.InterpretImpact(impactData);
             }
         }
     }
