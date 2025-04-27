@@ -283,6 +283,12 @@ namespace FESGameplayAbilitySystem
             if (dict.ContainsKey(key)) dict[key].Add(value);
             else dict[key] = new List<V>() { value };
         }
+        
+        public static void SafeAdd<K, V>(this Dictionary<K, HashSet<V>> dict, K key, V value)
+        {
+            if (dict.ContainsKey(key)) dict[key].Add(value);
+            else dict[key] = new HashSet<V>() { value };
+        }
 
         public static void SafeAddRange<K, V>(this Dictionary<K, List<V>> dict, K key, List<V> values)
         {
@@ -293,6 +299,11 @@ namespace FESGameplayAbilitySystem
         public static bool SafeRemove<K, V>(this Dictionary<K, V> dict, K key)
         {
             return dict.Remove(key);
+        }
+
+        public static bool SafeRemove<K, V>(this Dictionary<K, List<V>> dict, K key, V value)
+        {
+            return dict.ContainsKey(key) && dict[key].Remove(value);
         }
 
         public static void Shuffle<T>(this List<T> list)

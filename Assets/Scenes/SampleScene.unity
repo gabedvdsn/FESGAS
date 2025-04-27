@@ -536,8 +536,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 92dc1764b69317a468e5beb024d1f57d, type: 2}
   - {fileID: 11400000, guid: 2591653c2045c3544a18675e2cc7d2f7, type: 2}
   - {fileID: 11400000, guid: ae68ad506f713414690a31085e8f5432, type: 2}
-  ApplicationWorkers:
-  - {fileID: 11400000, guid: faf675260d10aba4fb178a59ae44c351, type: 2}
   ImpactWorkers:
   - {fileID: 11400000, guid: 9773e0e3e1fad234b907aa25057730ef, type: 2}
 --- !u!1 &165822435
@@ -4034,7 +4032,6 @@ MonoBehaviour:
   ActivationPolicy: 0
   MaxAbilities: 5
   StartingAbilities: []
-  ApplicationWorkers: []
   ImpactWorkers: []
 --- !u!114 &1585459093
 MonoBehaviour:
@@ -4357,6 +4354,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1742977054}
   m_CullTransparentMesh: 1
+--- !u!1 &1834734201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1834734202}
+  - component: {fileID: 1834734203}
+  m_Layer: 0
+  m_Name: ProcessControl
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1834734202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834734201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1834734203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834734201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9b179e7f6a64ea0a8bf97c3bffd32a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StartState: 0
+  DontDestroyOnLoad: 1
+  TestMono: {fileID: 11400000, guid: 024f5bbe1f330cb459247ccbe20df883, type: 2}
 --- !u!1 &1885200447
 GameObject:
   m_ObjectHideFlags: 0
@@ -5042,3 +5086,4 @@ SceneRoots:
   - {fileID: 1417627984}
   - {fileID: 165822436}
   - {fileID: 947189367}
+  - {fileID: 1834734202}

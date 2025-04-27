@@ -19,7 +19,7 @@ namespace FESGameplayAbilitySystem
         
         [Header("Leveling")]
 
-        public int StartingLevel = 0;
+        public int StartingLevel = 1;
         public int MaxLevel = 4;
         public bool IgnoreWhenLevelZero = true;
 
@@ -27,6 +27,10 @@ namespace FESGameplayAbilitySystem
         
         public GameplayEffectScriptableObject Cost;
         public GameplayEffectScriptableObject Cooldown;
+        
+        [Header("Process Management")]
+        
+        public EProcessManagementPolicy ManagementPolicy;
 
         public AbilitySpec Generate(GASComponentBase owner, int level)
         {
@@ -44,6 +48,12 @@ namespace FESGameplayAbilitySystem
         Activated,
         AlwaysActive,
         Toggled
+    }
+
+    public enum EProcessManagementPolicy
+    {
+        Dependent,
+        Independent
     }
 
 }

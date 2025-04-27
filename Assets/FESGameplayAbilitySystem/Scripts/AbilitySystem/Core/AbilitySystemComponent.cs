@@ -32,7 +32,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (AbilityScriptableObject ability in startingAbilities)
             {
-                GiveAbility(ability, 1, out _);
+                GiveAbility(ability, ability.StartingLevel, out _);
             }
         }
 

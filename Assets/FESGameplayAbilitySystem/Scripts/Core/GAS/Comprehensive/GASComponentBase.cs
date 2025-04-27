@@ -97,9 +97,14 @@ namespace FESGameplayAbilitySystem
             return ApplyGameplayEffect(spec);
         }
 
-        public void RemoveGameplayEffect(GameplayEffectScriptableObject GameplayEffect)
+        public void RemoveGameplayEffect(IEffectBase effect)
         {
-            List<AbstractGameplayEffectShelfContainer> toRemove = EffectShelf.Where(container => container.Spec.Base == GameplayEffect).ToList();
+            RemoveGameplayEffect(effect.GetIdentifier());
+        }
+
+        public void RemoveGameplayEffect(GameplayTagScriptableObject identifier)
+        {
+            List<AbstractGameplayEffectShelfContainer> toRemove = EffectShelf.Where(container => container.Spec.Base.GetIdentifier() == identifier).ToList();
             foreach (AbstractGameplayEffectShelfContainer container in toRemove)
             {
                 FinishedEffects.Add(container);
