@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace FESGameplayAbilitySystem
 {
@@ -82,11 +84,6 @@ namespace FESGameplayAbilitySystem
             if (state == State) return;
             
             State = state;
-            if (State == EProcessControlState.TerminatedImmediately)
-            {
-                TerminateAllImmediately();
-                return;
-            }
 
             SetAllProcesses();
         }
@@ -116,7 +113,8 @@ namespace FESGameplayAbilitySystem
 
             var pcb = ProcessControlBlock.Generate(
                 NextCacheIndex, -1,
-                process, handler
+                process, handler,
+                GetDefaultCreatedTransitionState(process.Lifecycle)
             );
 
             SetProcess(pcb);
@@ -156,8 +154,14 @@ namespace FESGameplayAbilitySystem
         public bool Wait(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
-            MoveFromSteppingToWaiting(active[cacheIndex]);
+            //MoveFromSteppingToWaiting(active[cacheIndex]);
+            active[cacheIndex].Wait();
             return true;
+        }
+
+        public bool Pause(int cacheIndex)
+        {
+            return active.ContainsKey(cacheIndex) && active[cacheIndex].Pause();
         }
         
         public bool Terminate(int cacheIndex)
@@ -200,7 +204,12 @@ namespace FESGameplayAbilitySystem
             {
                 case EProcessControlState.Ready or EProcessControlState.Closed:
                     // The PCB was created but hasn't been added to the active or waiting caches
-                    if (pcb.State == EProcessState.Created) PrepareCreatedProcess();
+                    if (pcb.State == EProcessState.Created)
+                    {
+                        PrepareCreatedProcess();
+                        SetProcess(pcb);
+                        return;
+                    }
                     SetRunning();
                     break;
                 case EProcessControlState.Waiting or EProcessControlState.ClosedWaiting:
@@ -222,7 +231,7 @@ namespace FESGameplayAbilitySystem
             void SetRunning()
             {
                 // The PCB must be in the waiting cache
-                if (pcb.State == EProcessState.Waiting) MoveFromWaitingToStepping(pcb);
+                if (pcb.State is EProcessState.Waiting) MoveFromWaitingToStepping(pcb);
             }
             
             // Move the PCB to the waiting cache
@@ -230,6 +239,13 @@ namespace FESGameplayAbilitySystem
             {
                 if (pcb.State != EProcessState.Waiting && pcb.State != EProcessState.Terminated) MoveFromSteppingToWaiting(pcb);
             }
+        }
+        
+        private void SetAllProcesses()
+        {
+            if (State == EProcessControlState.TerminatedImmediately) TerminateAllImmediately();
+            else if (State == EProcessControlState.Terminated) TerminateAll();
+            else foreach (var process in active.Values) SetProcess(process);
         }
 
         private void MoveFromWaitingToStepping(ProcessControlBlock pcb)
@@ -292,13 +308,52 @@ namespace FESGameplayAbilitySystem
         {
             waiting.Remove(pcb.CacheIndex);
         }
+        
+        #endregion
+        
+        #region PCB State Transfers
 
-        private void SetAllProcesses()
+        public static EProcessState GetDefaultCreatedTransitionState(EProcessLifecycle lifecycle)
         {
-            if (State == EProcessControlState.TerminatedImmediately) TerminateAllImmediately();
-            else if (State == EProcessControlState.Terminated) TerminateAll();
-            else foreach (var process in active.Values) SetProcess(process);
+            return lifecycle switch
+            {
+                EProcessLifecycle.SelfTerminating => EProcessState.Running,
+                EProcessLifecycle.RunThenWait => EProcessState.Running,
+                EProcessLifecycle.DependentRunning => EProcessState.Waiting,
+                _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+            };
         }
+        
+        public static bool ValidatePCBStateTransfer(EProcessLifecycle lifecycle, EProcessState from, EProcessState to)
+        {
+            switch (lifecycle)
+            {
+
+                case EProcessLifecycle.SelfTerminating:
+                    switch (from)
+                    {
+                        case EProcessState.Created:
+                            return to == EProcessState.Running;
+                            break;
+                        case EProcessState.Running:
+                            
+                            break;
+                        case EProcessState.Waiting:
+                            break;
+                        case EProcessState.Terminated:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(from), from, null);
+                    }
+                    break;
+                case EProcessLifecycle.RunThenWait:
+                    break;
+                case EProcessLifecycle.DependentRunning:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null);
+            }
+        } 
         
         #endregion
         

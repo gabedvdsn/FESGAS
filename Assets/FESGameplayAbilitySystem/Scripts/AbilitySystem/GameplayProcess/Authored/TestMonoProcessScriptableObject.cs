@@ -29,7 +29,7 @@ namespace FESGameplayAbilitySystem
             Debug.Log($"{name} is terminated");
             Destroy(mono.gameObject);
         }
-        public override async UniTask RunProcess(MonoGameplayProcess mono, CancellationToken token)
+        public override async UniTask  RunProcess(MonoGameplayProcess mono, CancellationToken token)
         {
             Debug.Log($"{name} is running");
             await UniTask.Delay(5000, cancellationToken: token);

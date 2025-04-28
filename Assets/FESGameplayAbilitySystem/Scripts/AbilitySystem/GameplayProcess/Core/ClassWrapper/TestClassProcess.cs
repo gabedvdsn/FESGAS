@@ -26,10 +26,6 @@ namespace FESGameplayAbilitySystem
         {
             Debug.Log($"Process waiting");
         }
-        public void WhenPause()
-        {
-            UnityEngine.Debug.Log($"Process is paused");
-        }
 
         public void WhenTerminate()
         {

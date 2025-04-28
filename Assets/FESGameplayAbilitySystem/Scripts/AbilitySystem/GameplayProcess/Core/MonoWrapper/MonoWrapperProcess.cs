@@ -38,10 +38,6 @@ namespace FESGameplayAbilitySystem
         {
             MonoData.WhenWait(activeMono);
         }
-        public void WhenPause()
-        {
-            
-        }
 
         public void WhenTerminate()
         {

@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         public int StepIndex { get; private set; }
         
         public EProcessState State { get; private set; }
-        private EProcessState queuedState;
+        public EProcessState queuedState { get; private set; }
 
         public float Lifetime => lifetime;
         private float lifetime;
@@ -24,7 +24,7 @@ namespace FESGameplayAbilitySystem
 
         private CancellationTokenSource cts;
 
-        private ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
+        private ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler, EProcessState nextState)
         {
             CacheIndex = cacheIndex;
             StepIndex = stepIndex;
@@ -38,9 +38,9 @@ namespace FESGameplayAbilitySystem
             lifetime = 0;
         }
 
-        public static ProcessControlBlock Generate(int cacheIndex, int loopingIndex, IGameplayProcess process, IGameplayProcessHandler handler)
+        public static ProcessControlBlock Generate(int cacheIndex, int loopingIndex, IGameplayProcess process, IGameplayProcessHandler handler, EProcessState nextState)
         {
-            return new ProcessControlBlock(cacheIndex, loopingIndex, process, handler);
+            return new ProcessControlBlock(cacheIndex, loopingIndex, process, handler, nextState);
         }
 
         public void Initialize()
@@ -59,23 +59,30 @@ namespace FESGameplayAbilitySystem
         public void Run()
         {
             if (State == EProcessState.Running) return;
+            var oldQueuedState = queuedState;
             queuedState = EProcessState.Running;
-            if (State != EProcessState.Paused) cts = new CancellationTokenSource();
+            cts = new CancellationTokenSource();
             SetQueuedState();
+
+            switch (Process.Lifecycle)
+            {
+
+                case EProcessLifecycle.SelfTerminating:
+                    queuedState = EProcessState.Terminated;
+                    break;
+                case EProcessLifecycle.RunThenWait:
+                case EProcessLifecycle.DependentRunning:
+                    queuedState = EProcessState.Waiting;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         public void Wait()
         {
             queuedState = EProcessState.Waiting;
             if (State != EProcessState.Running && State != EProcessState.Paused) SetQueuedState();
-        }
-
-        public bool Pause()
-        {
-            if (State != EProcessState.Running) return false;
-            queuedState = EProcessState.Paused;
-            SetQueuedState();
-            return true;
         }
 
         public bool Cancel()
@@ -108,10 +115,6 @@ namespace FESGameplayAbilitySystem
                     break;
                 case EProcessState.Running:
                     RunProcess().Forget();
-                    break;
-                case EProcessState.Paused:
-                    Process.WhenPause();
-                    if (!cts.IsCancellationRequested) cts.Cancel();
                     break;
                 case EProcessState.Waiting:
                     Process.WhenWait();
@@ -156,25 +159,7 @@ namespace FESGameplayAbilitySystem
             }
             catch (OperationCanceledException)
             {
-                // Paused or terminated
-                if (queuedState == EProcessState.Terminated) SetQueuedState();
-                return;
-            }
-            
-            if (queuedState != EProcessState.Paused)
-            {
-                switch (Process.Lifecycle)
-                {
-                    case EProcessLifecycle.SelfTerminating:
-                        Terminate();
-                        break;
-                    case EProcessLifecycle.RunThenWait:
-                    case EProcessLifecycle.DependentRunning:
-                        Wait();
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+
             }
 
             SetQueuedState();
@@ -200,6 +185,7 @@ namespace FESGameplayAbilitySystem
         public IGameplayProcess Process => pcb.Process;
         public IGameplayProcessHandler Handler => pcb.Handler;
         public EProcessState State => pcb.State;
+        public EProcessState QueuedState => pcb.queuedState;
         public float Lifetime => pcb.Lifetime;
     }
     
@@ -207,7 +193,6 @@ namespace FESGameplayAbilitySystem
     {
         Created,  // Created but initialized
         Running,  // Actively running
-        Paused,  // Paused during running
         Waiting,  // Ready but cannot run
         Terminated  // Must be terminated
     }

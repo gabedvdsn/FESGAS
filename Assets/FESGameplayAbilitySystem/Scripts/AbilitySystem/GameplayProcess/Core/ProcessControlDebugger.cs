@@ -34,9 +34,28 @@ namespace FESGameplayAbilitySystem
                     EditorGUILayout.BeginVertical("box");
                     EditorGUILayout.LabelField($"Process ID: {relay.CacheIndex}");
                     EditorGUILayout.LabelField($"State: {relay.State}");
+                    EditorGUILayout.LabelField($"Queued: {relay.QueuedState}");
                     EditorGUILayout.LabelField($"Update Time: {relay.Lifetime:F2} seconds");
                     EditorGUILayout.LabelField($"Timing: {relay.Process.StepTiming}");
                     EditorGUILayout.LabelField($"Lifecycle: {relay.Process.Lifecycle}");
+                    EditorGUILayout.BeginHorizontal("box");
+                    if (GUILayout.Button("Wait"))
+                    {
+                        ProcessControl.Instance.Wait(relay.CacheIndex);
+                    }
+                    if (GUILayout.Button("Pause"))
+                    {
+                        ProcessControl.Instance.Pause(relay.CacheIndex);
+                    }
+                    if (GUILayout.Button("Run"))
+                    {
+                        ProcessControl.Instance.Run(relay.CacheIndex);
+                    }
+                    if (GUILayout.Button("Terminate"))
+                    {
+                        ProcessControl.Instance.Terminate(relay.CacheIndex);
+                    }
+                    EditorGUILayout.EndHorizontal();
                     if (GUILayout.Button("Force Terminate"))
                     {
                         ProcessControl.Instance.TerminateImmediate(relay.CacheIndex);

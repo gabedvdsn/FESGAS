@@ -12,7 +12,6 @@ namespace FESGameplayAbilitySystem
         
         public void WhenUpdate(float lifespan);  // Called whenever the PCB is updated
         public void WhenWait();  // Called whenever the process is set to Wait state
-        public void WhenPause();  // Called whenever the process is paused while in Running state
         public void WhenTerminate();  // Called whenever the process is terminated
 
         public UniTask RunProcess(CancellationToken token);
