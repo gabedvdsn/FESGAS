@@ -7,12 +7,12 @@ namespace FESGameplayAbilitySystem
     public class TestClassProcess : IGameplayProcess
     {
 
-        public void WhenInitialize()
+        public void WhenInitialize(ProcessRelay relay)
         {
             Debug.Log($"Process initialized");
         }
 
-        public void WhenUpdate(float lifespan)
+        public void WhenUpdate(ProcessRelay relay)
         {
             //Debug.Log($"Process updated");// (lifetime: {lifespan})");
         }
@@ -22,12 +22,12 @@ namespace FESGameplayAbilitySystem
             Debug.Log($"Process ready");
         }
 
-        public void WhenWait()
+        public void WhenWait(ProcessRelay relay)
         {
             Debug.Log($"Process waiting");
         }
 
-        public void WhenTerminate()
+        public void WhenTerminate(ProcessRelay relay)
         {
             Debug.Log($"Process terminated");
         }
@@ -35,7 +35,7 @@ namespace FESGameplayAbilitySystem
         public EProcessUpdateTiming StepTiming => EProcessUpdateTiming.Update;
         public EProcessLifecycle Lifecycle => EProcessLifecycle.SelfTerminating;
 
-        public async UniTask RunProcess(CancellationToken token)
+        public async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
             Debug.Log("Starting RunProcess...");
 

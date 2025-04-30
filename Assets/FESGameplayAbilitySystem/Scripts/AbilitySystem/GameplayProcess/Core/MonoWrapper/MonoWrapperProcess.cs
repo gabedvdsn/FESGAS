@@ -22,33 +22,29 @@ namespace FESGameplayAbilitySystem
             this.parentTransform = parentTransform;
         }
 
-        public void WhenInitialize()
+        public void WhenInitialize(ProcessRelay relay)
         {
-            Debug.Log("Mono process initialized");
-            
-            activeMono = MonoData.WhenInitialize(initialPosition, initialRotation, parentTransform);
+            activeMono = MonoData.WhenInitialize(initialPosition, initialRotation, parentTransform, relay);
         }
 
-        public void WhenUpdate(float lifespan)
+        public void WhenUpdate(ProcessRelay relay)
         {
-            MonoData.WhenUpdate(activeMono, lifespan);
+            MonoData.WhenUpdate(activeMono, relay);
         }
         
-        public void WhenWait()
+        public void WhenWait(ProcessRelay relay)
         {
-            MonoData.WhenWait(activeMono);
+            MonoData.WhenWait(activeMono, relay);
         }
 
-        public void WhenTerminate()
+        public void WhenTerminate(ProcessRelay relay)
         {
-            Debug.Log("Mono process terminated");
-            
-            MonoData.WhenTerminate(activeMono);
+            MonoData.WhenTerminate(activeMono, relay);
         }
         
-        public async UniTask RunProcess(CancellationToken token)
+        public async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
-            await MonoData.RunProcess(activeMono, token);
+            await MonoData.RunProcess(activeMono, relay, token);
         }
         
         public int StepPriority => MonoData.StepPriority;

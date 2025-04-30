@@ -24,12 +24,12 @@ namespace FESGameplayAbilitySystem
             return Instantiate(MonoPrefab, initialPosition, initialRotation, parentTransform);
         }
         
-        public abstract MonoGameplayProcess WhenInitialize(Vector3 initialPosition, Quaternion initialRotation, Transform parentTransform);
-        public abstract void WhenUpdate(MonoGameplayProcess mono, float lifespan);
-        public abstract void WhenWait(MonoGameplayProcess mono);
-        public abstract void WhenPause(MonoGameplayProcess mono);
-        public abstract void WhenTerminate(MonoGameplayProcess mono);
-        public abstract UniTask RunProcess(MonoGameplayProcess mono, CancellationToken token);    
+        public abstract MonoGameplayProcess WhenInitialize(Vector3 initialPosition, Quaternion initialRotation, Transform parentTransform, ProcessRelay relay);
+        public abstract void WhenUpdate(MonoGameplayProcess mono, ProcessRelay relay);
+        public abstract void WhenWait(MonoGameplayProcess mono, ProcessRelay relay);
+        public abstract void WhenPause(MonoGameplayProcess mono, ProcessRelay relay);
+        public abstract void WhenTerminate(MonoGameplayProcess mono, ProcessRelay relay);
+        public abstract UniTask RunProcess(MonoGameplayProcess mono, ProcessRelay relay, CancellationToken token);    
         
     }
 }

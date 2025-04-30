@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -16,16 +17,33 @@ namespace FESGameplayAbilitySystem
         public EProcessState State { get; private set; }
         public EProcessState queuedState { get; private set; }
 
-        public float Lifetime => lifetime;
-        private float lifetime;
+        public float UnscaledLifetime => Time.unscaledTime - unscaledInitializeTime;
+        public float Lifetime => Time.time - initializeTime;
+        public float UnscaledInitializeTime => unscaledInitializeTime;
+        private float unscaledInitializeTime;
+        
+        public float InitializeTime => initializeTime;
+        private float initializeTime;
+        
+        public float Runtime => runtime;
+        private float runtime;
 
         public bool IsInitialized => isInitialized;
         private bool isInitialized;
 
+        public bool HasRun => hasRun;
+        private bool hasRun;
+        public bool MidRun => midRun;
+        private bool midRun;
+
         private CancellationTokenSource cts;
 
-        private ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler, EProcessState nextState)
+        private ProcessRelay relay;
+
+        private ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
         {
+            relay = new ProcessRelay(this);
+            
             CacheIndex = cacheIndex;
             StepIndex = stepIndex;
             
@@ -33,96 +51,118 @@ namespace FESGameplayAbilitySystem
             Handler = handler;
             
             State = EProcessState.Created;
-            queuedState = EProcessState.Waiting;
 
-            lifetime = 0;
+            runtime = 0;
         }
 
-        public static ProcessControlBlock Generate(int cacheIndex, int loopingIndex, IGameplayProcess process, IGameplayProcessHandler handler, EProcessState nextState)
+        public static ProcessControlBlock Generate(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
         {
-            return new ProcessControlBlock(cacheIndex, loopingIndex, process, handler, nextState);
+            return new ProcessControlBlock(cacheIndex, stepIndex, process, handler);
+        }
+
+        public void ForceIntoState(EProcessState state)
+        {
+            if (State == EProcessState.Running && state != EProcessState.Running) Interrupt();
+            queuedState = state;
+            SetQueuedState();
+        }
+        
+        public void QueueNextState(EProcessState state)
+        {
+            if (state == State) return;
+            
+            switch (state)
+            {
+                case EProcessState.Created:
+                    break;
+                case EProcessState.Running:
+                    QueueRun();
+                    break;
+                case EProcessState.Waiting:
+                    QueueWait();
+                    break;
+                case EProcessState.Terminated:
+                    QueueTerminate();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(state), state, null);
+            }
         }
 
         public void Initialize()
         {
             if (isInitialized) return;
 
-            isInitialized = true;
-            Process.WhenInitialize();
+            unscaledInitializeTime = Time.unscaledTime;
+            initializeTime = Time.time;
 
-            State = queuedState;
+            isInitialized = true;
+            Process.WhenInitialize(relay);
         }
         
-        /// <summary>
-        /// FROM: Waiting (Not active), Paused (Active)
-        /// </summary>
-        public void Run()
+        private void QueueRun()
         {
-            if (State == EProcessState.Running) return;
-            var oldQueuedState = queuedState;
             queuedState = EProcessState.Running;
-            cts = new CancellationTokenSource();
-            SetQueuedState();
-
-            switch (Process.Lifecycle)
-            {
-
-                case EProcessLifecycle.SelfTerminating:
-                    queuedState = EProcessState.Terminated;
-                    break;
-                case EProcessLifecycle.RunThenWait:
-                case EProcessLifecycle.DependentRunning:
-                    queuedState = EProcessState.Waiting;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            if (State != EProcessState.Running) SetQueuedState();
         }
 
-        public void Wait()
+        public bool Run()
         {
-            queuedState = EProcessState.Waiting;
-            if (State != EProcessState.Running && State != EProcessState.Paused) SetQueuedState();
-        }
+            if (State != EProcessState.Running) return false;
 
-        public bool Cancel()
-        {
-            if (State != EProcessState.Running && State != EProcessState.Paused) return false;
-            if (!cts.Token.IsCancellationRequested) cts.Cancel();
-            cts.Dispose();
-            cts = null;
+            RunProcess().Forget();
+            queuedState = ProcessControl.Instance.GetDefaultTransitionState(this);
+            
             return true;
         }
 
-        public void Terminate()
+        private void QueueWait()
+        {
+            queuedState = EProcessState.Waiting;
+            if (State != EProcessState.Running) SetQueuedState();
+        }
+
+        public bool Wait()
+        {
+            
+            if (State != EProcessState.Waiting) return false;
+
+            Process.WhenWait(relay);
+            
+            return true;
+        }
+
+        private void QueueTerminate()
         {
             queuedState = EProcessState.Terminated;
             if (State != EProcessState.Running) SetQueuedState();
         }
 
+        public bool Terminate()
+        {
+            if (State != EProcessState.Terminated) return false;
+            
+            Process.WhenTerminate(relay);
+            ProcessControl.Instance.Unregister(this);
+            
+            return true;
+        }
+
         private void SetQueuedState()
         {
-            if (queuedState == State)
-            {
-                return;
-            }
-
             State = queuedState;
             switch (State)
             {
-
                 case EProcessState.Created:
                     break;
                 case EProcessState.Running:
-                    RunProcess().Forget();
+                    ProcessControl.Instance.ProcessWillRun(this);
                     break;
                 case EProcessState.Waiting:
-                    Process.WhenWait();
-                    ProcessControl.Instance.ProcessIsWaiting(this);
+                    ProcessControl.Instance.ProcessWillWait(this);
                     break;
                 case EProcessState.Terminated:
-                    Process.WhenTerminate();
-                    ProcessControl.Instance.Unregister(this);
+                    ProcessControl.Instance.ProcessWillTerminate(this);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -130,45 +170,54 @@ namespace FESGameplayAbilitySystem
         }
 
         // Cannot be called in isolation, must be followed by a ProcessControl.Terminate(cacheIndex) call
-        public void TerminateImmediately()
+        public void Interrupt()
         {
             if (State != EProcessState.Running) return;
             
-            cts.Cancel();
-            cts.Dispose();
-            cts = null;
-            
-            queuedState = EProcessState.Terminated;
+            cts?.Cancel();
         }
-        
-        public void SetStepIndex(int stepIndex) => StepIndex = stepIndex;
 
         public void Step()
         {
-            lifetime += Time.deltaTime;
-            Process.WhenUpdate(lifetime);
+            Process.WhenUpdate(relay);
+            
+            runtime += Time.deltaTime;
+            // lifetime += Time.unscaledDeltaTime;
         }
         
         private async UniTask RunProcess()
         {
-            State = EProcessState.Running;
+            cts = new CancellationTokenSource();
+            
+            hasRun = true;
+            
+            if (!midRun) runtime = 0f;
+            midRun = false;
 
+            bool set = true;
             try
             {
-                await Process.RunProcess(cts.Token);
+                await Process.RunProcess(relay, cts.Token);
             }
             catch (OperationCanceledException)
             {
-
+                midRun = true;
+                set = false;
             }
 
-            SetQueuedState();
+            if (!cts.IsCancellationRequested) cts.Cancel();
+            cts.Dispose();
+            cts = null;
+
+            if (set) SetQueuedState();
         }
 
         public ProcessRelay GetRelay()
         {
-            return new ProcessRelay(this);
+            return relay;
         }
+        
+        public void SetStepIndex(int stepIndex) => StepIndex = stepIndex;
     }
 
     public struct ProcessRelay
@@ -186,7 +235,9 @@ namespace FESGameplayAbilitySystem
         public IGameplayProcessHandler Handler => pcb.Handler;
         public EProcessState State => pcb.State;
         public EProcessState QueuedState => pcb.queuedState;
+        public float UnscaledLifetime => pcb.UnscaledLifetime;
         public float Lifetime => pcb.Lifetime;
+        public float Runtime => pcb.Runtime;
     }
     
     public enum EProcessState

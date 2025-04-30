@@ -8,32 +8,30 @@ namespace FESGameplayAbilitySystem
     public class TestMonoProcessScriptableObject : AbstractMonoProcessDataScriptableObject
     {
 
-        public override MonoGameplayProcess WhenInitialize(Vector3 initialPosition, Quaternion initialRotation, Transform parentTransform)
+        public override MonoGameplayProcess WhenInitialize(Vector3 initialPosition, Quaternion initialRotation, Transform parentTransform, ProcessRelay relay)
         {
             return InstantiateMono(initialPosition, initialRotation, parentTransform);
         }
-        public override void WhenUpdate(MonoGameplayProcess mono, float lifespan)
+        public override void WhenUpdate(MonoGameplayProcess mono, ProcessRelay relay)
         {
-            mono.transform.Rotate(Vector3.up * (lifespan * .25f));
+            mono.transform.Rotate(Vector3.up * (relay.Runtime * .25f));
         }
-        public override void WhenWait(MonoGameplayProcess mono)
+        public override void WhenWait(MonoGameplayProcess mono, ProcessRelay relay)
         {
             
         }
-        public override void WhenPause(MonoGameplayProcess mono)
+        public override void WhenPause(MonoGameplayProcess mono, ProcessRelay relay)
         {
             
         }
-        public override void WhenTerminate(MonoGameplayProcess mono)
+        public override void WhenTerminate(MonoGameplayProcess mono, ProcessRelay relay)
         {
-            Debug.Log($"{name} is terminated");
             Destroy(mono.gameObject);
         }
-        public override async UniTask  RunProcess(MonoGameplayProcess mono, CancellationToken token)
+        public override async UniTask RunProcess(MonoGameplayProcess mono, ProcessRelay relay, CancellationToken token)
         {
-            Debug.Log($"{name} is running");
-            await UniTask.Delay(5000, cancellationToken: token);
-            Debug.Log($"{name} finished running");
+            int delay = 5000 - Mathf.FloorToInt(relay.Runtime * 1000);
+            await UniTask.Delay(delay, cancellationToken: token);
         }
     }
 }

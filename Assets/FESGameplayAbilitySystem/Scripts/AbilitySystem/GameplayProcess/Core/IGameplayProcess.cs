@@ -8,13 +8,13 @@ namespace FESGameplayAbilitySystem
 {
     public interface IGameplayProcess
     {
-        public void WhenInitialize();  // Called once when the process is first moved to Ready state
+        public void WhenInitialize(ProcessRelay relay);  // Called once when the process is first moved to Ready state
         
-        public void WhenUpdate(float lifespan);  // Called whenever the PCB is updated
-        public void WhenWait();  // Called whenever the process is set to Wait state
-        public void WhenTerminate();  // Called whenever the process is terminated
+        public void WhenUpdate(ProcessRelay relay);  // Called whenever the PCB is updated
+        public void WhenWait(ProcessRelay relay);  // Called whenever the process is set to Wait state
+        public void WhenTerminate(ProcessRelay relay);  // Called whenever the process is terminated
 
-        public UniTask RunProcess(CancellationToken token);
+        public UniTask RunProcess(ProcessRelay relay, CancellationToken token);
         
         public int StepPriority { get; }
         public EProcessUpdateTiming StepTiming { get; }
@@ -33,6 +33,6 @@ namespace FESGameplayAbilitySystem
     {
         SelfTerminating,
         RunThenWait,
-        DependentRunning
+        RequiresControl
     }
 }

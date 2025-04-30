@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor.Networking.PlayerConnection;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace FESGameplayAbilitySystem
@@ -16,7 +18,10 @@ namespace FESGameplayAbilitySystem
         
         public EProcessControlState StartState = EProcessControlState.Ready;
         public new bool DontDestroyOnLoad = true;
-        public AbstractMonoProcessDataScriptableObject TestMono;  // Testing purposes only, won't be included in shipped version
+        
+        public AbstractMonoProcessDataScriptableObject TestMonoST;  // Testing purposes only, won't be included in shipped version
+        public AbstractMonoProcessDataScriptableObject TestMonoRTW;  // Testing purposes only, won't be included in shipped version
+        public AbstractMonoProcessDataScriptableObject TestMonoRC;  // Testing purposes only, won't be included in shipped version
 
         public EProcessControlState State { get; private set; }
 
@@ -50,7 +55,21 @@ namespace FESGameplayAbilitySystem
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 //var process = new TestClassProcess();
-                var process = new MonoWrapperProcess(TestMono, Vector3.zero, Quaternion.identity);
+                var process = new MonoWrapperProcess(TestMonoST, Vector3.zero, Quaternion.identity);
+                Instance.Register(process, null, out _);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                //var process = new TestClassProcess();
+                var process = new MonoWrapperProcess(TestMonoRTW, Vector3.zero, Quaternion.identity);
+                Instance.Register(process, null, out _);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                //var process = new TestClassProcess();
+                var process = new MonoWrapperProcess(TestMonoRC, Vector3.zero, Quaternion.identity);
                 Instance.Register(process, null, out _);
             }
         }
@@ -67,7 +86,7 @@ namespace FESGameplayAbilitySystem
 
         private void Step(EProcessUpdateTiming timing)
         {
-            if (State is EProcessControlState.Waiting or EProcessControlState.Terminated) return;
+            if (State is EProcessControlState.Waiting or EProcessControlState.TerminatedImmediately) return;
             
             foreach (var priority in stepping[timing])
             {
@@ -85,7 +104,7 @@ namespace FESGameplayAbilitySystem
             
             State = state;
 
-            SetAllProcesses();
+            SetAllProcessesUponStateChange();
         }
 
         private void ResetProcessControl(EProcessControlState nextState)
@@ -106,15 +125,17 @@ namespace FESGameplayAbilitySystem
         // Register a new process and handler to a PCB
         public bool Register(IGameplayProcess process, IGameplayProcessHandler handler, out ProcessRelay relay)
         {
+            relay = default;
+            if (State is EProcessControlState.Closed 
+                or EProcessControlState.ClosedWaiting 
+                or EProcessControlState.Terminated 
+                or EProcessControlState.TerminatedImmediately) return false;
+            
             Debug.Log($"Registering process {process} ({handler})");
             
-            relay = default;
-            if (State is EProcessControlState.Closed or EProcessControlState.Terminated) return false;
-
             var pcb = ProcessControlBlock.Generate(
                 NextCacheIndex, -1,
-                process, handler,
-                GetDefaultCreatedTransitionState(process.Lifecycle)
+                process, handler
             );
 
             SetProcess(pcb);
@@ -126,7 +147,6 @@ namespace FESGameplayAbilitySystem
         // Unregister a PCB
         public bool Unregister(ProcessControlBlock pcb)
         {
-            // The PCB has already taken care of termination logic (and is Termination state)
             Debug.Log($"Unregistering process {pcb.CacheIndex}");
             
             if (waiting.Contains(pcb.CacheIndex)) waiting.Remove(pcb.CacheIndex);
@@ -147,6 +167,8 @@ namespace FESGameplayAbilitySystem
         public bool Run(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
+            if (!ValidatePCBStateTransfer(active[cacheIndex], EProcessState.Running)) return false;
+
             SetProcess(active[cacheIndex]);
             return true;
         }
@@ -154,28 +176,35 @@ namespace FESGameplayAbilitySystem
         public bool Wait(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
-            //MoveFromSteppingToWaiting(active[cacheIndex]);
-            active[cacheIndex].Wait();
+            if (!ValidatePCBStateTransfer(active[cacheIndex], EProcessState.Waiting)) return false;
+            
+            active[cacheIndex].QueueNextState(EProcessState.Waiting);
             return true;
-        }
-
-        public bool Pause(int cacheIndex)
-        {
-            return active.ContainsKey(cacheIndex) && active[cacheIndex].Pause();
         }
         
         public bool Terminate(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
-            active[cacheIndex].Terminate();
+            // if (!ValidatePCBStateTransfer(active[cacheIndex], EProcessState.Terminated)) return false;
+            
+            active[cacheIndex].QueueNextState(EProcessState.Terminated);
             return true;
         }
 
         public bool TerminateImmediate(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
-            active[cacheIndex].TerminateImmediately();
-            return Terminate(cacheIndex);
+            //if (!ValidatePCBStateTransfer(active[cacheIndex], EProcessState.Terminated)) return false;
+            
+            active[cacheIndex].ForceIntoState(EProcessState.Terminated);
+            
+            /*active[cacheIndex].Interrupt();
+            Terminate(cacheIndex);
+
+            if (!active.ContainsKey(cacheIndex)) return true;
+            active[cacheIndex].Terminate();*/
+
+            return true;
         }
         
         public void TerminateAll()
@@ -189,8 +218,11 @@ namespace FESGameplayAbilitySystem
             List<int> indices = active.Keys.ToList();
             foreach (int cacheIndex in indices)
             {
-                active[cacheIndex].TerminateImmediately();
-                Terminate(cacheIndex);
+                // active[cacheIndex].Interrupt();
+                active[cacheIndex].ForceIntoState(EProcessState.Terminated);
+                
+                /*Terminate(cacheIndex);
+                active[cacheIndex].Terminate();*/
             }
         }
         
@@ -200,22 +232,10 @@ namespace FESGameplayAbilitySystem
         
         private void SetProcess(ProcessControlBlock pcb)
         {
-            switch (State)
-            {
-                case EProcessControlState.Ready or EProcessControlState.Closed:
-                    // The PCB was created but hasn't been added to the active or waiting caches
-                    if (pcb.State == EProcessState.Created)
-                    {
-                        PrepareCreatedProcess();
-                        SetProcess(pcb);
-                        return;
-                    }
-                    SetRunning();
-                    break;
-                case EProcessControlState.Waiting or EProcessControlState.ClosedWaiting:
-                    SetWaiting();
-                    break;
-            }
+            if (pcb.State == EProcessState.Created) PrepareCreatedProcess();
+            var setState = GetDefaultTransitionState(pcb);
+            
+            pcb.QueueNextState(setState);
             
             return;
 
@@ -226,49 +246,32 @@ namespace FESGameplayAbilitySystem
                 waiting.Add(pcb.CacheIndex);
                 active[pcb.CacheIndex] = pcb;
             }
-            
-            // Move the PCB to the active cache
-            void SetRunning()
-            {
-                // The PCB must be in the waiting cache
-                if (pcb.State is EProcessState.Waiting) MoveFromWaitingToStepping(pcb);
-            }
-            
-            // Move the PCB to the waiting cache
-            void SetWaiting()
-            {
-                if (pcb.State != EProcessState.Waiting && pcb.State != EProcessState.Terminated) MoveFromSteppingToWaiting(pcb);
-            }
         }
         
-        private void SetAllProcesses()
+        private void SetAllProcessesUponStateChange()
         {
             if (State == EProcessControlState.TerminatedImmediately) TerminateAllImmediately();
             else if (State == EProcessControlState.Terminated) TerminateAll();
-            else foreach (var process in active.Values) SetProcess(process);
-        }
-
-        private void MoveFromWaitingToStepping(ProcessControlBlock pcb)
-        {
-            RemoveFromWaiting(pcb);
-            MoveToStepping(pcb);
-
-            pcb.Run();
-        }
-
-        private void MoveFromSteppingToWaiting(ProcessControlBlock pcb, bool block = true)
-        {
-            pcb.Wait();
-        }
-
-        public void ProcessIsWaiting(ProcessControlBlock pcb)
-        {
-            RemoveFromStepping(pcb);
-            MoveToWaiting(pcb);
+            else
+            {
+                foreach (var pcb in active.Values)
+                {
+                    if (pcb.State == EProcessState.Created) SetProcess(pcb);
+                    else
+                    {
+                        var setState = GetDefaultStateWhenControlChanged(pcb);
+                        if (State is EProcessControlState.Ready or EProcessControlState.Waiting or EProcessControlState.ClosedWaiting) pcb.ForceIntoState(setState);
+                        else pcb.QueueNextState(setState);
+                        // pcb.QueueNextState(setState, true);
+                    }
+                }
+            }
         }
 
         private void MoveToStepping(ProcessControlBlock pcb)
         {
+            if (pcb.StepIndex >= 0) return;
+            
             var timing = pcb.Process.StepTiming;
             int priority = pcb.Process.StepPriority;
 
@@ -283,6 +286,8 @@ namespace FESGameplayAbilitySystem
         
         private void RemoveFromStepping(ProcessControlBlock pcb)
         {
+            if (pcb.StepIndex < 0) return;
+            
             var timing = pcb.Process.StepTiming;
             int priority = pcb.Process.StepPriority;
             int lastIndex = stepping[timing][priority].Count - 1;
@@ -302,6 +307,7 @@ namespace FESGameplayAbilitySystem
         private void MoveToWaiting(ProcessControlBlock pcb)
         {
             waiting.Add(pcb.CacheIndex);
+            pcb.SetStepIndex(-1);
         }
 
         private void RemoveFromWaiting(ProcessControlBlock pcb)
@@ -311,49 +317,532 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
+        #region IPC
+        
+        public void ProcessWillRun(ProcessControlBlock pcb)
+        {
+            RemoveFromWaiting(pcb);
+            MoveToStepping(pcb);
+
+            pcb.Run();
+        }
+
+        public void ProcessWillWait(ProcessControlBlock pcb)
+        {
+            RemoveFromStepping(pcb);
+            MoveToWaiting(pcb);
+
+            pcb.Wait();
+        }
+
+        public void ProcessWillTerminate(ProcessControlBlock pcb)
+        {
+            pcb.Terminate();
+        }
+        
+        #endregion
+        
         #region PCB State Transfers
 
-        public static EProcessState GetDefaultCreatedTransitionState(EProcessLifecycle lifecycle)
+        public EProcessState GetDefaultTransitionState(ProcessControlBlock pcb)
         {
-            return lifecycle switch
+            var lifecycle = pcb.Process.Lifecycle;
+            var from = pcb.State;
+
+            return State switch
             {
-                EProcessLifecycle.SelfTerminating => EProcessState.Running,
-                EProcessLifecycle.RunThenWait => EProcessState.Running,
-                EProcessLifecycle.DependentRunning => EProcessState.Waiting,
-                _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                EProcessControlState.Ready => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Created => EProcessState.Running,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Created => EProcessState.Running,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Running,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Created => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Running,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Waiting => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Created => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Created => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Created => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Closed => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Running => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Running,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Waiting => EProcessState.Running,
+                        EProcessState.Running => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.ClosedWaiting => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Terminated => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.TerminatedImmediately => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                _ => throw new ArgumentOutOfRangeException(nameof(State), State, null)
             };
         }
         
-        public static bool ValidatePCBStateTransfer(EProcessLifecycle lifecycle, EProcessState from, EProcessState to)
+        public EProcessState GetDefaultStateWhenControlChanged(ProcessControlBlock pcb)
         {
-            switch (lifecycle)
+            var lifecycle = pcb.Process.Lifecycle;
+            var from = pcb.State;
+
+            return State switch
+            {
+                EProcessControlState.Ready => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Running => EProcessState.Running,
+                        EProcessState.Waiting => EProcessState.Running,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Waiting when !pcb.HasRun || pcb.MidRun => EProcessState.Running,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Waiting when pcb.MidRun => EProcessState.Running,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Waiting => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Closed => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Running => EProcessState.Running,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Running => EProcessState.Running,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Running => EProcessState.Running,
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.ClosedWaiting => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Waiting => EProcessState.Waiting,
+                        EProcessState.Running => EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Terminated => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.TerminatedImmediately => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RunThenWait => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Terminated,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    EProcessLifecycle.RequiresControl => from switch
+                    {
+                        EProcessState.Created => EProcessState.Terminated,
+                        EProcessState.Running => EProcessState.Waiting,
+                        EProcessState.Waiting => EProcessState.Terminated,
+                        EProcessState.Terminated => EProcessState.Terminated,
+                        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                _ => throw new ArgumentOutOfRangeException(nameof(State), State, null)
+            };
+        }
+        
+        public bool ValidatePCBStateTransfer(ProcessControlBlock pcb, EProcessState to)
+        {
+            var lifecycle = pcb.Process.Lifecycle;
+            var from = pcb.State;
+            
+            return State switch
             {
 
-                case EProcessLifecycle.SelfTerminating:
-                    switch (from)
+                EProcessControlState.Ready => lifecycle switch
+                {
+
+                    EProcessLifecycle.SelfTerminating => to switch
                     {
-                        case EProcessState.Created:
-                            return to == EProcessState.Running;
-                            break;
-                        case EProcessState.Running:
-                            
-                            break;
-                        case EProcessState.Waiting:
-                            break;
-                        case EProcessState.Terminated:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(from), from, null);
-                    }
-                    break;
-                case EProcessLifecycle.RunThenWait:
-                    break;
-                case EProcessLifecycle.DependentRunning:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null);
-            }
-        } 
+                        EProcessState.Created => false,
+                        EProcessState.Running => from == EProcessState.Created,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => from == EProcessState.Running,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RunThenWait => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => from is EProcessState.Waiting,
+                        EProcessState.Waiting => from is EProcessState.Running,
+                        EProcessState.Terminated => from is EProcessState.Running or EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RequiresControl => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => from is EProcessState.Created or EProcessState.Waiting,
+                        EProcessState.Waiting => from is EProcessState.Running,
+                        EProcessState.Terminated => from is EProcessState.Running or EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Waiting => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => true,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RunThenWait => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => true,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RequiresControl => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => true,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Closed => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => from == EProcessState.Created,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => from == EProcessState.Running,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RunThenWait => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => from is EProcessState.Waiting,
+                        EProcessState.Waiting => from is EProcessState.Running,
+                        EProcessState.Terminated => from is EProcessState.Running or EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RequiresControl => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => from is EProcessState.Created or EProcessState.Waiting,
+                        EProcessState.Waiting => from is EProcessState.Running,
+                        EProcessState.Terminated => from is EProcessState.Running or EProcessState.Waiting,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.ClosedWaiting => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => true,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RunThenWait => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => true,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RequiresControl => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => true,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.Terminated => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => false,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RunThenWait => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => false,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RequiresControl => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => false,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                EProcessControlState.TerminatedImmediately => lifecycle switch
+                {
+                    EProcessLifecycle.SelfTerminating => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => false,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RunThenWait => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => false,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    EProcessLifecycle.RequiresControl => to switch
+                    {
+                        EProcessState.Created => false,
+                        EProcessState.Running => false,
+                        EProcessState.Waiting => false,
+                        EProcessState.Terminated => false,
+                        _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(lifecycle), lifecycle, null)
+                },
+                _ => throw new ArgumentOutOfRangeException()
+            };
+        }
         
         #endregion
         
