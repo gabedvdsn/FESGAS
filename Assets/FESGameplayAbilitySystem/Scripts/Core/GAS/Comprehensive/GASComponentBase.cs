@@ -1,26 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class GASComponentBase : MonoBehaviour
+    public abstract class GASComponentBase : AbstractMonoProcess, IGameplayProcessHandler
     {
         [Header("Gameplay Ability System")]
         
         public GASIdentityData Identity;
         
+        // Subsystems
         [HideInInspector] public AttributeSystemComponent AttributeSystem;
         [HideInInspector] public AbilitySystemComponent AbilitySystem;
         
+        // Core
         private List<AbstractGameplayEffectShelfContainer> EffectShelf;
         private List<AbstractGameplayEffectShelfContainer> FinishedEffects;
         private bool needsCleaning;
-
+        private bool isActive;
+        
+        // Tags
         public TagCache TagCache;
+        
+        // Process
+        private Dictionary<int, ProcessRelay> Relays;
         
         protected void Awake()
         {
@@ -29,6 +38,8 @@ namespace FESGameplayAbilitySystem
             
             EffectShelf = new List<AbstractGameplayEffectShelfContainer>();
             FinishedEffects = new List<AbstractGameplayEffectShelfContainer>();
+
+            Relays = new Dictionary<int, ProcessRelay>();
             
             Identity.Initialize(this);
             
@@ -48,6 +59,52 @@ namespace FESGameplayAbilitySystem
             
             TagCache.TickTagWorkers();
         }
+        
+        #region Process Parameters
+        
+        // Handling
+        public bool HandlerValidateAgainst(IGameplayProcessHandler handler)
+        {
+            return (GASComponentBase)handler == this;
+        }
+
+        public void HandlerSubscribeProcess(ProcessRelay relay)
+        {
+            Relays[relay.CacheIndex] = relay;
+        }
+
+        public bool HandlerVoidProcess(int processIndex)
+        {
+            return Relays.Remove(processIndex);
+        }
+        
+        // Process
+        public override void WhenInitialize(ProcessRelay relay)
+        {
+            isActive = true;
+        }
+        public override void WhenUpdate(ProcessRelay relay)
+        {
+            TickEffectShelf();
+            
+            if (needsCleaning) ClearFinishedEffects();
+            
+            TagCache.TickTagWorkers();
+        }
+        public override void WhenWait(ProcessRelay relay)
+        {
+            //
+        }
+        public override void WhenTerminate(ProcessRelay relay)
+        {
+            //
+        }
+        public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
+        {
+            await UniTask.WaitWhile(() => isActive, cancellationToken: token);
+        }
+        
+        #endregion
         
         #region Effect Handling
         

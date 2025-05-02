@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
@@ -43,7 +44,7 @@ namespace FESGameplayAbilitySystem
         private ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
         {
             relay = new ProcessRelay(this);
-            
+
             CacheIndex = cacheIndex;
             StepIndex = stepIndex;
             
@@ -124,7 +125,6 @@ namespace FESGameplayAbilitySystem
 
         public bool Wait()
         {
-            
             if (State != EProcessState.Waiting) return false;
 
             Process.WhenWait(relay);
@@ -220,7 +220,7 @@ namespace FESGameplayAbilitySystem
         public void SetStepIndex(int stepIndex) => StepIndex = stepIndex;
     }
 
-    public struct ProcessRelay
+    public class ProcessRelay
     {
         private ProcessControlBlock pcb;
         public bool Valid => pcb is not null;

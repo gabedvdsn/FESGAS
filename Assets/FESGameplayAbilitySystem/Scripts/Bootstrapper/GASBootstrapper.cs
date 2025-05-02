@@ -22,5 +22,13 @@ namespace FESGameplayAbilitySystem
         {
             return (GASBootstrapper)handler == this;
         }
+        public void HandlerSubscribeProcess(ProcessRelay relay)
+        {
+            throw new System.NotImplementedException();
+        }
+        public bool HandlerVoidProcess(int processIndex)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

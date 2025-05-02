@@ -25,13 +25,13 @@ namespace FESGameplayAbilitySystem
         public AbilitySpec Spec;
         
         private Dictionary<ESourceTarget, List<GASComponentBase>> SourceTargetData;
-        private Dictionary<Type, Dictionary<ESourceTarget, List<object>>> Payload;
+        private Dictionary<GameplayTagScriptableObject, Dictionary<ESourceTargetData, List<object>>> Payload;
 
         public ProxyDataPacket(AbilitySpec spec)
         {
             Spec = spec;
             SourceTargetData = new Dictionary<ESourceTarget, List<GASComponentBase>>();
-            Payload = new Dictionary<Type, Dictionary<ESourceTarget, List<object>>>();
+            Payload = new Dictionary<GameplayTagScriptableObject, Dictionary<ESourceTargetData, List<object>>>();
         }
 
         #region GAS
@@ -69,35 +69,31 @@ namespace FESGameplayAbilitySystem
         
         #region Payload
 
-        public void AddPayload<T>(ESourceTarget sourceTarget, T value)
+        public void AddPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, T value)
         {
-            Type t = typeof(T);
-            
-            if (!Payload.ContainsKey(t)) Payload[t] = new Dictionary<ESourceTarget, List<object>>();
-            Payload[t].SafeAdd(sourceTarget, value);
+            if (!Payload.ContainsKey(key)) Payload[key] = new Dictionary<ESourceTargetData, List<object>>();
+            Payload[key].SafeAdd(sourceTarget, value);
         }
 
-        public void AddPayloadRange<T>(ESourceTarget sourceTarget, List<T> values)
+        public void AddPayloadRange<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, List<T> values)
         {
-            Type t = typeof(T);
-            if (!Payload.ContainsKey(t)) Payload[t] = new Dictionary<ESourceTarget, List<object>>();
+            if (!Payload.ContainsKey(key)) Payload[key] = new Dictionary<ESourceTargetData, List<object>>();
 
-            if (!Payload[t].ContainsKey(sourceTarget)) Payload[t][sourceTarget] = new List<object>();
+            if (!Payload[key].ContainsKey(sourceTarget)) Payload[key][sourceTarget] = new List<object>();
             
-            Payload[t][sourceTarget].AddRange(values);
+            Payload[key][sourceTarget].AddRange(values);
         }
 
-        public bool TryGetPayload<T>(ESourceTarget sourceTarget, out ProxyDataValue<T> proxyDataValue)
+        public bool TryGetPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, out ProxyDataValue<T> proxyDataValue)
         {
-            Type t = typeof(T);
-            if (!Payload.ContainsKey(t) || !Payload[t].ContainsKey(sourceTarget))
+            if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget))
             {
                 proxyDataValue = default;
                 return false;
             }
             
             List<T> tObjects = new List<T>();
-            foreach (object o in Payload[t][sourceTarget])
+            foreach (object o in Payload[key][sourceTarget])
             {
                 if (o is T cast) tObjects.Add(cast);
             }
@@ -106,8 +102,8 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public bool TryPayloadTarget<T>(out ProxyDataValue<T> proxyDataValue) => TryGetPayload(ESourceTarget.Target, out proxyDataValue);
-        public bool TryPayloadSource<T>(out ProxyDataValue<T> proxyDataValue) => TryGetPayload(ESourceTarget.Source, out proxyDataValue);
+        public bool TryPayloadTarget<T>(GameplayTagScriptableObject key, out ProxyDataValue<T> proxyDataValue) => TryGetPayload(ESourceTargetData.Target, key, out proxyDataValue);
+        public bool TryPayloadSource<T>(GameplayTagScriptableObject key, out ProxyDataValue<T> proxyDataValue) => TryGetPayload(ESourceTargetData.Source, key, out proxyDataValue);
         
         #endregion
         
@@ -142,11 +138,11 @@ namespace FESGameplayAbilitySystem
                 AddRange(sourceTarget, other.SourceTargetData[sourceTarget]);
             }
 
-            foreach (Type t in other.Payload.Keys)
+            foreach (var key in other.Payload.Keys)
             {
-                foreach (ESourceTarget sourceTarget in other.Payload[t].Keys)
+                foreach (ESourceTargetData sourceTarget in other.Payload[key].Keys)
                 {
-                    AddPayloadRange(sourceTarget, other.Payload[t][sourceTarget]);
+                    AddPayloadRange(sourceTarget, key, other.Payload[key][sourceTarget]);
                 }
             }
         }
@@ -170,6 +166,18 @@ namespace FESGameplayAbilitySystem
             Data = data;
         }
 
+        public T Get(EProxyDataValueTarget target)
+        {
+            return target switch
+            {
+
+                EProxyDataValueTarget.Primary => Primary,
+                EProxyDataValueTarget.Any => Any,
+                EProxyDataValueTarget.Last => Last,
+                _ => throw new ArgumentOutOfRangeException(nameof(target), target, null)
+            };
+        }
+
         public T Primary => Valid ? Data[0] : default;
         public T Any => Valid ? Data.RandomChoice() : default;
         public List<T> All => Valid ? Data : new List<T>();
@@ -185,8 +193,22 @@ namespace FESGameplayAbilitySystem
                 s += $"{Data[i]}";
                 if (i < Data.Count - 1) s += ", ";
             }
-
+            
             return s;
         }
+    }
+
+    public enum ESourceTargetData
+    {
+        Source,
+        Target,
+        Data
+    }
+
+    public enum EProxyDataValueTarget
+    {
+        Primary,
+        Any,
+        Last
     }
 }

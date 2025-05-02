@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8631222586962226511}
-  - component: {fileID: 7817965879063145044}
+  - component: {fileID: 4471479272133613396}
   m_Layer: 0
   m_Name: TestMonoProcess
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 3059789963433198792}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7817965879063145044
+--- !u!114 &4471479272133613396
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,9 +42,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 3205951817180500489}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9367a317d70243d4b19f406197e9d1be, type: 3}
+  m_Script: {fileID: 11500000, guid: 244653e61199bc443bdcd2b32ec676dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ProcessStepPriority: 0
+  ProcessLifecycle: 0
+  ProcessTiming: 1
 --- !u!1 &8673131289563404514
 GameObject:
   m_ObjectHideFlags: 0
@@ -74,7 +77,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.4453549, y: -0.08425984, z: 0.08398982, w: 0.8874148}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8631222586962226511}

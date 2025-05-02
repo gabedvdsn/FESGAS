@@ -19,9 +19,9 @@ namespace FESGameplayAbilitySystem
         public EProcessControlState StartState = EProcessControlState.Ready;
         public new bool DontDestroyOnLoad = true;
         
-        public AbstractMonoProcessDataScriptableObject TestMonoST;  // Testing purposes only, won't be included in shipped version
-        public AbstractMonoProcessDataScriptableObject TestMonoRTW;  // Testing purposes only, won't be included in shipped version
-        public AbstractMonoProcessDataScriptableObject TestMonoRC;  // Testing purposes only, won't be included in shipped version
+        public MonoProcessPacket TestMonoST;  // Testing purposes only, won't be included in shipped version
+        public MonoProcessPacket TestMonoRTW;  // Testing purposes only, won't be included in shipped version
+        public MonoProcessPacket TestMonoRC;  // Testing purposes only, won't be included in shipped version
 
         public EProcessControlState State { get; private set; }
 
@@ -55,21 +55,21 @@ namespace FESGameplayAbilitySystem
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 //var process = new TestClassProcess();
-                var process = new MonoWrapperProcess(TestMonoST, Vector3.zero, Quaternion.identity);
+                var process = PrepareMonoProcess(TestMonoST, null, null);
                 Instance.Register(process, null, out _);
             }
             
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 //var process = new TestClassProcess();
-                var process = new MonoWrapperProcess(TestMonoRTW, Vector3.zero, Quaternion.identity);
+                var process = PrepareMonoProcess(TestMonoRTW, null, null);
                 Instance.Register(process, null, out _);
             }
             
             if (Input.GetKeyDown(KeyCode.Alpha3))
             {
                 //var process = new TestClassProcess();
-                var process = new MonoWrapperProcess(TestMonoRC, Vector3.zero, Quaternion.identity);
+                var process = PrepareMonoProcess(TestMonoRC, null, null);
                 Instance.Register(process, null, out _);
             }
         }
@@ -131,8 +131,6 @@ namespace FESGameplayAbilitySystem
                 or EProcessControlState.Terminated 
                 or EProcessControlState.TerminatedImmediately) return false;
             
-            Debug.Log($"Registering process {process} ({handler})");
-            
             var pcb = ProcessControlBlock.Generate(
                 NextCacheIndex, -1,
                 process, handler
@@ -147,10 +145,10 @@ namespace FESGameplayAbilitySystem
         // Unregister a PCB
         public bool Unregister(ProcessControlBlock pcb)
         {
-            Debug.Log($"Unregistering process {pcb.CacheIndex}");
-            
             if (waiting.Contains(pcb.CacheIndex)) waiting.Remove(pcb.CacheIndex);
             else RemoveFromStepping(pcb);
+
+            pcb.Handler?.HandlerVoidProcess(pcb.CacheIndex);
             
             return active.Remove(pcb.CacheIndex);
         }
@@ -158,6 +156,38 @@ namespace FESGameplayAbilitySystem
         public Dictionary<int, ProcessControlBlock> FetchActiveProcesses()
         {
             return active;
+        }
+
+        public MonoWrapperProcess PrepareMonoProcess(MonoProcessPacket packet, MonoProcessParametersScriptableObject parameters, ProxyDataPacket data)
+        {
+            // Can't use data bc don't know how to grab payload data
+            // Default to Identity parameters
+            if (parameters is null || data is null)
+            {
+                return new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity);
+            }
+
+            MonoWrapperProcess process = new MonoWrapperProcess(packet.MonoProcess);
+            
+            // Position
+            if (data.TryGetPayload<Vector3>(packet.Position, parameters.PositionTag, out var posData) && posData.Valid)
+            {
+                process.SetPosition(posData.Primary);
+            }
+            
+            // Rotation
+            if (data.TryGetPayload<Quaternion>(packet.Rotation, parameters.RotationTag, out var rotData) && rotData.Valid)
+            {
+                process.SetRotation(rotData.Primary);
+            }
+            
+            // Parent Transform
+            if (data.TryGetPayload<Transform>(packet.Rotation, parameters.RotationTag, out var ptData) && ptData.Valid)
+            {
+                process.SetParentTransform(ptData.Primary);
+            }
+
+            return process;
         }
         
         #endregion
@@ -185,7 +215,6 @@ namespace FESGameplayAbilitySystem
         public bool Terminate(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
-            // if (!ValidatePCBStateTransfer(active[cacheIndex], EProcessState.Terminated)) return false;
             
             active[cacheIndex].QueueNextState(EProcessState.Terminated);
             return true;
@@ -194,15 +223,8 @@ namespace FESGameplayAbilitySystem
         public bool TerminateImmediate(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
-            //if (!ValidatePCBStateTransfer(active[cacheIndex], EProcessState.Terminated)) return false;
             
             active[cacheIndex].ForceIntoState(EProcessState.Terminated);
-            
-            /*active[cacheIndex].Interrupt();
-            Terminate(cacheIndex);
-
-            if (!active.ContainsKey(cacheIndex)) return true;
-            active[cacheIndex].Terminate();*/
 
             return true;
         }
@@ -218,11 +240,7 @@ namespace FESGameplayAbilitySystem
             List<int> indices = active.Keys.ToList();
             foreach (int cacheIndex in indices)
             {
-                // active[cacheIndex].Interrupt();
                 active[cacheIndex].ForceIntoState(EProcessState.Terminated);
-                
-                /*Terminate(cacheIndex);
-                active[cacheIndex].Terminate();*/
             }
         }
         
@@ -233,9 +251,9 @@ namespace FESGameplayAbilitySystem
         private void SetProcess(ProcessControlBlock pcb)
         {
             if (pcb.State == EProcessState.Created) PrepareCreatedProcess();
-            var setState = GetDefaultTransitionState(pcb);
+            var state = GetDefaultTransitionState(pcb);
             
-            pcb.QueueNextState(setState);
+            pcb.QueueNextState(state);
             
             return;
 
@@ -262,7 +280,6 @@ namespace FESGameplayAbilitySystem
                         var setState = GetDefaultStateWhenControlChanged(pcb);
                         if (State is EProcessControlState.Ready or EProcessControlState.Waiting or EProcessControlState.ClosedWaiting) pcb.ForceIntoState(setState);
                         else pcb.QueueNextState(setState);
-                        // pcb.QueueNextState(setState, true);
                     }
                 }
             }

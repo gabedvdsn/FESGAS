@@ -6,49 +6,61 @@ namespace FESGameplayAbilitySystem
 {
     public class MonoWrapperProcess : IGameplayProcess
     {
-        private AbstractMonoProcessDataScriptableObject MonoData;
-        
+        private AbstractMonoProcess MonoPrefab;
+
         private Vector3 initialPosition;
         private Quaternion initialRotation;
         private Transform parentTransform;
         
-        private MonoGameplayProcess activeMono;
+        private AbstractMonoProcess activeMono;
 
-        public MonoWrapperProcess(AbstractMonoProcessDataScriptableObject monoData, Vector3 initialPosition, Quaternion initialRotation, Transform parentTransform = null)
+        public MonoWrapperProcess(AbstractMonoProcess monoPrefab)
         {
-            MonoData = monoData;
+            MonoPrefab = monoPrefab;
+        }
+
+        public MonoWrapperProcess(AbstractMonoProcess monoPrefab, Vector3 initialPosition, Quaternion initialRotation, Transform parentTransform = null)
+        {
+            MonoPrefab = monoPrefab;
             this.initialPosition = initialPosition;
             this.initialRotation = initialRotation;
             this.parentTransform = parentTransform;
         }
 
+        public void SetPosition(Vector3 pos) => initialPosition = pos;
+        public void SetRotation(Quaternion rot) => initialRotation = rot;
+        public void SetParentTransform(Transform pt) => parentTransform = pt;
+
         public void WhenInitialize(ProcessRelay relay)
         {
-            activeMono = MonoData.WhenInitialize(initialPosition, initialRotation, parentTransform, relay);
+            if (parentTransform is null) activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation);
+            else activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation, parentTransform);
+            
+            activeMono.WhenInitialize(relay);
         }
 
         public void WhenUpdate(ProcessRelay relay)
         {
-            MonoData.WhenUpdate(activeMono, relay);
+            activeMono.WhenUpdate(relay);
         }
         
         public void WhenWait(ProcessRelay relay)
         {
-            MonoData.WhenWait(activeMono, relay);
+            activeMono.WhenWait(relay);
         }
 
         public void WhenTerminate(ProcessRelay relay)
         {
-            MonoData.WhenTerminate(activeMono, relay);
+            activeMono.WhenTerminate(relay);
         }
         
         public async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
-            await MonoData.RunProcess(activeMono, relay, token);
+            await activeMono.RunProcess(relay, token);
         }
         
-        public int StepPriority => MonoData.StepPriority;
-        public EProcessUpdateTiming StepTiming => MonoData.StepTiming;
-        public EProcessLifecycle Lifecycle => MonoData.Lifecycle;
+        public int StepPriority => activeMono.StepPriority;
+        public EProcessUpdateTiming StepTiming => activeMono.StepTiming;
+        public EProcessLifecycle Lifecycle => activeMono.Lifecycle;
     }
 }
