@@ -190,7 +190,7 @@ namespace FESGameplayAbilitySystem
             {
                 Register
                 (
-                    new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity),
+                    new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity, GameRoot.Instance ? GameRoot.Instance.transform : null),
                     data.Handler,
                     out relay
                 );
@@ -219,25 +219,25 @@ namespace FESGameplayAbilitySystem
             // Default to Identity parameters
             if (parameters is null || data is null)
             {
-                return new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity, null);
+                return new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity, GameRoot.Instance ? GameRoot.Instance.transform : null);
             }
 
             MonoWrapperProcess process = new MonoWrapperProcess(packet.MonoProcess);
             
             // Position
             process.SetPosition(
-                data.TryGetPayload<Vector3>(packet.Position, parameters.PositionTag, packet.PositionTarget, out var pos) 
+                data.TryGetPayload<Vector3>(packet.Position, parameters.Position, packet.PositionTarget, out var pos) 
                     ? pos : Vector3.zero);
             
             // Rotation
             process.SetRotation(
-                data.TryGetPayload<Quaternion>(packet.Rotation, parameters.RotationTag, packet.RotationTarget, out var rot) 
+                data.TryGetPayload<Quaternion>(packet.Rotation, parameters.Rotation, packet.RotationTarget, out var rot) 
                     ? rot : Quaternion.identity);
             
             // Parent transform
             process.SetParentTransform(
-                data.TryGetPayload<Transform>(packet.Transform, parameters.FollowTransformTag, packet.TransformTarget, out var t) 
-                    ? t : null);
+                data.TryGetPayload<Transform>(packet.Transform, parameters.Transform, packet.TransformTarget, out var t) 
+                    ? t : GameRoot.Instance ? GameRoot.Instance.transform : null);
 
             return process;
         }
@@ -924,6 +924,12 @@ namespace FESGameplayAbilitySystem
         {
             return (ProcessControl)handler == this;
         }
+
+        public bool HandlerProcessIsSubscribed(ProcessRelay relay)
+        {
+            return true;
+        }
+
         public void HandlerSubscribeProcess(ProcessRelay relay)
         {
             // Doesn't need to do anything!

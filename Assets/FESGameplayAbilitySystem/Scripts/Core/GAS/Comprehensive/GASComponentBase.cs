@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class GASComponentBase : AbstractMonoProcess, IGameplayProcessHandler
+    public abstract class GASComponentBase : LazyMonoProcess, IGameplayProcessHandler
     {
         [Header("Gameplay Ability System")]
         
@@ -23,7 +23,6 @@ namespace FESGameplayAbilitySystem
         private List<AbstractGameplayEffectShelfContainer> EffectShelf;
         private List<AbstractGameplayEffectShelfContainer> FinishedEffects;
         private bool needsCleaning;
-        protected bool isActive;
         
         // Tags
         public TagCache TagCache;
@@ -63,38 +62,29 @@ namespace FESGameplayAbilitySystem
         #region Process Parameters
         
         // Process
-        public override void WhenInitialize(ProcessRelay relay)
-        {
-            Debug.Log($"{name} is initialized");
-        }
         public override void WhenUpdate(ProcessRelay relay)
         {
-            transform.Rotate(Vector3.up * (relay.Runtime * Time.deltaTime));
-            
             TickEffectShelf();
             
             if (needsCleaning) ClearFinishedEffects();
             
             TagCache.TickTagWorkers();
         }
-        public override void WhenWait(ProcessRelay relay)
-        {
-            isActive = false;
-        }
-        public override void WhenTerminate(ProcessRelay relay)
-        {
-            Destroy(gameObject);
-        }
         public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
-            isActive = true;
-            await UniTask.WaitWhile(() => isActive, cancellationToken: token);
+            processActive = true;
+            await UniTask.WaitWhile(() => processActive, cancellationToken: token);
         }
         
         // Handling
         public bool HandlerValidateAgainst(IGameplayProcessHandler handler)
         {
             return (GASComponentBase)handler == this;
+        }
+
+        public bool HandlerProcessIsSubscribed(ProcessRelay relay)
+        {
+            return Relays.ContainsKey(relay.CacheIndex);
         }
 
         public void HandlerSubscribeProcess(ProcessRelay relay)

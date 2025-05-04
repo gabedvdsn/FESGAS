@@ -39,11 +39,11 @@ namespace FESGameplayAbilitySystem
                 if (activeMono)
                 {
                     activeMono.WhenInitialize(relay);
-                    return;
+                    activeMono.SendProcessData();
                 }
             }
             
-            if (parentTransform is null) activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation);
+            if (parentTransform is null) activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation, GameRoot.Instance ? GameRoot.Instance.transform : null);
             else activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation, parentTransform);
             
             activeMono.WhenInitialize(relay);

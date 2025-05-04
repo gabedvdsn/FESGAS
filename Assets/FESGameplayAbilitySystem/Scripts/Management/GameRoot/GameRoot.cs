@@ -23,7 +23,6 @@ namespace FESGameplayAbilitySystem
         
         protected override void Awake()
         {
-            Debug.Log($"x");
             if (Instance is not null && Instance != this)
             {
                 Debug.Log($"woah buddy");
@@ -37,6 +36,8 @@ namespace FESGameplayAbilitySystem
             // Self initialize when bootstrapper is null
             if (Bootstrapper.Instance is null) Initialize();
         }
+        
+        #region Control
         
         public void Initialize()
         {
@@ -88,6 +89,13 @@ namespace FESGameplayAbilitySystem
             task.Prepare(data);
             await task.Activate(data, token);
             task.Clean(data);
+        }
+        
+        #endregion
+
+        public override void WhenUpdate(ProcessRelay relay)
+        {
+            transform.Rotate(Vector3.up * (25f * Time.deltaTime));
         }
     }
 }

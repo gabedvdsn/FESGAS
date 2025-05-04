@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61ca221b10ca3a1439609d07237be645, type: 3}
   m_Name: MPP_Default
   m_EditorClassIdentifier: 
-  FollowTransformTag: {fileID: 11400000, guid: 9fc7f51ebbe8ef547b1e00ee62b4d6d3, type: 2}
-  PositionTag: {fileID: 11400000, guid: 2f2eeb6e8826e4d49803a41b2c017363, type: 2}
-  RotationTag: {fileID: 11400000, guid: c0906095a24643a409cd32eabafbf0b5, type: 2}
+  Position: {fileID: 11400000, guid: 2f2eeb6e8826e4d49803a41b2c017363, type: 2}
+  Rotation: {fileID: 11400000, guid: c0906095a24643a409cd32eabafbf0b5, type: 2}
+  Transform: {fileID: 11400000, guid: 9fc7f51ebbe8ef547b1e00ee62b4d6d3, type: 2}

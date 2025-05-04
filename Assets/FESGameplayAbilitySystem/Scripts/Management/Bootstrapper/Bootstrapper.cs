@@ -51,6 +51,12 @@ namespace FESGameplayAbilitySystem
         {
             return (Bootstrapper)handler == this;
         }
+
+        public bool HandlerProcessIsSubscribed(ProcessRelay relay)
+        {
+            return true;
+        }
+
         public void HandlerSubscribeProcess(ProcessRelay relay)
         {
             Relays[relay.CacheIndex] = relay;

@@ -12,6 +12,10 @@ namespace FESGameplayAbilitySystem
 
         public IGameplayProcessHandler Handler;
 
+        public GameplayTagScriptableObject PositionTag => GameRoot.Instance.DefaultDataParameters.Position;
+        public GameplayTagScriptableObject RotationTag => GameRoot.Instance.DefaultDataParameters.Rotation;
+        public GameplayTagScriptableObject TransformTag => GameRoot.Instance.DefaultDataParameters.Transform;
+
         public ProcessDataPacket()
         {
             Handler = ProcessControl.Instance;

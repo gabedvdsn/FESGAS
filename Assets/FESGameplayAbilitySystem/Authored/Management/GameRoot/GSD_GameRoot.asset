@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GSD_GameRoot
   m_EditorClassIdentifier: 
   ActivationPolicy: 0
-  MaxAbilities: 99999
+  MaxAbilities: 99999999
   StartingAbilities: []
   ImpactWorkers: []
   AttributeSet: {fileID: 11400000, guid: c167fcdea8759264fb4b1178b183d365, type: 2}

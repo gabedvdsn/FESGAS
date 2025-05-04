@@ -150,6 +150,7 @@ namespace FESGameplayAbilitySystem
 
         private void SetQueuedState()
         {
+            if (queuedState == State) return;
             State = queuedState;
             switch (State)
             {

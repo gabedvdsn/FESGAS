@@ -17,6 +17,14 @@ namespace FESGameplayAbilitySystem
         
         [Tooltip("Uses Object.Instantiate when null")]
         public AbstractMonoProcessInstantiatorScriptableObject Instantiator;
+
+        protected ProcessDataPacket data;
+        protected bool processActive;
+        
+        public void SendProcessData(ProcessDataPacket processData)
+        {
+            data = processData;
+        }
         
         public abstract void WhenInitialize(ProcessRelay relay);
         
@@ -31,10 +39,5 @@ namespace FESGameplayAbilitySystem
         public int StepPriority => ProcessStepPriority;
         public EProcessUpdateTiming StepTiming => ProcessTiming;
         public EProcessLifecycle Lifecycle => ProcessLifecycle;
-
-        private void OnDestroy()
-        {
-            Debug.Log($"destroyed!?");
-        }
     }
 }

@@ -17,11 +17,6 @@ namespace FESGameplayAbilitySystem
             //Debug.Log($"Process updated");// (lifetime: {lifespan})");
         }
 
-        public void WhenReady()
-        {
-            Debug.Log($"Process ready");
-        }
-
         public void WhenWait(ProcessRelay relay)
         {
             Debug.Log($"Process waiting");
@@ -32,7 +27,7 @@ namespace FESGameplayAbilitySystem
             Debug.Log($"Process terminated");
         }
 
-        public string ProcessName => "ClassProcess";
+        public string ProcessName => "AnonymousClassProcess";
         public EProcessUpdateTiming StepTiming => EProcessUpdateTiming.Update;
         public EProcessLifecycle Lifecycle => EProcessLifecycle.SelfTerminating;
 
