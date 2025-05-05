@@ -33,6 +33,16 @@ namespace FESGameplayAbilitySystem
 
         public void WhenInitialize(ProcessRelay relay)
         {
+            if (MonoPrefab.Instantiator is not null)
+            {
+                activeMono = MonoPrefab.Instantiator.InstantiateProcess(MonoPrefab, initialPosition, initialRotation, parentTransform);
+                if (activeMono)
+                {
+                    activeMono.WhenInitialize(relay);
+                    return;
+                }
+            }
+            
             if (parentTransform is null) activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation);
             else activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation, parentTransform);
             
@@ -52,7 +62,13 @@ namespace FESGameplayAbilitySystem
         public void WhenTerminate(ProcessRelay relay)
         {
             if (!activeMono) return;
+            
             activeMono.WhenTerminate(relay);
+            if (activeMono.Instantiator is not null)
+            {
+                activeMono.Instantiator.CleanProcess(activeMono);
+            }
+            if (activeMono is not null) Object.Destroy(activeMono.gameObject);
         }
         
         public async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
@@ -60,7 +76,7 @@ namespace FESGameplayAbilitySystem
             await activeMono.RunProcess(relay, token);
         }
 
-        public GameplayTagScriptableObject ProcessTag => activeMono.GetProcessTag();
+        public string ProcessName => activeMono ? activeMono.name : "[ ]";
         public int StepPriority => activeMono.StepPriority;
         public EProcessUpdateTiming StepTiming => activeMono.StepTiming;
         public EProcessLifecycle Lifecycle => activeMono.Lifecycle;

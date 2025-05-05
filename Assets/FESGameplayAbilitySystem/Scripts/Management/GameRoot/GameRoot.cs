@@ -12,9 +12,6 @@ namespace FESGameplayAbilitySystem
         [Header("Game Root")]
         
         public static GameRoot Instance;
-        public new bool DontDestroyOnLoad = true;
-        
-        [Space]
         
         // Useful for backend systems like observers, audio, etc...
         public List<AbstractCreateProcessProxyTask> CreateProcessTasks;
@@ -26,20 +23,22 @@ namespace FESGameplayAbilitySystem
         
         protected override void Awake()
         {
+            Debug.Log($"x");
             if (Instance is not null && Instance != this)
             {
+                Debug.Log($"woah buddy");
                 Destroy(gameObject);
             }
 
             Instance = this;
             
-            // Only use DDoL if ProcessControl is also using
-            if (DontDestroyOnLoad && ProcessControl.Instance.DontDestroyOnLoad) DontDestroyOnLoad(gameObject);
-            
             base.Awake();
+            
+            // Self initialize when bootstrapper is null
+            if (Bootstrapper.Instance is null) Initialize();
         }
-
-        private void Start()
+        
+        public void Initialize()
         {
             NativeDataPacket = ProxyDataPacket.GenerateFrom
             (
@@ -47,7 +46,14 @@ namespace FESGameplayAbilitySystem
                 this, ESourceTargetBoth.Both
             );
             
-            RunProcessTasks(CreateProcessTasks, NativeDataPacket);
+            RunProcessTasks(CreateProcessTasks);
+        }
+        
+        public void RunProcessTask(AbstractCreateProcessProxyTask task)
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+            
+            ActivateProcess(NativeDataPacket, task, cts.Token).Forget();
         }
         
         public void RunProcessTask(AbstractCreateProcessProxyTask task, ProxyDataPacket data)
@@ -55,6 +61,16 @@ namespace FESGameplayAbilitySystem
             CancellationTokenSource cts = new CancellationTokenSource();
             
             ActivateProcess(data, task, cts.Token).Forget();
+        }
+        
+        public void RunProcessTasks(List<AbstractCreateProcessProxyTask> tasks)
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+            
+            foreach (var task in tasks)
+            {
+                ActivateProcess(NativeDataPacket, task, cts.Token).Forget();
+            }
         }
 
         public void RunProcessTasks(List<AbstractCreateProcessProxyTask> tasks, ProxyDataPacket data)

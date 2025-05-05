@@ -16,7 +16,7 @@ namespace FESGameplayAbilitySystem
 
         public UniTask RunProcess(ProcessRelay relay, CancellationToken token);
 
-        public GameplayTagScriptableObject ProcessTag { get; }
+        public string ProcessName { get; }
         public int StepPriority { get; }
         public EProcessUpdateTiming StepTiming { get; }
         public EProcessLifecycle Lifecycle { get; }

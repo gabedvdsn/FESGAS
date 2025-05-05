@@ -28,13 +28,23 @@ namespace FESGameplayAbilitySystem
             DontDestroyOnLoad(gameObject);
             
             if (ProcessControl.Instance is null) Instantiate(ProcessControlPrefab);
-            if (GameRoot.Instance is null) Instantiate(GameRootPrefab);
+            // if (GameRoot.Instance is null) Instantiate(GameRootPrefab);
             
             var data = ProxyDataPacket.GenerateFrom(
-                IEffectDerivation.GenerateSourceDerivation(GameRoot.Instance), 
-                GameRoot.Instance, ESourceTargetBoth.Both);
+                IEffectDerivation.GenerateSourceDerivation(null), 
+                null, ESourceTargetBoth.Both);
             
-            ProcessControl.Instance.RegisterMonoProcess(new MonoProcessPacket(GameRootPrefab), data, null);
+            ProcessControl.Instance.RegisterMonoProcess(new MonoProcessPacket(GameRootPrefab), data, null, out _);
+
+            Initialize();
+            
+            // Game initialization happens here after bootstrapping is complete
+            GameRoot.Instance.Initialize();
+        }
+
+        private void Initialize()
+        {
+            // Any further bootstrap initialization stuff here   
         }
         
         public bool HandlerValidateAgainst(IGameplayProcessHandler handler)

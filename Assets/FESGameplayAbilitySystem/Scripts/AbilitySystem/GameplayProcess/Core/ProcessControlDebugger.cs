@@ -25,7 +25,7 @@ namespace FESGameplayAbilitySystem
             }
 
             EditorGUILayout.BeginVertical("box");
-            EditorGUILayout.LabelField($"State: {ProcessControl.Instance.State}");
+            EditorGUILayout.LabelField($"State: {ProcessControl.Instance.State}  |  {ProcessControl.Instance.Active}/{ProcessControl.Instance.Created}");
 
             showProcessControls = EditorGUILayout.Toggle("Show Process Controls", showProcessControls);
             
@@ -92,7 +92,8 @@ namespace FESGameplayAbilitySystem
                     if (relay.Process is null) continue;
 
                     EditorGUILayout.BeginVertical("box");
-                    
+
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}");
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
                     EditorGUILayout.BeginHorizontal("box");
@@ -122,6 +123,7 @@ namespace FESGameplayAbilitySystem
 
                     EditorGUILayout.BeginVertical("box");
                     
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}");
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
                     EditorGUILayout.BeginHorizontal("box");

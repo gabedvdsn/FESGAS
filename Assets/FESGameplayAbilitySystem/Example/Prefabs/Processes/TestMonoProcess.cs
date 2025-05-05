@@ -29,9 +29,5 @@ namespace FESGameplayAbilitySystem
         {
             await UniTask.Delay(relay.RemainingRuntime(5000), cancellationToken: token);
         }
-        public override GameplayTagScriptableObject GetProcessTag()
-        {
-            return null;
-        }
     }
 }

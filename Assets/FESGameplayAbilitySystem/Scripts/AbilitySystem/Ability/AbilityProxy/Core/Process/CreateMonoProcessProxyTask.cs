@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
         {
             foreach (var packet in MonoProcesses)
             {
-                ProcessControl.Instance.RegisterMonoProcess(packet, data, UseDefaultParameters ? GameRoot.Instance.DefaultDataParameters : Parameters);
+                ProcessControl.Instance.RegisterMonoProcess(packet, data, UseDefaultParameters ? GameRoot.Instance.DefaultDataParameters : Parameters, out _);
             }
             
             await UniTask.CompletedTask;

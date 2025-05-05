@@ -13,6 +13,11 @@ namespace FESGameplayAbilitySystem
         public EProcessLifecycle ProcessLifecycle;
         public EProcessUpdateTiming ProcessTiming;
         
+        [Space(5)]
+        
+        [Tooltip("Uses Object.Instantiate when null")]
+        public AbstractMonoProcessInstantiatorScriptableObject Instantiator;
+        
         public abstract void WhenInitialize(ProcessRelay relay);
         
         public abstract void WhenUpdate(ProcessRelay relay);
@@ -23,9 +28,13 @@ namespace FESGameplayAbilitySystem
         
         public abstract UniTask RunProcess(ProcessRelay relay, CancellationToken token);
 
-        public abstract GameplayTagScriptableObject GetProcessTag();
         public int StepPriority => ProcessStepPriority;
         public EProcessUpdateTiming StepTiming => ProcessTiming;
         public EProcessLifecycle Lifecycle => ProcessLifecycle;
+
+        private void OnDestroy()
+        {
+            Debug.Log($"destroyed!?");
+        }
     }
 }

@@ -36,6 +36,9 @@ namespace FESGameplayAbilitySystem
         private int cacheCounter = 0;
         private int NextCacheIndex => cacheCounter++;
 
+        public int Created => cacheCounter;
+        public int Active => active.Count;
+
         #region Events
         
         private void Awake()
@@ -148,7 +151,9 @@ namespace FESGameplayAbilitySystem
             );
 
             SetProcess(pcb);
+            
             relay = pcb.GetRelay();
+            handler?.HandlerSubscribeProcess(relay);
             
             return true;
         }
@@ -173,12 +178,12 @@ namespace FESGameplayAbilitySystem
         
         #region Mono Processes
         
-        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data)
+        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, out ProcessRelay relay)
         {
-            RegisterMonoProcess(packet, data, GameRoot.Instance.DefaultDataParameters);
+            RegisterMonoProcess(packet, data, GameRoot.Instance.DefaultDataParameters, out relay);
         }
 
-        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, MonoProcessParametersScriptableObject parameters)
+        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, MonoProcessParametersScriptableObject parameters, out ProcessRelay relay)
         {
             // Can't use data bc don't know how to grab payload data
             if (parameters is null)
@@ -187,9 +192,9 @@ namespace FESGameplayAbilitySystem
                 (
                     new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity),
                     data.Handler,
-                    out var relay
+                    out relay
                 );
-                data.Handler.HandlerSubscribeProcess(relay);
+                data.Handler?.HandlerSubscribeProcess(relay);
             }
             else
             {
@@ -197,9 +202,9 @@ namespace FESGameplayAbilitySystem
                 (
                     PrepareMonoProcess(packet, data, parameters),
                     data.Handler,
-                    out var relay
+                    out relay
                 );
-                data.Handler.HandlerSubscribeProcess(relay);
+                data.Handler?.HandlerSubscribeProcess(relay);
             }
         }
 
@@ -214,28 +219,25 @@ namespace FESGameplayAbilitySystem
             // Default to Identity parameters
             if (parameters is null || data is null)
             {
-                return new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity);
+                return new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity, null);
             }
 
             MonoWrapperProcess process = new MonoWrapperProcess(packet.MonoProcess);
             
             // Position
-            if (data.TryGetPayload<Vector3>(packet.Position, parameters.PositionTag, out var posData) && posData.Valid)
-            {
-                process.SetPosition(posData.Get(packet.PositionTarget));
-            } else process.SetPosition(Vector3.zero);
+            process.SetPosition(
+                data.TryGetPayload<Vector3>(packet.Position, parameters.PositionTag, packet.PositionTarget, out var pos) 
+                    ? pos : Vector3.zero);
             
             // Rotation
-            if (data.TryGetPayload<Quaternion>(packet.Rotation, parameters.RotationTag, out var rotData) && rotData.Valid)
-            {
-                process.SetRotation(rotData.Get(packet.RotationTarget));
-            } else process.SetRotation(Quaternion.identity);
+            process.SetRotation(
+                data.TryGetPayload<Quaternion>(packet.Rotation, parameters.RotationTag, packet.RotationTarget, out var rot) 
+                    ? rot : Quaternion.identity);
             
-            // Parent Transform
-            if (data.TryGetPayload<Transform>(packet.Transform, parameters.FollowTransformTag, out var ptData) && ptData.Valid)
-            {
-                process.SetParentTransform(ptData.Get(packet.TransformTarget));
-            }
+            // Parent transform
+            process.SetParentTransform(
+                data.TryGetPayload<Transform>(packet.Transform, parameters.FollowTransformTag, packet.TransformTarget, out var t) 
+                    ? t : null);
 
             return process;
         }

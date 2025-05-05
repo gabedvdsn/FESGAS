@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 
@@ -70,6 +71,28 @@ namespace FESGameplayAbilitySystem
 
             Payload[key][sourceTarget].AddRange(values);
         }
+        
+        public bool TryGetPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        {
+            value = default;
+            
+            if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget))
+            {
+                return false;
+            }
+
+            object o = target switch
+            {
+                EProxyDataValueTarget.Primary => Payload[key][sourceTarget][0],
+                EProxyDataValueTarget.Any => Payload[key][sourceTarget].RandomChoice(),
+                EProxyDataValueTarget.Last => Payload[key][sourceTarget][^1],
+                _ => throw new ArgumentOutOfRangeException(nameof(target), target, null)
+            };
+
+            if (o is not T cast) return false;
+            value = cast;
+            return value is not null;
+        }
 
         public bool TryGetPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, out DataValue<T> dataValue)
         {
@@ -88,9 +111,6 @@ namespace FESGameplayAbilitySystem
             dataValue = new DataValue<T>(tObjects);
             return true;
         }
-
-        public bool TryPayloadTarget<T>(GameplayTagScriptableObject key, out DataValue<T> dataValue) => TryGetPayload(ESourceTargetData.Target, key, out dataValue);
-        public bool TryPayloadSource<T>(GameplayTagScriptableObject key, out DataValue<T> dataValue) => TryGetPayload(ESourceTargetData.Source, key, out dataValue);
         
         #endregion
     }

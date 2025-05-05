@@ -65,10 +65,12 @@ namespace FESGameplayAbilitySystem
         // Process
         public override void WhenInitialize(ProcessRelay relay)
         {
-            //
+            Debug.Log($"{name} is initialized");
         }
         public override void WhenUpdate(ProcessRelay relay)
         {
+            transform.Rotate(Vector3.up * (relay.Runtime * Time.deltaTime));
+            
             TickEffectShelf();
             
             if (needsCleaning) ClearFinishedEffects();
@@ -88,8 +90,6 @@ namespace FESGameplayAbilitySystem
             isActive = true;
             await UniTask.WaitWhile(() => isActive, cancellationToken: token);
         }
-
-        public override GameplayTagScriptableObject GetProcessTag() => Identity.NameTag;
         
         // Handling
         public bool HandlerValidateAgainst(IGameplayProcessHandler handler)

@@ -32,7 +32,7 @@ namespace FESGameplayAbilitySystem
             Debug.Log($"Process terminated");
         }
 
-        public GameplayTagScriptableObject ProcessTag => null;
+        public string ProcessName => "ClassProcess";
         public EProcessUpdateTiming StepTiming => EProcessUpdateTiming.Update;
         public EProcessLifecycle Lifecycle => EProcessLifecycle.SelfTerminating;
 
