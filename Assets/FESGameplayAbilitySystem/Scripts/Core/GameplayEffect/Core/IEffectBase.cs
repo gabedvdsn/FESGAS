@@ -39,7 +39,7 @@ namespace FESGameplayAbilitySystem
             private CustomEffect Effect = new();
             private bool createEmptyRequirements;
             
-            public bool TryGenerate(out CustomEffect effect)
+            public bool TryToEffect(out CustomEffect effect)
             {
                 effect = null;
                 
@@ -54,6 +54,11 @@ namespace FESGameplayAbilitySystem
 
                 effect = Effect;
                 return true;
+            }
+
+            public CustomEffect ToEffectUnvalidated()
+            {
+                return Effect;
             }
 
             public EffectPrototype SetAttributeTarget(AttributeScriptableObject arg)

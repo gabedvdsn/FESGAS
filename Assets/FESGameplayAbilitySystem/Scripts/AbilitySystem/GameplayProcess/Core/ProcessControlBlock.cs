@@ -223,6 +223,7 @@ namespace FESGameplayAbilitySystem
     public class ProcessRelay
     {
         private ProcessControlBlock pcb;
+        
         public bool Valid => pcb is not null;
 
         public ProcessRelay(ProcessControlBlock pcb)
@@ -238,6 +239,8 @@ namespace FESGameplayAbilitySystem
         public float UnscaledLifetime => pcb.UnscaledLifetime;
         public float Lifetime => pcb.Lifetime;
         public float Runtime => pcb.Runtime;
+
+        public int RemainingRuntime(int runtime, int multiplier = 1000) => runtime - (int)Runtime * multiplier;
     }
     
     public enum EProcessState

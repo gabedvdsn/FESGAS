@@ -8,39 +8,17 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "PT_CreateMonoProcess_", menuName = "FESGAS/Ability/Task/Create Mono Process")]
-    public class CreateMonoProcessProxyTask : AbstractAbilityProxyTaskScriptableObject
+    public class CreateMonoProcessProxyTask : AbstractCreateProcessProxyTask
     {
+        [Header("Create Mono Processes")]
+        
         public List<MonoProcessPacket> MonoProcesses;
-        public MonoProcessParametersScriptableObject Parameters;
         
         public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
         {
-            // Can't use data bc don't know how to grab payload data
-            if (Parameters is null)
+            foreach (var packet in MonoProcesses)
             {
-                foreach (var packet in MonoProcesses)
-                {
-                    ProcessControl.Instance.Register
-                    (
-                        new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity),
-                        data.Spec.Owner,
-                        out var relay
-                    );
-                    data.Spec.Owner.HandlerSubscribeProcess(relay);
-                }
-            }
-            else
-            {
-                foreach (var packet in MonoProcesses)
-                {
-                    ProcessControl.Instance.Register
-                    (
-                        ProcessControl.Instance.PrepareMonoProcess(packet, Parameters, data),
-                        data.Spec.Owner,
-                        out var relay
-                    );
-                    data.Spec.Owner.HandlerSubscribeProcess(relay);
-                }
+                ProcessControl.Instance.RegisterMonoProcess(packet, data, UseDefaultParameters ? GameRoot.Instance.DefaultDataParameters : Parameters);
             }
             
             await UniTask.CompletedTask;
@@ -51,6 +29,11 @@ namespace FESGameplayAbilitySystem
     public struct MonoProcessPacket
     {
         public AbstractMonoProcess MonoProcess;
+
+        public MonoProcessPacket(AbstractMonoProcess monoProcess) : this()
+        {
+            MonoProcess = monoProcess;
+        }
 
         [Space(5)]
         

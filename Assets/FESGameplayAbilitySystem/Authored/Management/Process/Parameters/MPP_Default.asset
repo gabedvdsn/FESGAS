@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61ca221b10ca3a1439609d07237be645, type: 3}
+  m_Name: MPP_Default
+  m_EditorClassIdentifier: 
+  FollowTransformTag: {fileID: 11400000, guid: 9fc7f51ebbe8ef547b1e00ee62b4d6d3, type: 2}
+  PositionTag: {fileID: 11400000, guid: 2f2eeb6e8826e4d49803a41b2c017363, type: 2}
+  RotationTag: {fileID: 11400000, guid: c0906095a24643a409cd32eabafbf0b5, type: 2}

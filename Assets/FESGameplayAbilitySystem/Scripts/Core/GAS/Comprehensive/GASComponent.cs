@@ -16,6 +16,7 @@ namespace FESGameplayAbilitySystem
     [RequireComponent(typeof(AbilitySystemComponent))]
     public class GASComponent : GASComponentBase
     {
+        
         public GASSystemData SystemData;
 
         protected override void PrepareSystem()

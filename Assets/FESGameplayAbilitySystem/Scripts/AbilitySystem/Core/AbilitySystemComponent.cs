@@ -214,7 +214,7 @@ namespace FESGameplayAbilitySystem
 
         public bool CanActivateAbility(int index)
         {
-            return AbilityCache.TryGetValue(index, out AbilitySpecContainer container) && container.Spec.ValidateActivationRequirements();
+            return AbilityCache.TryGetValue(index, out AbilitySpecContainer container) && container.Spec.ValidateActivationRequirements() && (!container.Spec.Base.IgnoreWhenLevelZero || container.Spec.Level > 0);
         }
 
         public bool TryActivateAbility(int abilityIndex)

@@ -64,6 +64,10 @@ namespace FESGameplayAbilitySystem
         {
             return Base.Tags.ContextTags;
         }
+        public GameplayTagScriptableObject GetAssetTag()
+        {
+            return Base.Tags.AssetTag;
+        }
         public int GetLevel() => Level;
         public void SetLevel(int level) => Level = level;
         public float GetRelativeLevel() => RelativeLevel;

@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
             // Hook into input handler here
             if (!ConnectInputHandler())
             {
-                if (data.Spec.Owner.AbilitySystem.InjectInterrupt()) return UniTask.CompletedTask;
+                if (data.Spec.GetOwner().AbilitySystem.InjectInterrupt()) return UniTask.CompletedTask;
             }
             EnableTargetingVisualization();
             return base.Prepare(data);

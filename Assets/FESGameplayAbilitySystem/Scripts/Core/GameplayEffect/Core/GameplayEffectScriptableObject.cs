@@ -41,7 +41,7 @@ namespace FESGameplayAbilitySystem
             IEffectBase effect = EffectBuilder.Prototype()
                 .SetAttributeTarget(ImpactSpecification.AttributeTarget)
                 .ProvideEmptyRequirements(true)
-                .TryGenerate(out var e) ? e : null;
+                .TryToEffect(out var e) ? e : null;
             
             return spec;
         }
@@ -168,6 +168,7 @@ namespace FESGameplayAbilitySystem
     {
         public GASComponentBase GetOwner();
         public List<GameplayTagScriptableObject> GetContextTags();
+        public GameplayTagScriptableObject GetAssetTag();
         public int GetLevel();
         public void SetLevel(int level);
         public float GetRelativeLevel();
@@ -195,6 +196,10 @@ namespace FESGameplayAbilitySystem
         public List<GameplayTagScriptableObject> GetContextTags()
         {
             return new List<GameplayTagScriptableObject>() { Owner.Identity.NameTag };
+        }
+        public GameplayTagScriptableObject GetAssetTag()
+        {
+            return Owner.Identity.NameTag;
         }
         public int GetLevel()
         {

@@ -51,6 +51,7 @@ namespace FESGameplayAbilitySystem
 
         public void WhenTerminate(ProcessRelay relay)
         {
+            if (!activeMono) return;
             activeMono.WhenTerminate(relay);
         }
         
@@ -58,7 +59,8 @@ namespace FESGameplayAbilitySystem
         {
             await activeMono.RunProcess(relay, token);
         }
-        
+
+        public GameplayTagScriptableObject ProcessTag => activeMono.GetProcessTag();
         public int StepPriority => activeMono.StepPriority;
         public EProcessUpdateTiming StepTiming => activeMono.StepTiming;
         public EProcessLifecycle Lifecycle => activeMono.Lifecycle;

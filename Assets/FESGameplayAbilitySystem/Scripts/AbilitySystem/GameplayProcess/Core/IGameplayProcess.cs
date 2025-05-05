@@ -15,7 +15,8 @@ namespace FESGameplayAbilitySystem
         public void WhenTerminate(ProcessRelay relay);  // Called whenever the process is terminated
 
         public UniTask RunProcess(ProcessRelay relay, CancellationToken token);
-        
+
+        public GameplayTagScriptableObject ProcessTag { get; }
         public int StepPriority { get; }
         public EProcessUpdateTiming StepTiming { get; }
         public EProcessLifecycle Lifecycle { get; }

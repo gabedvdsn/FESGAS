@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a42dbe2415465689d11a1e8ae1fdbc, type: 3}
+  m_Name: ABIL_CreateSpinningBlock
+  m_EditorClassIdentifier: 
+  Definition:
+    Name: Create Spinning Block
+    Description: Creates a spinning block process for 5 seconds.
+    UnlearnedIcon: {fileID: 0}
+    NormalIcon: {fileID: 0}
+    QueuedIcon: {fileID: 0}
+    OnCooldownIcon: {fileID: 0}
+    Type: 0
+    ActivateImmediately: 0
+  Tags:
+    AssetTag: {fileID: 11400000, guid: b198ece20f3f0334386ffd278f568a9d, type: 2}
+    ContextTags: []
+    PassivelyGrantedTags: []
+    ActiveGrantedTags: []
+    SourceRequirements:
+      AvoidTags: []
+      RequireTags: []
+    TargetRequirements:
+      AvoidTags: []
+      RequireTags: []
+  Proxy:
+    TargetingProxy: {fileID: 0}
+    UseImplicitInstructions: 1
+    OwnerAs: 1
+    Stages: []
+  StartingLevel: 1
+  MaxLevel: 4
+  IgnoreWhenLevelZero: 1
+  Cost: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}
+  Cooldown: {fileID: 11400000, guid: 48329c560908223419af9ff7e72b7351, type: 2}

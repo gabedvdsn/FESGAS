@@ -8,6 +8,8 @@ namespace FESGameplayAbilitySystem
 {
     public class ProcessControlDebugger : EditorWindow
     {
+        bool showProcessControls = true;
+        
         [MenuItem("FESGameplayAbilitySystem/Process Debugger")]
         public static void ShowWindow()
         {
@@ -24,6 +26,8 @@ namespace FESGameplayAbilitySystem
 
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField($"State: {ProcessControl.Instance.State}");
+
+            showProcessControls = EditorGUILayout.Toggle("Show Process Controls", showProcessControls);
             
             EditorGUILayout.BeginHorizontal("box");
             EditorGUI.BeginDisabledGroup(ProcessControl.Instance.State == EProcessControlState.Ready);
@@ -74,6 +78,12 @@ namespace FESGameplayAbilitySystem
             
             EditorGUILayout.Space();
 
+            if (showProcessControls) ShowFull();
+            else ShowSimple();
+        }
+
+        private void ShowSimple()
+        {
             try
             {
                 foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
@@ -82,6 +92,36 @@ namespace FESGameplayAbilitySystem
                     if (relay.Process is null) continue;
 
                     EditorGUILayout.BeginVertical("box");
+                    
+                    EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
+                    
+                    EditorGUILayout.BeginHorizontal("box");
+                    EditorGUILayout.LabelField($"State: {relay.State}");
+                    EditorGUILayout.LabelField($"Queued: {relay.QueuedState}");
+                    EditorGUILayout.EndHorizontal();
+                    
+                    EditorGUILayout.BeginHorizontal("box");
+                    EditorGUILayout.LabelField($"Runtime: {relay.Runtime:F2} seconds");
+                    EditorGUILayout.LabelField($"Lifetime: {relay.UnscaledLifetime:F2} seconds");
+                    EditorGUILayout.EndHorizontal();
+                    
+                    EditorGUILayout.EndVertical();
+                }
+            }
+            catch (InvalidOperationException) { }
+        }
+
+        private void ShowFull()
+        {
+            try
+            {
+                foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
+                {
+                    var relay = kvp.Value.GetRelay();
+                    if (relay.Process is null) continue;
+
+                    EditorGUILayout.BeginVertical("box");
+                    
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
                     EditorGUILayout.BeginHorizontal("box");

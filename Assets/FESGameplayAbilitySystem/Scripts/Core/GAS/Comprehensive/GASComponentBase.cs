@@ -23,15 +23,15 @@ namespace FESGameplayAbilitySystem
         private List<AbstractGameplayEffectShelfContainer> EffectShelf;
         private List<AbstractGameplayEffectShelfContainer> FinishedEffects;
         private bool needsCleaning;
-        private bool isActive;
+        protected bool isActive;
         
         // Tags
         public TagCache TagCache;
         
         // Process
-        private Dictionary<int, ProcessRelay> Relays;
+        protected Dictionary<int, ProcessRelay> Relays;
         
-        protected void Awake()
+        protected virtual void Awake()
         {
             AttributeSystem = GetComponent<AttributeSystemComponent>();
             AbilitySystem = GetComponent<AbilitySystemComponent>();
@@ -51,7 +51,23 @@ namespace FESGameplayAbilitySystem
 
         protected abstract void PrepareSystem();
         
-        private void Update()
+        /*private void Update()
+        {
+            TickEffectShelf();
+            
+            if (needsCleaning) ClearFinishedEffects();
+            
+            TagCache.TickTagWorkers();
+        }*/
+        
+        #region Process Parameters
+        
+        // Process
+        public override void WhenInitialize(ProcessRelay relay)
+        {
+            //
+        }
+        public override void WhenUpdate(ProcessRelay relay)
         {
             TickEffectShelf();
             
@@ -59,8 +75,21 @@ namespace FESGameplayAbilitySystem
             
             TagCache.TickTagWorkers();
         }
-        
-        #region Process Parameters
+        public override void WhenWait(ProcessRelay relay)
+        {
+            isActive = false;
+        }
+        public override void WhenTerminate(ProcessRelay relay)
+        {
+            Destroy(gameObject);
+        }
+        public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
+        {
+            isActive = true;
+            await UniTask.WaitWhile(() => isActive, cancellationToken: token);
+        }
+
+        public override GameplayTagScriptableObject GetProcessTag() => Identity.NameTag;
         
         // Handling
         public bool HandlerValidateAgainst(IGameplayProcessHandler handler)
@@ -76,32 +105,6 @@ namespace FESGameplayAbilitySystem
         public bool HandlerVoidProcess(int processIndex)
         {
             return Relays.Remove(processIndex);
-        }
-        
-        // Process
-        public override void WhenInitialize(ProcessRelay relay)
-        {
-            isActive = true;
-        }
-        public override void WhenUpdate(ProcessRelay relay)
-        {
-            TickEffectShelf();
-            
-            if (needsCleaning) ClearFinishedEffects();
-            
-            TagCache.TickTagWorkers();
-        }
-        public override void WhenWait(ProcessRelay relay)
-        {
-            //
-        }
-        public override void WhenTerminate(ProcessRelay relay)
-        {
-            //
-        }
-        public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
-        {
-            await UniTask.WaitWhile(() => isActive, cancellationToken: token);
         }
         
         #endregion

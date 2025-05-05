@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 
 namespace FESGameplayAbilitySystem
 {
-    public class ProcessControl : MonoBehaviour
+    public class ProcessControl : MonoBehaviour, IGameplayProcessHandler
     {
         // Singleton instance
         public static ProcessControl Instance;
@@ -18,6 +18,10 @@ namespace FESGameplayAbilitySystem
         
         public EProcessControlState StartState = EProcessControlState.Ready;
         public new bool DontDestroyOnLoad = true;
+        
+        [Space]
+        
+        public GameplayTagScriptableObject ControlTag;
         
         public MonoProcessPacket TestMonoST;  // Testing purposes only, won't be included in shipped version
         public MonoProcessPacket TestMonoRTW;  // Testing purposes only, won't be included in shipped version
@@ -55,21 +59,28 @@ namespace FESGameplayAbilitySystem
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 //var process = new TestClassProcess();
-                var process = PrepareMonoProcess(TestMonoST, null, null);
+                var process = PrepareMonoProcess(TestMonoST, null);
                 Instance.Register(process, null, out _);
             }
             
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 //var process = new TestClassProcess();
-                var process = PrepareMonoProcess(TestMonoRTW, null, null);
+                var process = PrepareMonoProcess(TestMonoRTW, null);
                 Instance.Register(process, null, out _);
             }
             
             if (Input.GetKeyDown(KeyCode.Alpha3))
             {
                 //var process = new TestClassProcess();
-                var process = PrepareMonoProcess(TestMonoRC, null, null);
+                var process = PrepareMonoProcess(TestMonoRC, null);
+                Instance.Register(process, null, out _);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                //var process = new TestClassProcess();
+                var process = new TestClassProcess();
                 Instance.Register(process, null, out _);
             }
         }
@@ -157,8 +168,47 @@ namespace FESGameplayAbilitySystem
         {
             return active;
         }
+        
+        #endregion
+        
+        #region Mono Processes
+        
+        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data)
+        {
+            RegisterMonoProcess(packet, data, GameRoot.Instance.DefaultDataParameters);
+        }
 
-        public MonoWrapperProcess PrepareMonoProcess(MonoProcessPacket packet, MonoProcessParametersScriptableObject parameters, ProxyDataPacket data)
+        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, MonoProcessParametersScriptableObject parameters)
+        {
+            // Can't use data bc don't know how to grab payload data
+            if (parameters is null)
+            {
+                Register
+                (
+                    new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity),
+                    data.Handler,
+                    out var relay
+                );
+                data.Handler.HandlerSubscribeProcess(relay);
+            }
+            else
+            {
+                Register
+                (
+                    PrepareMonoProcess(packet, data, parameters),
+                    data.Handler,
+                    out var relay
+                );
+                data.Handler.HandlerSubscribeProcess(relay);
+            }
+        }
+
+        private MonoWrapperProcess PrepareMonoProcess(MonoProcessPacket packet, ProcessDataPacket data)
+        {
+            return PrepareMonoProcess(packet, data, GameRoot.Instance.DefaultDataParameters);
+        }
+        
+        private MonoWrapperProcess PrepareMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, MonoProcessParametersScriptableObject parameters)
         {
             // Can't use data bc don't know how to grab payload data
             // Default to Identity parameters
@@ -172,19 +222,19 @@ namespace FESGameplayAbilitySystem
             // Position
             if (data.TryGetPayload<Vector3>(packet.Position, parameters.PositionTag, out var posData) && posData.Valid)
             {
-                process.SetPosition(posData.Primary);
-            }
+                process.SetPosition(posData.Get(packet.PositionTarget));
+            } else process.SetPosition(Vector3.zero);
             
             // Rotation
             if (data.TryGetPayload<Quaternion>(packet.Rotation, parameters.RotationTag, out var rotData) && rotData.Valid)
             {
-                process.SetRotation(rotData.Primary);
-            }
+                process.SetRotation(rotData.Get(packet.RotationTarget));
+            } else process.SetRotation(Quaternion.identity);
             
             // Parent Transform
-            if (data.TryGetPayload<Transform>(packet.Rotation, parameters.RotationTag, out var ptData) && ptData.Valid)
+            if (data.TryGetPayload<Transform>(packet.Transform, parameters.FollowTransformTag, out var ptData) && ptData.Valid)
             {
-                process.SetParentTransform(ptData.Primary);
+                process.SetParentTransform(ptData.Get(packet.TransformTarget));
             }
 
             return process;
@@ -866,6 +916,20 @@ namespace FESGameplayAbilitySystem
         private void OnDestroy()
         {
             TerminateAllImmediately();
+        }
+        
+        public bool HandlerValidateAgainst(IGameplayProcessHandler handler)
+        {
+            return (ProcessControl)handler == this;
+        }
+        public void HandlerSubscribeProcess(ProcessRelay relay)
+        {
+            // Doesn't need to do anything!
+        }
+        public bool HandlerVoidProcess(int processIndex)
+        {
+            // Doesn't need to do anything!
+            return true;
         }
     }
 
