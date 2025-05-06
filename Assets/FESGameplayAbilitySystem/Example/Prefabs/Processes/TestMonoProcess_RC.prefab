@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 3205951817180500489}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -48,6 +48,13 @@ MonoBehaviour:
   ProcessStepPriority: 0
   ProcessLifecycle: 0
   ProcessTiming: 1
+  Instantiator: {fileID: 0}
+  InitialPositionTarget: 0
+  InitialPositionValue: 0
+  InitialRotationTarget: 0
+  InitialRotationValue: 0
+  ParentTransformTarget: 2
+  ParentTransformValue: 0
 --- !u!1 &8673131289563404514
 GameObject:
   m_ObjectHideFlags: 0

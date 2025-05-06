@@ -13,7 +13,12 @@ namespace FESGameplayAbilitySystem
         
         public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
         {
-            GASComponentBase target = data.Target().Primary;
+            if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase target))
+            {
+                await UniTask.CompletedTask;
+                return;
+            }
+            
             foreach (GameplayEffectScriptableObject effect in Effects)
             {
                 target.ApplyGameplayEffect(target.GenerateEffectSpec(data.Spec, effect));

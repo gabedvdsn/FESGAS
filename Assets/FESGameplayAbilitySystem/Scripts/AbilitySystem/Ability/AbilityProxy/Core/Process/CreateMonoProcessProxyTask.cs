@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
         {
             foreach (var packet in MonoProcesses)
             {
-                ProcessControl.Instance.RegisterMonoProcess(packet, data, UseDefaultParameters ? GameRoot.Instance.DefaultDataParameters : Parameters, out _);
+                ProcessControl.Instance.Register(packet, data, out _);
             }
             
             await UniTask.CompletedTask;
@@ -34,21 +34,5 @@ namespace FESGameplayAbilitySystem
         {
             MonoProcess = monoProcess;
         }
-
-        [Space(5)]
-        
-        public ESourceTargetData Transform;
-        public EProxyDataValueTarget TransformTarget;
-        
-        [Space(5)]
-        
-        public ESourceTargetData Position;
-        public EProxyDataValueTarget PositionTarget;
-        
-        [Space(5)]
-        
-        public ESourceTargetData Rotation;
-        public EProxyDataValueTarget RotationTarget;
-        
     }
 }

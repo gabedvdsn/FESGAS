@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
         [Space]
         
         public bool UseImplicitInstructions = true;
-        public ESourceTargetBoth OwnerAs = ESourceTargetBoth.Source;
+        public ESourceTargetExpanded OwnerAs = ESourceTargetExpanded.Source;
         
         [Header("Proxy Stages")]
         

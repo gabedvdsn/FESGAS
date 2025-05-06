@@ -83,11 +83,12 @@ namespace FESGameplayAbilitySystem
         Source
     }
 
-    public enum ESourceTargetBoth
+    public enum ESourceTargetExpanded
     {
         Target,
         Source,
-        Both
+        Both,
+        Neither
     }
     
     public enum ESourceTargetEither

@@ -17,7 +17,22 @@ namespace FESGameplayAbilitySystem
         
         [Tooltip("Uses Object.Instantiate when null")]
         public AbstractMonoProcessInstantiatorScriptableObject Instantiator;
-
+        
+        [Header("Parameter Usage")]
+        
+        public ESourceTargetData InitialPositionTarget = ESourceTargetData.Source;
+        public EProxyDataValueTarget InitialPositionValue = EProxyDataValueTarget.Primary;
+        
+        [Space(5)]
+        
+        public ESourceTargetData InitialRotationTarget = ESourceTargetData.Source;
+        public EProxyDataValueTarget InitialRotationValue = EProxyDataValueTarget.Primary;
+        
+        [Space(5)]
+        
+        public ESourceTargetData ParentTransformTarget = ESourceTargetData.Data;
+        public EProxyDataValueTarget ParentTransformValue = EProxyDataValueTarget.Primary;
+        
         protected ProcessDataPacket data;
         protected bool processActive;
         
@@ -25,14 +40,36 @@ namespace FESGameplayAbilitySystem
         {
             data = processData;
         }
-        
-        public abstract void WhenInitialize(ProcessRelay relay);
+
+        public virtual void WhenInitialize(ProcessRelay relay)
+        {
+            if (data.TryGetPayload<Vector3>(InitialPositionTarget, GameRoot.PositionTag, InitialPositionValue, out var pos))
+            {
+                transform.position = pos;
+            }
+            
+            if (data.TryGetPayload<Quaternion>(InitialRotationTarget, GameRoot.RotationTag, InitialRotationValue, out var rot))
+            {
+                transform.rotation = rot;
+            }
+            
+            if (data.TryGetPayload<Transform>(ParentTransformTarget, GameRoot.TransformTag, ParentTransformValue, out var pt))
+            {
+                transform.SetParent(pt);
+            }
+        }
         
         public abstract void WhenUpdate(ProcessRelay relay);
-        
-        public abstract void WhenWait(ProcessRelay relay);
-        
-        public abstract void WhenTerminate(ProcessRelay relay);
+
+        public virtual void WhenWait(ProcessRelay relay)
+        {
+            processActive = false;
+        }
+
+        public virtual void WhenTerminate(ProcessRelay relay)
+        {
+            processActive = false;
+        }
         
         public abstract UniTask RunProcess(ProcessRelay relay, CancellationToken token);
 

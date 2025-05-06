@@ -63,9 +63,10 @@ namespace FESGameplayAbilitySystem
 
     public enum ESourceTargetData
     {
+        Data,
         Source,
-        Target,
-        Data
+        Target
+        
     }
 
     public enum EProxyDataValueTarget

@@ -15,47 +15,28 @@ namespace FESGameplayAbilitySystem
             Handler = spec.GetOwner();
         }
 
-        public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, GASComponentBase component, ESourceTargetBoth sourceTarget)
+        public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, GASComponentBase component, ESourceTargetExpanded sourceTarget)
         {
             ProxyDataPacket data = new ProxyDataPacket(spec);
             switch (sourceTarget)
             {
-                case ESourceTargetBoth.Target:
-                    data.Add(ESourceTarget.Target, component);
+                case ESourceTargetExpanded.Target:
+                    data.AddPayload(ESourceTargetData.Target, component);
                     break;
-                case ESourceTargetBoth.Source:
-                    data.Add(ESourceTarget.Source, component);
+                case ESourceTargetExpanded.Source:
+                    data.AddPayload(ESourceTargetData.Source, component);
                     break;
-                case ESourceTargetBoth.Both:
-                    data.Add(ESourceTarget.Target, component);
-                    data.Add(ESourceTarget.Source, component);
+                case ESourceTargetExpanded.Both:
+                    data.AddPayload(ESourceTargetData.Target, component);
+                    data.AddPayload(ESourceTargetData.Source, component);
+                    break;
+                case ESourceTargetExpanded.Neither:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(sourceTarget), sourceTarget, null);
             }
             
             return data;
-        }
-
-        public void CompileWith(ProxyDataPacket other)
-        {
-            foreach (ESourceTarget sourceTarget in other.SourceTargetData.Keys)
-            {
-                AddRange(sourceTarget, other.SourceTargetData[sourceTarget]);
-            }
-
-            foreach (var key in other.Payload.Keys)
-            {
-                foreach (ESourceTargetData sourceTarget in other.Payload[key].Keys)
-                {
-                    AddPayloadRange(sourceTarget, key, other.Payload[key][sourceTarget]);
-                }
-            }
-        }
-        
-        public override string ToString()
-        {
-            return $"Ability: {Spec}, Source: ({Source()}), Target: ({Target()})";
         }
         
     }

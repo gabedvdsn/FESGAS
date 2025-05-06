@@ -20,6 +20,11 @@ namespace FESGameplayAbilitySystem
         [Header("Defaults")]
         
         public MonoProcessParametersScriptableObject DefaultDataParameters;
+
+        public static GameplayTagScriptableObject GASTag => Instance.DefaultDataParameters.GAS;
+        public static GameplayTagScriptableObject PositionTag => Instance.DefaultDataParameters.Position;
+        public static GameplayTagScriptableObject RotationTag => Instance.DefaultDataParameters.Rotation;
+        public static GameplayTagScriptableObject TransformTag => Instance.DefaultDataParameters.Transform;
         
         protected override void Awake()
         {
@@ -44,7 +49,7 @@ namespace FESGameplayAbilitySystem
             NativeDataPacket = ProxyDataPacket.GenerateFrom
             (
                 IEffectDerivation.GenerateSourceDerivation(this),
-                this, ESourceTargetBoth.Both
+                this, ESourceTargetExpanded.Both
             );
             
             RunProcessTasks(CreateProcessTasks);
@@ -57,11 +62,11 @@ namespace FESGameplayAbilitySystem
             ActivateProcess(NativeDataPacket, task, cts.Token).Forget();
         }
         
-        public void RunProcessTask(AbstractCreateProcessProxyTask task, ProxyDataPacket data)
+        public void RunProcessTask(AbstractCreateProcessProxyTask task, ProxyDataPacket _data)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
             
-            ActivateProcess(data, task, cts.Token).Forget();
+            ActivateProcess(_data, task, cts.Token).Forget();
         }
         
         public void RunProcessTasks(List<AbstractCreateProcessProxyTask> tasks)
@@ -74,21 +79,21 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void RunProcessTasks(List<AbstractCreateProcessProxyTask> tasks, ProxyDataPacket data)
+        public void RunProcessTasks(List<AbstractCreateProcessProxyTask> tasks, ProxyDataPacket _data)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
             
             foreach (var task in tasks)
             {
-                ActivateProcess(data, task, cts.Token).Forget();
+                ActivateProcess(_data, task, cts.Token).Forget();
             }
         }
 
-        private async UniTask ActivateProcess(ProxyDataPacket data, AbstractCreateProcessProxyTask task, CancellationToken token)
+        private async UniTask ActivateProcess(ProxyDataPacket _data, AbstractCreateProcessProxyTask task, CancellationToken token)
         {
-            task.Prepare(data);
-            await task.Activate(data, token);
-            task.Clean(data);
+            task.Prepare(_data);
+            await task.Activate(_data, token);
+            task.Clean(_data);
         }
         
         #endregion

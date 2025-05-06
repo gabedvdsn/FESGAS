@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StartState: 0
   DontDestroyOnLoad: 1
-  ControlTag: {fileID: 11400000, guid: f9a3b2163b82ad24ca880376ac360cce, type: 2}
+  ControlTag: {fileID: 0}
   TestMonoST:
     MonoProcess: {fileID: 4471479272133613396, guid: af582417aa7090d4ab1dd007535c30d3, type: 3}
     Transform: 0

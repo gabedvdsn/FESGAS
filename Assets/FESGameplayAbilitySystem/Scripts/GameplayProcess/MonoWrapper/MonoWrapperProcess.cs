@@ -7,45 +7,36 @@ namespace FESGameplayAbilitySystem
     public class MonoWrapperProcess : IGameplayProcess
     {
         private AbstractMonoProcess MonoPrefab;
-
-        private Vector3 initialPosition;
-        private Quaternion initialRotation;
-        private Transform parentTransform;
+        private ProcessDataPacket DataPacket;
         
         private AbstractMonoProcess activeMono;
 
-        public MonoWrapperProcess(AbstractMonoProcess monoPrefab)
+        public MonoWrapperProcess(AbstractMonoProcess monoPrefab, ProcessDataPacket data)
         {
             MonoPrefab = monoPrefab;
+            DataPacket = data;
         }
-
-        public MonoWrapperProcess(AbstractMonoProcess monoPrefab, Vector3 initialPosition, Quaternion initialRotation, Transform parentTransform = null)
-        {
-            MonoPrefab = monoPrefab;
-            this.initialPosition = initialPosition;
-            this.initialRotation = initialRotation;
-            this.parentTransform = parentTransform;
-        }
-
-        public void SetPosition(Vector3 pos) => initialPosition = pos;
-        public void SetRotation(Quaternion rot) => initialRotation = rot;
-        public void SetParentTransform(Transform pt) => parentTransform = pt;
 
         public void WhenInitialize(ProcessRelay relay)
         {
             if (MonoPrefab.Instantiator is not null)
             {
-                activeMono = MonoPrefab.Instantiator.InstantiateProcess(MonoPrefab, initialPosition, initialRotation, parentTransform);
+                activeMono = MonoPrefab.Instantiator.InstantiateProcess(MonoPrefab);
                 if (activeMono)
                 {
+                    activeMono.SendProcessData(DataPacket);
                     activeMono.WhenInitialize(relay);
-                    activeMono.SendProcessData();
+                    
+                    return;
                 }
             }
+            else
+            {
+                activeMono = Object.Instantiate(MonoPrefab);
+            }
             
-            if (parentTransform is null) activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation, GameRoot.Instance ? GameRoot.Instance.transform : null);
-            else activeMono = Object.Instantiate(MonoPrefab, initialPosition, initialRotation, parentTransform);
-            
+            DataPacket.AddPayload(ESourceTargetData.Data, GameRoot.TransformTag, GameRoot.Instance.transform);
+            activeMono.SendProcessData(DataPacket);
             activeMono.WhenInitialize(relay);
         }
 

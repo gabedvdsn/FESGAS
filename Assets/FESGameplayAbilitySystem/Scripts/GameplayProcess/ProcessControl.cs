@@ -62,22 +62,19 @@ namespace FESGameplayAbilitySystem
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 //var process = new TestClassProcess();
-                var process = PrepareMonoProcess(TestMonoST, null);
-                Instance.Register(process, null, out _);
+                Instance.Register(TestMonoST, new ProcessDataPacket(), out _);
             }
             
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 //var process = new TestClassProcess();
-                var process = PrepareMonoProcess(TestMonoRTW, null);
-                Instance.Register(process, null, out _);
+                Instance.Register(TestMonoRTW, new ProcessDataPacket(), out _);
             }
             
             if (Input.GetKeyDown(KeyCode.Alpha3))
             {
                 //var process = new TestClassProcess();
-                var process = PrepareMonoProcess(TestMonoRC, null);
-                Instance.Register(process, null, out _);
+                Instance.Register(TestMonoRC, new ProcessDataPacket(), out _);
             }
             
             if (Input.GetKeyDown(KeyCode.Alpha4))
@@ -157,7 +154,18 @@ namespace FESGameplayAbilitySystem
             
             return true;
         }
-
+        
+        public void Register(MonoProcessPacket packet, ProcessDataPacket data, out ProcessRelay relay)
+        {
+            Register
+            (
+                new MonoWrapperProcess(packet.MonoProcess, data),
+                data.Handler,
+                out relay
+            );
+            data.Handler?.HandlerSubscribeProcess(relay);
+        }
+        
         // Unregister a PCB
         public bool Unregister(ProcessControlBlock pcb)
         {
@@ -172,74 +180,6 @@ namespace FESGameplayAbilitySystem
         public Dictionary<int, ProcessControlBlock> FetchActiveProcesses()
         {
             return active;
-        }
-        
-        #endregion
-        
-        #region Mono Processes
-        
-        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, out ProcessRelay relay)
-        {
-            RegisterMonoProcess(packet, data, GameRoot.Instance.DefaultDataParameters, out relay);
-        }
-
-        public void RegisterMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, MonoProcessParametersScriptableObject parameters, out ProcessRelay relay)
-        {
-            // Can't use data bc don't know how to grab payload data
-            if (parameters is null)
-            {
-                Register
-                (
-                    new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity, GameRoot.Instance ? GameRoot.Instance.transform : null),
-                    data.Handler,
-                    out relay
-                );
-                data.Handler?.HandlerSubscribeProcess(relay);
-            }
-            else
-            {
-                Register
-                (
-                    PrepareMonoProcess(packet, data, parameters),
-                    data.Handler,
-                    out relay
-                );
-                data.Handler?.HandlerSubscribeProcess(relay);
-            }
-        }
-
-        private MonoWrapperProcess PrepareMonoProcess(MonoProcessPacket packet, ProcessDataPacket data)
-        {
-            return PrepareMonoProcess(packet, data, GameRoot.Instance.DefaultDataParameters);
-        }
-        
-        private MonoWrapperProcess PrepareMonoProcess(MonoProcessPacket packet, ProcessDataPacket data, MonoProcessParametersScriptableObject parameters)
-        {
-            // Can't use data bc don't know how to grab payload data
-            // Default to Identity parameters
-            if (parameters is null || data is null)
-            {
-                return new MonoWrapperProcess(packet.MonoProcess, Vector3.zero, Quaternion.identity, GameRoot.Instance ? GameRoot.Instance.transform : null);
-            }
-
-            MonoWrapperProcess process = new MonoWrapperProcess(packet.MonoProcess);
-            
-            // Position
-            process.SetPosition(
-                data.TryGetPayload<Vector3>(packet.Position, parameters.Position, packet.PositionTarget, out var pos) 
-                    ? pos : Vector3.zero);
-            
-            // Rotation
-            process.SetRotation(
-                data.TryGetPayload<Quaternion>(packet.Rotation, parameters.Rotation, packet.RotationTarget, out var rot) 
-                    ? rot : Quaternion.identity);
-            
-            // Parent transform
-            process.SetParentTransform(
-                data.TryGetPayload<Transform>(packet.Transform, parameters.Transform, packet.TransformTarget, out var t) 
-                    ? t : GameRoot.Instance ? GameRoot.Instance.transform : null);
-
-            return process;
         }
         
         #endregion

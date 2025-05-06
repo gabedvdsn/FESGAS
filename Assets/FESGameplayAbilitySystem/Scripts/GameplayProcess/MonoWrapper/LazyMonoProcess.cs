@@ -11,24 +11,9 @@ namespace FESGameplayAbilitySystem
     /// </summary>
     public class LazyMonoProcess : AbstractMonoProcess
     {
-        public override void WhenInitialize(ProcessRelay relay)
-        {
-            
-        }
-
         public override void WhenUpdate(ProcessRelay relay)
         {
             
-        }
-
-        public override void WhenWait(ProcessRelay relay)
-        {
-            processActive = false;
-        }
-
-        public override void WhenTerminate(ProcessRelay relay)
-        {
-            processActive = false;
         }
 
         public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)

@@ -32,9 +32,9 @@ namespace FESGameplayAbilitySystem
             
             var data = ProxyDataPacket.GenerateFrom(
                 IEffectDerivation.GenerateSourceDerivation(null), 
-                null, ESourceTargetBoth.Both);
+                null, ESourceTargetExpanded.Neither);
             
-            ProcessControl.Instance.RegisterMonoProcess(new MonoProcessPacket(GameRootPrefab), data, null, out _);
+            ProcessControl.Instance.Register(new MonoProcessPacket(GameRootPrefab), data, out _);
 
             Initialize();
             

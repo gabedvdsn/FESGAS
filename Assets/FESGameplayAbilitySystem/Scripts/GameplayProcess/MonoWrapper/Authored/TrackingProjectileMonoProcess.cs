@@ -10,11 +10,13 @@ namespace FESGameplayAbilitySystem
 
         public override void WhenInitialize(ProcessRelay relay)
         {
-            if (!data.TryGetPayload<Transform>(ESourceTargetData.Target,
+            base.WhenInitialize(relay);
+            
+            /*if (!data.TryGetPayload<Transform>(ESourceTargetData.Target,
                     data.TransformTag, EProxyDataValueTarget.Primary, out target))
             {
                 Debug.Log($"whelp");
-            }
+            }*/
         }
 
         public override void WhenUpdate(ProcessRelay relay)

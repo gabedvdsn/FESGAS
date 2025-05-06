@@ -1,20 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Unity.VisualScripting;
+using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
+    /// <summary>
+    /// ProcessDataPackets (and subclasses) contain data pertaining to processes and abilities
+    /// Example usage:
+    ///     An ability, Cast, fires a ball that homes in on its target
+    ///     Cast is the ability and via implicit data and/or targeting tasks assigns some data to the packet
+    ///     The Ball is a MonoProcess and is created via ProcessControl
+    ///     Before initializing the MonoProcessWrapper is passed the data packet and its initial values are set
+    ///     After initializing the MonoProcess is passed the data packet
+    ///     It is responsible for procuring data from the data packet
+    ///         E.g. procuring the target transform via Data.TryGetPayload[Transform](Target, GameRoot.TransformParameter, Primary, out Transform value)
+    ///         This procures the Transform value under the Target classification stored under the key GameRoot.TransformParameter
+    /// </summary>
     public class ProcessDataPacket
     {
-        protected Dictionary<ESourceTarget, List<GASComponentBase>> SourceTargetData = new();
         protected Dictionary<GameplayTagScriptableObject, Dictionary<ESourceTargetData, List<object>>> Payload = new();
 
         public IGameplayProcessHandler Handler;
-
-        public GameplayTagScriptableObject PositionTag => GameRoot.Instance.DefaultDataParameters.Position;
-        public GameplayTagScriptableObject RotationTag => GameRoot.Instance.DefaultDataParameters.Rotation;
-        public GameplayTagScriptableObject TransformTag => GameRoot.Instance.DefaultDataParameters.Transform;
 
         public ProcessDataPacket()
         {
@@ -26,40 +35,13 @@ namespace FESGameplayAbilitySystem
             Handler = handler;
         }
 
-        #region GAS
+        #region Core
         
-        public void Add(ESourceTarget sourceTarget, GASComponentBase component, bool noDuplicates = true)
+        public void AddPayload(ESourceTargetData sourceTarget, GASComponentBase component, bool noDuplicates = true)
         {
-            if (SourceTargetData.ContainsKey(sourceTarget))
-            {
-                if (noDuplicates && SourceTargetData[sourceTarget].Contains(component)) return;
-                SourceTargetData[sourceTarget].Add(component);
-            }
-            else SourceTargetData[sourceTarget] = new List<GASComponentBase>{ component };
+            if (noDuplicates && PayloadContains(component, sourceTarget, GameRoot.GASTag)) return;
+            AddPayload(sourceTarget, GameRoot.GASTag, component);
         }
-
-        public bool Remove(ESourceTarget sourceTarget, GASComponentBase component)
-        {
-            return SourceTargetData.ContainsKey(sourceTarget) && SourceTargetData[sourceTarget].Remove(component);
-        }
-        
-        public void AddRange(ESourceTarget sourceTarget, List<GASComponentBase> components, bool noDuplicates = true)
-        {
-            if (SourceTargetData.ContainsKey(sourceTarget)) SourceTargetData[sourceTarget].AddRange(noDuplicates ? components.Where(component => !SourceTargetData[sourceTarget].Contains(component)) : components);
-            else SourceTargetData[sourceTarget] = components;
-        }
-
-        public DataValue<GASComponentBase> Get(ESourceTarget sourceTarget)
-        {
-            return !SourceTargetData.ContainsKey(sourceTarget) ? default : new DataValue<GASComponentBase>(SourceTargetData[sourceTarget]);
-        }
-
-        public DataValue<GASComponentBase> Target() => Get(ESourceTarget.Target);
-        public DataValue<GASComponentBase> Source() => Get(ESourceTarget.Source);
-        
-        #endregion
-        
-        #region Payload
 
         public void AddPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, T value)
         {
@@ -114,6 +96,33 @@ namespace FESGameplayAbilitySystem
 
             dataValue = new DataValue<T>(tObjects);
             return true;
+        }
+
+        public bool TryGetTarget<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        {
+            return TryGetPayload<T>(ESourceTargetData.Target, key, target, out value);
+        }
+        
+        public bool TryGetSource<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        {
+            return TryGetPayload<T>(ESourceTargetData.Source, key, target, out value);
+        }
+        
+        public bool TryGetData<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        {
+            return TryGetPayload<T>(ESourceTargetData.Data, key, target, out value);
+        }
+        
+        public bool PayloadContains<T>(T value, ESourceTargetData sourceTarget, GameplayTagScriptableObject key)
+        {
+            if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget)) return false;
+            
+            foreach (var o in Payload[key][sourceTarget])
+            {
+                if (o is T cast && cast.Equals(value)) return true;
+            }
+
+            return false;
         }
         
         #endregion
