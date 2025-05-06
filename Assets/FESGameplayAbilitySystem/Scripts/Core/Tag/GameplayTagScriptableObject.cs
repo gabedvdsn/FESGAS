@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "NewGameplayTag", menuName = "FESGAS/Tag")]
+    [CreateAssetMenu(fileName = "TAG_", menuName = "FESGAS/Tag")]
     public class GameplayTagScriptableObject : ScriptableObject
     {
         public string Name;

@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
     {
         public override void WhenUpdate(ProcessRelay relay)
         {
-            transform.Rotate(Vector3.up * (relay.Runtime * .25f));
+            transform.Rotate(Vector3.up * (relay.UpdateTime * .25f));
         }
         public override void WhenTerminate(ProcessRelay relay)
         {

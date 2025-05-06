@@ -1,27 +1,50 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
+    [RequireComponent(typeof(Rigidbody))]
     public class TrackingProjectileMonoProcess : LazyMonoProcess
     {
-        private Transform target;
+        private GASComponentBase targetGAS;
+        public Transform target;
+        private Rigidbody rb;
+
+        private void Awake()
+        {
+            rb = GetComponent<Rigidbody>();
+        }
 
         public override void WhenInitialize(ProcessRelay relay)
         {
             base.WhenInitialize(relay);
             
-            /*if (!data.TryGetPayload<Transform>(ESourceTargetData.Target,
-                    data.TransformTag, EProxyDataValueTarget.Primary, out target))
-            {
-                Debug.Log($"whelp");
-            }*/
-        }
+            if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out targetGAS)) Debug.Log($"Whelp!");
+            target = targetGAS.transform;
 
-        public override void WhenUpdate(ProcessRelay relay)
+            var to = Quaternion.LookRotation(target.position - transform.position);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, to, 360);
+        }
+        
+        public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
-            transform.position = Vector3.Lerp(transform.position, Vector3.up * 1000, relay.Runtime / 25f);
+            while (Vector3.Distance(transform.position, target.position) > .1f)
+            {
+                token.ThrowIfCancellationRequested();
+
+                //rb.velocity = (target.position - transform.position).normalized * (15f);
+                
+                transform.position = Vector3.MoveTowards(transform.position, target.position, 3 * Time.deltaTime);
+                
+                /*var to = Quaternion.LookRotation(target.position - transform.position);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, to, 180f * Time.deltaTime);*/
+
+                await UniTask.NextFrame(token);
+            }
         }
     }
 }

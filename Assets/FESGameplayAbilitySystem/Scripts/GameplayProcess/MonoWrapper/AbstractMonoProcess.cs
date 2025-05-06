@@ -47,16 +47,25 @@ namespace FESGameplayAbilitySystem
             {
                 transform.position = pos;
             }
+            else if (data.TryGetPayload<GASComponent>(InitialPositionTarget, GameRoot.GASTag, InitialPositionValue, out var gasPos))
+            {
+                transform.position = gasPos.transform.position;
+            }
             
             if (data.TryGetPayload<Quaternion>(InitialRotationTarget, GameRoot.RotationTag, InitialRotationValue, out var rot))
             {
                 transform.rotation = rot;
+            }
+            else if (data.TryGetPayload<GASComponent>(InitialRotationTarget, GameRoot.GASTag, InitialRotationValue, out var gasRot))
+            {
+                transform.rotation = gasRot.transform.rotation;
             }
             
             if (data.TryGetPayload<Transform>(ParentTransformTarget, GameRoot.TransformTag, ParentTransformValue, out var pt))
             {
                 transform.SetParent(pt);
             }
+            else transform.SetParent(GameRoot.Instance.transform);
         }
         
         public abstract void WhenUpdate(ProcessRelay relay);

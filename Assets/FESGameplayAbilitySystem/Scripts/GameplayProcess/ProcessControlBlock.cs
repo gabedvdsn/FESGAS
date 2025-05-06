@@ -26,8 +26,8 @@ namespace FESGameplayAbilitySystem
         public float InitializeTime => initializeTime;
         private float initializeTime;
         
-        public float Runtime => runtime;
-        private float runtime;
+        public float UpdateTime => updateTime;
+        private float updateTime;
 
         public bool IsInitialized => isInitialized;
         private bool isInitialized;
@@ -53,7 +53,7 @@ namespace FESGameplayAbilitySystem
             
             State = EProcessState.Created;
 
-            runtime = 0;
+            updateTime = 0;
         }
 
         public static ProcessControlBlock Generate(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
@@ -182,7 +182,7 @@ namespace FESGameplayAbilitySystem
         {
             Process.WhenUpdate(relay);
             
-            runtime += Time.deltaTime;
+            updateTime += Time.deltaTime;
             // lifetime += Time.unscaledDeltaTime;
         }
         
@@ -192,7 +192,7 @@ namespace FESGameplayAbilitySystem
             
             hasRun = true;
             
-            if (!midRun) runtime = 0f;
+            if (!midRun) updateTime = 0f;
             midRun = false;
 
             bool set = true;
@@ -239,9 +239,9 @@ namespace FESGameplayAbilitySystem
         public EProcessState QueuedState => pcb.queuedState;
         public float UnscaledLifetime => pcb.UnscaledLifetime;
         public float Lifetime => pcb.Lifetime;
-        public float Runtime => pcb.Runtime;
+        public float UpdateTime => pcb.UpdateTime;
 
-        public int RemainingRuntime(int runtime, int multiplier = 1000) => runtime - (int)Runtime * multiplier;
+        public int RemainingRuntime(int runtime, int multiplier = 1000) => runtime - (int)UpdateTime * multiplier;
     }
     
     public enum EProcessState

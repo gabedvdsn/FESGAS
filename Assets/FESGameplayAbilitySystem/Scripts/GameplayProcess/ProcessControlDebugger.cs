@@ -93,7 +93,7 @@ namespace FESGameplayAbilitySystem
 
                     EditorGUILayout.BeginVertical("box");
 
-                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}");
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
                     EditorGUILayout.BeginHorizontal("box");
@@ -102,7 +102,7 @@ namespace FESGameplayAbilitySystem
                     EditorGUILayout.EndHorizontal();
                     
                     EditorGUILayout.BeginHorizontal("box");
-                    EditorGUILayout.LabelField($"Runtime: {relay.Runtime:F2} seconds");
+                    EditorGUILayout.LabelField($"UpdateTime: {relay.UpdateTime:F2} seconds");
                     EditorGUILayout.LabelField($"Lifetime: {relay.UnscaledLifetime:F2} seconds");
                     EditorGUILayout.EndHorizontal();
                     
@@ -123,7 +123,7 @@ namespace FESGameplayAbilitySystem
 
                     EditorGUILayout.BeginVertical("box");
                     
-                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}");
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
                     EditorGUILayout.BeginHorizontal("box");
@@ -132,7 +132,7 @@ namespace FESGameplayAbilitySystem
                     EditorGUILayout.EndHorizontal();
                     
                     EditorGUILayout.BeginHorizontal("box");
-                    EditorGUILayout.LabelField($"Runtime: {relay.Runtime:F2} seconds");
+                    EditorGUILayout.LabelField($"UpdateTime: {relay.UpdateTime:F2} seconds");
                     EditorGUILayout.LabelField($"Lifetime: {relay.UnscaledLifetime:F2} seconds");
                     EditorGUILayout.EndHorizontal();
                     
