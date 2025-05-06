@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "TestSelectTarget_", menuName = "FESGAS/Ability/Proxy/Targeting/Select Target Test")]
-    public class SelectTestTargetProxyTaskScriptableObject : AbstractSelectTargetProxyTaskScriptableObject
+    [CreateAssetMenu(fileName = "TestSelectTarget_", menuName = "FESGAS/Ability/Targeting/Select Target Test")]
+    public class GetTestTargetProxyTask : AbstractSelectTargetProxyTaskScriptableObject
     {
         public override UniTask Activate(ProxyDataPacket data, CancellationToken token)
         {

@@ -20,7 +20,7 @@ namespace FESGameplayAbilitySystem
         private ImpactWorkerCache ImpactWorkerCache;
 
         public bool Executing => abilityActive && activeContainer is not null;
-        private bool abilityActive;
+        public bool abilityActive;
         private AbilitySpecContainer activeContainer = null;
         private Queue<int> activationQueue = new();
         
@@ -229,7 +229,7 @@ namespace FESGameplayAbilitySystem
             {
                 EAbilityActivationPolicy.NoRestrictions => ActivateAbility(AbilityCache[abilityIndex]),
                 EAbilityActivationPolicy.SingleActive => !Executing && ActivateAbility(AbilityCache[abilityIndex]),
-                EAbilityActivationPolicy.QueueSingleActive => Executing ? ActivateAbility(AbilityCache[abilityIndex]) : QueueAbilityActivation(abilityIndex),
+                EAbilityActivationPolicy.SingleActiveQueue => !Executing ? ActivateAbility(AbilityCache[abilityIndex]) : QueueAbilityActivation(abilityIndex),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -270,16 +270,19 @@ namespace FESGameplayAbilitySystem
 
         private void ClaimActive(AbilitySpecContainer container)
         {
+            Debug.Log($"claimed {container}");
+            abilityActive = true;
+
+            
             switch (activationPolicy)
             {
-
                 case EAbilityActivationPolicy.NoRestrictions:
                     break;
                 case EAbilityActivationPolicy.SingleActive:
                     if (activeContainer is not null) activeContainer.Interrupt();
                     activeContainer = container;
                     break;
-                case EAbilityActivationPolicy.QueueSingleActive:
+                case EAbilityActivationPolicy.SingleActiveQueue:
                     if (activeContainer is null) activeContainer = container;
                     break;
                 default:
@@ -289,8 +292,13 @@ namespace FESGameplayAbilitySystem
 
         private void ReleaseClaim(AbilitySpecContainer container)
         {
-            if (activeContainer == container) activeContainer = null;
-            if (activationPolicy == EAbilityActivationPolicy.QueueSingleActive && activationQueue.Count > 0) TryActivateAbility(activationQueue.Dequeue());
+            Debug.Log($"released {container}");
+            if (activeContainer == container)
+            {
+                activeContainer = null;
+                abilityActive = false;
+            }
+            if (activationPolicy == EAbilityActivationPolicy.SingleActiveQueue && activationQueue.Count > 0) TryActivateAbility(activationQueue.Dequeue());
         }
         
         #endregion
@@ -340,6 +348,7 @@ namespace FESGameplayAbilitySystem
                 if (IsActive || IsTargeting) return false;  // Prevent reactivation mid-use
                 
                 Spec.Owner.AbilitySystem.ClaimActive(this);
+                
                 
                 ResetTokens();
                 AwaitAbility(implicitData).Forget();
@@ -425,7 +434,8 @@ namespace FESGameplayAbilitySystem
 
             private void ResetTokens()
             {
-                ReleaseAndClean();
+                CleanTargetingToken();
+                CleanActivationToken();
                 
                 cts = new CancellationTokenSource();
                 targetingCts = new CancellationTokenSource();
@@ -442,6 +452,6 @@ namespace FESGameplayAbilitySystem
     {
         NoRestrictions,  // Always able to activate any available ability
         SingleActive,  // Only able to activate one ability at a time
-        QueueSingleActive  // Only able to activate one ability at a time, but subsequent activations are queued (queue is cleared in the same moment that targeting tasks are cancelled)
+        SingleActiveQueue  // Only able to activate one ability at a time, but subsequent activations are queued (queue is cleared in the same moment that targeting tasks are cancelled)
     }
 }

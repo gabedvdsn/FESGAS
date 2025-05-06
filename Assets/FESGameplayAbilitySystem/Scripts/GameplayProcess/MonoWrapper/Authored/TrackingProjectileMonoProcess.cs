@@ -38,7 +38,7 @@ namespace FESGameplayAbilitySystem
 
                 //rb.velocity = (target.position - transform.position).normalized * (15f);
                 
-                transform.position = Vector3.MoveTowards(transform.position, target.position, 3 * Time.deltaTime);
+                transform.position = Vector3.MoveTowards(transform.position, target.position, 8 * Time.deltaTime);
                 
                 /*var to = Quaternion.LookRotation(target.position - transform.position);
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, to, 180f * Time.deltaTime);*/

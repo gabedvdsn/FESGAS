@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f5df4d009acc324da13eb79bff8002d, type: 3}
+  m_Name: PT_CreateMonoProcess_CreateAOE
+  m_EditorClassIdentifier: 
+  ReadOnlyDescription: 'This is an Ability Proxy Task (APT). APTs implement 3 methods:
+    Prepare, Activate, and Clean. Prepare is always called before the APT is activated,
+    and Clean is always called after the APT is finished activating, regardless of
+    the manner the activation is resolved.'
+  MonoProcesses:
+  - MonoProcess: {fileID: 3210473624934245448, guid: 1c6034833ba3e5249acd8f824af1612d, type: 3}

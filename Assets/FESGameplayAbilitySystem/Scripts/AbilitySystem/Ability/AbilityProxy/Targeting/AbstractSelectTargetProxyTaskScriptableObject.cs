@@ -13,17 +13,20 @@ namespace FESGameplayAbilitySystem
             {
                 if (data.Spec.GetOwner().AbilitySystem.InjectInterrupt()) return UniTask.CompletedTask;
             }
+            
             EnableTargetingVisualization();
+            
             return base.Prepare(data);
         }
         
         public override UniTask Clean(ProxyDataPacket data)
         {
+            DisableTargetingVisualization();
+            
             // Unhook from input handler here
             DisconnectInputHandler();
             
-            DisableTargetingVisualization();
-            return base.Prepare(data);
+            return base.Clean(data);
         }
 
         protected abstract bool ConnectInputHandler();
