@@ -65,103 +65,89 @@ Integrating FESGAS into an existing project well into development can be very tr
 
 ## 5. Architecture Overview
 
-### Attribute System
+#### Attribute System
 - Tracks gameplay attributes dynamically at runtime (e.g. Health, MoveSpeed, Armor)
 - Easy extension for any variety of custom attributes and attribute-derived values
 
-### Modular Events
+#### Modular Events
 - Manage and react to changes within the system
     - `AttributeChangeEvent`: Manipulate impacts and attribute values (e.g. clamp health, damage amplification/reduction)
     - `ImpactWorker`: React to attribute impact (e.g. lifesteal, damage reflection)
     - `TagWorker`: Perform actions when/while tags are applied or removed (e.g. apply flame particles while the _burning_ tag is applied)
     - `EffectWorker`: Monitor systems while an effect is applied (e.g. Dota 2's Ancient Apparition's Ice Blast kills when below a certain threshold)
 
-### Gameplay Effects
+#### Gameplay Effects
 - Modify target attributes under a variety of parameters, including duration, tick rate, and reversing impact after removal
 - Define as **Instant**, **Durational**, or **Infinite**
 - Supports application, ongoing, and removal requirements
 
-### Gameplay Abilities
+#### Gameplay Abilities
 - Encapsulate complex gameplay logic through modular, reusable components
 - Supports activation conditions, cooldowns/costs, and lifecycle steps
 - Designed to separate logic (how the ability executes) from data (what an ability does)
 
-### Proxy Task System
+#### Proxy Task System
 - Lightweight, modular, async tasks that build ability behaviours as chains of operations
 - Allows precise control over the lifecycle of an ability
 - Designed to minimize coupling between the ability and what it executes
 
-### Gameplay Processes
+#### Gameplay Processes
 - Runtime systems (e.g. projectiles, AOEs, timers) managed via the centralized `ProcessControl`
 - Supports Self-Terminating, RunThenWait, and ExternalControl lifecycles
 - Utilizes UniTask for highly scalable and lightweight deployment of hundreds of active processes
+- Define custom `MonoProcessInstantiator` classes to handle custom logic behind MonoBehaviour process instantiation (e.g. object pooling)
 
-#### 5.3 Gameplay Tags
-...
+### 5.2 A Deeper Look
+Let's take a deeper look at some of the core systems. 
 
-#### 5.4 Extensibility
-...
+#### Setting Up Your Attributes
+An Actor's set of Attributes is defined in its `AttributeSet`. It is easy to define how the attribute is initialized, as well as its overflow policy. Easily create more complex sets of Attributes by combining multiple `AttributeSet`s with respect to some collision resolution policy.
 
-## 6. API Documentation
+![image](https://github.com/user-attachments/assets/e9a3fa80-2411-490e-8a72-55867b674107)
 
-## 7. Ability Examples
+#### How Abilities Work
+FESGAS distinguishes itself from traditional GAS frameworks by how it approaches Abilities. As opposed to defining abilities by what they do, abilities are simply a collection of tasks separated into distinct stages. These stages, and the tasks therein (called `ProxyTasks`), are what define the behaviour of the Ability.
 
-### Purifying Flames (Oracle, Dota 2)
-At level 1, when cast on a target, this ability immediately deals 90 damage and then heals the target for 150 health over 10 seconds.
+One of the biggest issues with traditional approaches is that Ability inheritance trees quickly become completely overdeveloped and unnecessarily complicated. Abilities that perform different actions are separated into subclasses, but when a particular Ability calls for their logic to coincide, integration can be downright painful. One of my goals with FESGAS was to solve this issue and avoid subclassing the `Ability` class altogether.
 
-<details>
-    <summary>Create Gameplay Effects</summary>
-    
-1. Instant Damage
-This effect will immediately deal 50 damage to the target.
-- **Impact Specification**
-    - **Attribute Target:** `Attribute.Health`
-    - **Value Target:** Current
-    - **Impact Operation:** Add
-    - **Magnitude:** -90
-    - **Magnitude Calculation:** `MagnitudeModifier.Constant`
-    - **Magnitude Calculation Operation:** Multiply
-- **Duration Specification**
-    - **Duration Policy:** Instant
-    - ...
+![image](https://github.com/user-attachments/assets/9a1a8b97-81e4-4c5b-803d-5a35b681d374)
 
-2. Heal Over Time
-This effect will heal the target by 10 every .5 seconds for 3 seconds, healing for 60 health in total.
-- **Impact Specification**
-    - **Attribute Target:** `Attribute.Health`
-    - **Value Target:** Current
-    - **Impact Operation:** Add
-    - **Magnitude:** 15
-    - **Magnitude Calculation:** `MagnitudeModifier.Constant`
-    - **Magnitude Calculation Operation:** Multiply
-- **Duration Specification**
-    - **Duration Policy:** Durational
-    - **TickOnApplication:** false
-    - **Duration:** 10
-    - **Duration Calculation:** `MagnitudeModifier.Constant`
-    - **Duration Calculation Operation:** Multiply
-    - **Ticks:** 10
-    - **Tick Calculation:** `MagnitudeModifier.Constant`
-    - **Tick Calculation Operation:** Multiply
-    - ...
-</details>
-<details>
-    <summary>Create Proxy Task</summary>
+Abilities are split into two stages:
+1. Targeting\
+    a. Some targeting logic is executed (e.g. waiting for user input or automatically finding the nearest enemy)\
+    b. Pertinent data is stored in a shared packet passed between the stages and tasks of execution
+2. Activation\
+    a. Each `ProxyStage` is iterated through, and all `ProxyTask`s within the stage are activated\
+    b. The stage is ended when Any/All of the `ProxyTask`s complete
 
-1. Create `AbstractAbilityProxyTask.ApplyEffectProxyTask` as a subclass of `AbstractAbilityProxyTask`\
-   a. This task will take in a `GameplayEffectScriptableObject`\
-   b. Within the `ApplyEffectProxyTask.Activate(...)` method, 
+Some examples of `ProxyTask`s are:
+- Channeling
+- Applying `GameplayEffect`s
+- Creating processes
+
+#### Making a Gameplay Effect
+Gameplay effects are the heart and soul of any GAS framework. The setup for GEs in FESGAS will be familiar if you have experience with other traditional frameworks. The GE is defined by its Impact and Duration specifications. A set of Source and Target requirements define the parameters for application, ongoing, and removal conditions. To minimize overhead, these requirements are only validated against when pertinent parts of the system are updated, such as other GEs being applied or tags being applied/removed.
+
+![image](https://github.com/user-attachments/assets/e881be2c-7596-4e3e-88a9-5735f2d932bc)
+
+#### Process Handling
+There are two types of processes: MonoBehaviour processes and non-MonoBehaviour processes. Any MonoBehaviour process must inherit from the `AbstractMonoProcess` class, and it is recommended to subclass directly from the `LazyMonoProcess` class, which predefines some helpful logic.
+
+The most-used method for registering mono processes is via a `CreateMonoProcessProxyTask`. Non-MonoBehaviour processes can be registered as required by accessing `ProcessControl.Instance.Register(...)` as needed. For MonoBehaviour processes specifically, a `ProcessDataPacket` is passed into the `ProcessControl.Register` call, which should contain any pertinent data the process may require. As you define processes, please be aware of the following critical aspects:
+1. Processes define their own lifecycle, from initialization to termination. Processes are excluded from any Unity event loops by default.
+2. When a process accesses its `ProcessDataPacket`, it is assuming that the data was categorized correctly before registration. This logic must be clearly outlined when setting up processes and when adding data to the `ProcessDataPacket`. If the process attempts to gather data but cannot find any, a default value will be used.
+
+![image](https://github.com/user-attachments/assets/f523481c-0e77-4d18-8653-b0f99d2d02ac)
 
 
-1. Fill in identifying information, `Tag` validation requirements, etc...
-2. Create the `AbilityProxySpecification`\
-   a. **Use Implicit Data:** true (When the `Ability` is activated in the `AbilitySystemComponent` script, it will capture the associated `GASComponent` within a `ProxyDataPacket` object)\
-   b. **Owner As:** Target (The captured `GASComponent` will be captured as a `Target`)\
-   c. Add an `AbilityProxyStage`\
-       i. **Task Policy:** Any\
-       ii. ...
+## 6. Customization
 
-</details>
-After an activation request is validated and relayed to the `AbilitySystemComponent`, the ...
+## 7. Best Practices
 
-### This project (and README) is still being developed.
+## 8. Contributing
+
+## 9. License
+FESGAS is licensed under the MIT License. See the LICENSE file for details.
+
+## 10. Acknowledgements
+Special thanks to @sjai013 for kickstarting this adventure by inspiring me to create my own. I utilized his framework for my individual Game Development Capstone project at university. Thank you to my professors and peers for advice and guidance.
