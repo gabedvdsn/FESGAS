@@ -25,6 +25,7 @@ namespace FESGameplayAbilitySystem
         public GameplayEffectSpec Generate(IEffectDerivation derivation, GASComponentBase system);
         public GameplayTagScriptableObject GetIdentifier();
         public string GetReferenceName();
+        public EAffiliationPolicy GetAffiliationPolicy();
     }
 
     public static class EffectBuilder
@@ -207,6 +208,12 @@ namespace FESGameplayAbilitySystem
                 return this;
             }
 
+            public EffectPrototype SetAffiliationPolicy(EAffiliationPolicy arg)
+            {
+                Effect.AffiliationPolicy = arg;
+                return this;
+            }
+
         }
     }
 
@@ -244,6 +251,8 @@ namespace FESGameplayAbilitySystem
 
         public GameplayTagScriptableObject Identifier;
         public string ReferenceName;
+
+        public EAffiliationPolicy AffiliationPolicy;
         
         public AttributeScriptableObject GetAttributeTarget() => AttributeTarget;
 
@@ -330,6 +339,10 @@ namespace FESGameplayAbilitySystem
         public string GetReferenceName()
         {
             return ReferenceName;
+        }
+        public EAffiliationPolicy GetAffiliationPolicy()
+        {
+            return AffiliationPolicy;
         }
     }
 }

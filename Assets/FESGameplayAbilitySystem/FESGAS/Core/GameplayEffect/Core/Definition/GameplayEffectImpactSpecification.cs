@@ -17,6 +17,7 @@ namespace FESGameplayAbilitySystem
 
         [Space] 
         
+        public EAffiliationPolicy AffiliationPolicy;
         public EImpactType ImpactType;
         public bool ReverseImpactOnRemoval;
         public EEffectReApplicationPolicy ReApplicationPolicy;
@@ -94,5 +95,12 @@ namespace FESGameplayAbilitySystem
         OnApply,
         OnTick,
         OnRemove
+    }
+
+    public enum EAffiliationPolicy
+    {
+        IsOther,
+        IsSame,
+        IsAny
     }
 }

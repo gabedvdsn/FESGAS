@@ -346,7 +346,7 @@ namespace FESGameplayAbilitySystem
                 if (IsActive || IsTargeting) return false;  // Prevent reactivation mid-use
                 
                 Spec.Owner.AbilitySystem.ClaimActive(this);
-                
+                implicitData.AddPayload(ESourceTargetData.Data, GameRoot.DerivationTag, this);
                 
                 ResetTokens();
                 AwaitAbility(implicitData).Forget();

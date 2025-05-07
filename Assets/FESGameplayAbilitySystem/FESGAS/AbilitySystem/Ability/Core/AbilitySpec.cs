@@ -72,6 +72,10 @@ namespace FESGameplayAbilitySystem
         public void SetLevel(int level) => Level = level;
         public float GetRelativeLevel() => RelativeLevel;
         public string GetName() => Base.Definition.Name;
+        public GameplayTagScriptableObject GetAffiliation()
+        {
+            return Owner.Identity.Affiliation;
+        }
 
         public override string ToString()
         {

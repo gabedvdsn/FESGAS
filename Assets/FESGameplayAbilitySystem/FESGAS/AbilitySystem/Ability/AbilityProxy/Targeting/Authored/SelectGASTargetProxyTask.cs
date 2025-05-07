@@ -5,7 +5,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "PTTarget_SelectGAS", menuName = "FESGAS/Ability/Targeting/Select Target")]
-    public class SelectGASTargetProxyTask : AbstractSelectTargetProxyTaskScriptableObject
+    public class SelectGASTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
     {
 
         public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
@@ -30,26 +30,6 @@ namespace FESGameplayAbilitySystem
                 await UniTask.NextFrame(token);
             }
             UnityEngine.Debug.Log($"Out of targeting");
-        }
-        
-        protected override bool ConnectInputHandler()
-        {
-            return true;
-        }
-        
-        protected override void DisconnectInputHandler()
-        {
-            
-        }
-        
-        protected override void EnableTargetingVisualization()
-        {
-            
-        }
-        
-        protected override void DisableTargetingVisualization()
-        {
-            
         }
     }
 }

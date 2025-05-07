@@ -10,6 +10,7 @@ namespace FESGameplayAbilitySystem
         public int MaxLevel = 15;
 
         public GameplayTagScriptableObject NameTag;
+        [HideInInspector] public GameplayTagScriptableObject Affiliation;
 
         private GASComponentBase System;
 

@@ -53,6 +53,10 @@ namespace FESGameplayAbilitySystem
         {
             return name;
         }
+        public EAffiliationPolicy GetAffiliationPolicy()
+        {
+            return ImpactSpecification.AffiliationPolicy;
+        }
         public void ApplyImpactSpecification(GameplayEffectSpec spec)
         {
             ImpactSpecification.ApplyImpactSpecifications(spec);
@@ -173,6 +177,7 @@ namespace FESGameplayAbilitySystem
         public void SetLevel(int level);
         public float GetRelativeLevel();
         public string GetName();
+        public GameplayTagScriptableObject GetAffiliation();
 
         public static SourceEffectDerivation GenerateSourceDerivation(GASComponentBase source)
         {
@@ -216,6 +221,10 @@ namespace FESGameplayAbilitySystem
         public string GetName()
         {
             return Owner.Identity.DistinctName;
+        }
+        public GameplayTagScriptableObject GetAffiliation()
+        {
+            return Owner.Identity.Affiliation;
         }
     }
 

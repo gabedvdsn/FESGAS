@@ -13,7 +13,7 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Targeting Instructions")]
         
-        public AbstractSelectTargetProxyTaskScriptableObject TargetingProxy;
+        public AbstractTargetingProxyTaskScriptableObject TargetingProxy;
         
         [Space]
         

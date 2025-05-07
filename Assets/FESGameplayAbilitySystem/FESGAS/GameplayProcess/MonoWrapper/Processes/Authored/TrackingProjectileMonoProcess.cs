@@ -8,7 +8,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class TrackingProjectileMonoProcess : LazyMonoProcess
+    public class TrackingProjectileMonoProcess : AbstractEffectingMonoProcess
     {
         private GASComponentBase targetGAS;
         public Transform target;
@@ -45,6 +45,8 @@ namespace FESGameplayAbilitySystem
 
                 await UniTask.NextFrame(token);
             }
+            
+            ApplyEffects(targetGAS);
         }
     }
 }

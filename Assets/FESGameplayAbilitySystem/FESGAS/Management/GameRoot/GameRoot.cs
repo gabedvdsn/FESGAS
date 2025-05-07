@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public class GameRoot : GASComponent
+    public class GameRoot : GASComponent, IEffectDerivation
     {
         [Header("Game Root")]
         
@@ -21,10 +21,18 @@ namespace FESGameplayAbilitySystem
         
         public MonoProcessParametersScriptableObject DefaultDataParameters;
 
+        [Space(5)] 
+        
+        public GameplayTagScriptableObject MasterTag;
+        public GameplayTagScriptableObject AllyTag;
+        public GameplayTagScriptableObject EnemyTag;
+
         public static GameplayTagScriptableObject GASTag => Instance.DefaultDataParameters.GAS;
         public static GameplayTagScriptableObject PositionTag => Instance.DefaultDataParameters.Position;
         public static GameplayTagScriptableObject RotationTag => Instance.DefaultDataParameters.Rotation;
         public static GameplayTagScriptableObject TransformTag => Instance.DefaultDataParameters.Transform;
+        public static GameplayTagScriptableObject DerivationTag => Instance.DefaultDataParameters.Derivation;
+        public static GameplayTagScriptableObject GenericTag => Instance.DefaultDataParameters.Generic;
         
         protected override void Awake()
         {
@@ -102,5 +110,41 @@ namespace FESGameplayAbilitySystem
         {
             transform.Rotate(Vector3.up * (25f * Time.deltaTime));
         }
+        
+        #region Effect Derivation
+        
+        public GASComponentBase GetOwner()
+        {
+            return this;
+        }
+        public List<GameplayTagScriptableObject> GetContextTags()
+        {
+            return new List<GameplayTagScriptableObject>();
+        }
+        public GameplayTagScriptableObject GetAssetTag()
+        {
+            return Identity.NameTag;
+        }
+        public int GetLevel()
+        {
+            return Identity.Level;
+        }
+        public void SetLevel(int level)
+        {
+            Identity.Level = level;
+        }
+        public float GetRelativeLevel()
+        {
+            return Identity.Level / (float)Identity.MaxLevel;
+        }
+        public string GetName()
+        {
+            return Identity.DistinctName;
+        }
+        public GameplayTagScriptableObject GetAffiliation()
+        {
+            return MasterTag;
+        }
+        #endregion
     }
 }

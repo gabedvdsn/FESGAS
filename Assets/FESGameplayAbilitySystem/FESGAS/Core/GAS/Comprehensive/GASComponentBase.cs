@@ -51,7 +51,17 @@ namespace FESGameplayAbilitySystem
         protected abstract void PrepareSystem();
         
         #region Process Parameters
-        
+        public override void WhenInitialize(ProcessRelay relay)
+        {
+            base.WhenInitialize(relay);
+
+            // Attempt to find affiliation
+            if (data.TryGetData(GameRoot.GenericTag, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
+            {
+                Identity.Affiliation = affiliation;
+            }
+        }
+
         // Process
         public override void WhenUpdate(ProcessRelay relay)
         {
@@ -341,16 +351,15 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectApplicationRequirements(GameplayEffectSpec spec)
         {
-            return spec.Base.ValidateApplicationRequirements(spec);
-            
-            /*List<GameplayTagScriptableObject> appliedTags = GetAppliedTags();
+            var affiliation = spec.Derivation.GetAffiliation();
+            return spec.Base.GetAffiliationPolicy() switch
+            {
 
-            // Validate target (this) application requirements
-            return spec.Base.TargetRequirements.CheckApplicationRequirements(appliedTags) &&
-                   !spec.Base.TargetRequirements.CheckRemovalRequirements(appliedTags) &&
-                   // Validate source application requirements
-                   spec.Source.ValidateEffectApplicationRequirements(spec.Base.SourceRequirements) &&
-                   !spec.Source.ValidateEffectRemovalRequirements(spec.Base.SourceRequirements);*/
+                EAffiliationPolicy.IsOther => Identity.Affiliation != affiliation,
+                EAffiliationPolicy.IsSame => Identity.Affiliation == affiliation,
+                EAffiliationPolicy.IsAny => true,
+                _ => throw new ArgumentOutOfRangeException()
+            } && spec.Base.ValidateApplicationRequirements(spec);
         }
         
         /// <summary>
@@ -456,6 +465,11 @@ namespace FESGameplayAbilitySystem
         }
         
         #endregion
+
+        private void OnTriggerEnter(Collider other)
+        {
+            UnityEngine.Debug.Log(other);
+        }
 
         public override string ToString()
         {

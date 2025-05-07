@@ -10,16 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2d34fc1f98f8a0b4c9b37da3e706e0e1, type: 3}
-  m_Name: GE_Damage_ChanneledBigDamage
+  m_Name: GE_CreateAOE_Damage
   m_EditorClassIdentifier: 
-  Identifier: {fileID: 11400000, guid: 02753a5a3b184c041b03931d580b650b, type: 2}
-  GrantedTags:
-  - {fileID: 11400000, guid: 02753a5a3b184c041b03931d580b650b, type: 2}
+  Identifier: {fileID: 11400000, guid: a60c0b96560658a45af7145f553ff03f, type: 2}
+  GrantedTags: []
   ImpactSpecification:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     TargetImpact: 0
     ImpactOperation: 0
-    ImpactType: 2
+    ImpactType: 1
     ReverseImpactOnRemoval: 0
     ReApplicationPolicy: 0
     Magnitude: -50
@@ -27,13 +26,13 @@ MonoBehaviour:
     MagnitudeCalculationOperation: 0
     Packets: []
   DurationSpecification:
-    DurationPolicy: 2
+    DurationPolicy: 0
     TickOnApplication: 0
-    Duration: 3
-    DurationCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
+    Duration: 0
+    DurationCalculation: {fileID: 0}
     DurationCalculationOperation: 0
-    Ticks: 2
-    TickCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
+    Ticks: 0
+    TickCalculation: {fileID: 0}
     TickCalculationOperation: 0
     Rounding: 0
     UseDefaultTickRate: 0

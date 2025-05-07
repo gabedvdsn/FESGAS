@@ -5,7 +5,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "TPTarget_Position", menuName = "FESGAS/Ability/Targeting/Select Position")]
-    public class SelectPositionTargetProxyTask : AbstractSelectTargetProxyTaskScriptableObject
+    public class SelectPositionTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
     {
 
         public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
@@ -26,27 +26,6 @@ namespace FESGameplayAbilitySystem
                 await UniTask.NextFrame(token);
             }
             await UniTask.CompletedTask;
-        }
-        
-        protected override bool ConnectInputHandler()
-        {
-            Debug.Log($"Connected input handler");
-            return true;
-        }
-        
-        protected override void DisconnectInputHandler()
-        {
-            Debug.Log($"Disconnected input handler");
-        }
-        
-        protected override void EnableTargetingVisualization()
-        {
-            Debug.Log($"Enabled visualization");
-        }
-        
-        protected override void DisableTargetingVisualization()
-        {
-            Debug.Log($"Disabled visualization");
         }
     }
 }
