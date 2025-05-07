@@ -34,7 +34,7 @@ namespace FESGameplayAbilitySystem
                 IEffectDerivation.GenerateSourceDerivation(null), 
                 null, ESourceTargetExpanded.Neither);
             
-            ProcessControl.Instance.Register(new MonoProcessPacket(GameRootPrefab), data, out _);
+            ProcessControl.Instance.Register(GameRootPrefab, data, out _);
 
             Initialize();
             

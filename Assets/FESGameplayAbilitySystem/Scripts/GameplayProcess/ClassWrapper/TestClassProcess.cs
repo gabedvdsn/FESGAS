@@ -27,6 +27,17 @@ namespace FESGameplayAbilitySystem
             Debug.Log($"Process terminated");
         }
 
+        public bool TryGetProcess<T>(out T process)
+        {
+            if (this is T cast)
+            {
+                process = cast;
+                return true;
+            }
+
+            process = default;
+            return false;
+        }
         public string ProcessName => "AnonymousClassProcess";
         public EProcessUpdateTiming StepTiming => EProcessUpdateTiming.Update;
         public EProcessLifecycle Lifecycle => EProcessLifecycle.SelfTerminating;

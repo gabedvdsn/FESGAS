@@ -46,28 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StartState: 0
   DontDestroyOnLoad: 1
-  ControlTag: {fileID: 0}
-  TestMonoST:
-    MonoProcess: {fileID: 4471479272133613396, guid: af582417aa7090d4ab1dd007535c30d3, type: 3}
-    Transform: 0
-    TransformTarget: 0
-    Position: 0
-    PositionTarget: 0
-    Rotation: 0
-    RotationTarget: 0
-  TestMonoRTW:
-    MonoProcess: {fileID: 4471479272133613396, guid: 5365b3f90d9864b42be03a0e04b34c11, type: 3}
-    Transform: 0
-    TransformTarget: 0
-    Position: 0
-    PositionTarget: 0
-    Rotation: 0
-    RotationTarget: 0
-  TestMonoRC:
-    MonoProcess: {fileID: 4471479272133613396, guid: 38d13fe21f4a5834ebe76155c01156d7, type: 3}
-    Transform: 0
-    TransformTarget: 0
-    Position: 0
-    PositionTarget: 0
-    Rotation: 0
-    RotationTarget: 0
+  ControlTag: {fileID: 11400000, guid: f9a3b2163b82ad24ca880376ac360cce, type: 2}
+  TestMonoST: {fileID: 0}
+  TestMonoRTW: {fileID: 0}
+  TestMonoRC: {fileID: 0}

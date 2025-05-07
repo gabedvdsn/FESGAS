@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
     /// <summary>
     /// Multiplies the SMAVs under the primary attribute by the current value
     /// </summary>
-    [CreateAssetMenu(menuName = "FESGAS/Attribute/Change Event/Basic Math", fileName = "ACE_LogicalMath_")]
+    [CreateAssetMenu(menuName = "FESGAS/Attribute/Change Event/Logical Math", fileName = "ACE_LogicalMath_")]
     public class MathAttributeChangeEventScriptableObject : AbstractRelativeAttributeChangeEventScriptableObject
     {
         [Header("Math Event")]
@@ -22,7 +22,7 @@ namespace FESGameplayAbilitySystem
         public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
-            var result = GASHelper.AttributeMathEvent(change.Value.ToAttributeValue(), attributeCache[RelativeTo].Value * RelativeMultiplier, Operation, OperationTarget, OperationPolicy);
+            var result = GASHelper.AttributeMathEvent(change.Value.ToAttributeValue(), GetRelative(attributeCache, change), Operation, OperationTarget, OperationPolicy);
             change.Override(result);
         }
 

@@ -9,15 +9,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3dec84551a44eaf98d825ea832e524c, type: 3}
-  m_Name: ACE_ClampHealth
+  m_Script: {fileID: 11500000, guid: b9657128c22d4be5b88d5845f856d220, type: 3}
+  m_Name: ACE_LogicalMath_MagicalDamageAmp
   m_EditorClassIdentifier: 
-  Timing: 1
+  Timing: 0
   TargetAttribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-  TargetModification: 3
+  TargetModification: 0
   ExclusivelyTargetModification: 1
-  AllowSelfModification: 1
-  SignPolicy: 4
-  ImpactType: 3
+  AllowSelfModification: 0
+  SignPolicy: 0
+  ImpactType: 1
   AnyContextTag: 1
   ValidContextTags: []
+  From: 1
+  RelativeTo: {fileID: 11400000, guid: 3f1f46fc75e632240b3aba2bf54938cd, type: 2}
+  RelativeMultiplier: 1
+  Operation: 1
+  OperationTarget: 0
+  OperationPolicy: 1

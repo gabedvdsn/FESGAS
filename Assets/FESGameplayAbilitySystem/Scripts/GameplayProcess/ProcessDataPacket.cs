@@ -27,7 +27,7 @@ namespace FESGameplayAbilitySystem
 
         public ProcessDataPacket()
         {
-            Handler = ProcessControl.Instance;
+            Handler = GameRoot.Instance;
         }
 
         public ProcessDataPacket(IGameplayProcessHandler handler)

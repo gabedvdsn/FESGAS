@@ -39,9 +39,9 @@ namespace FESGameplayAbilitySystem
 
         private CancellationTokenSource cts;
 
-        private ProcessRelay relay;
+        protected ProcessRelay relay;
 
-        private ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
+        protected ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
         {
             relay = new ProcessRelay(this);
 
@@ -241,6 +241,11 @@ namespace FESGameplayAbilitySystem
         public float Lifetime => pcb.Lifetime;
         public float UpdateTime => pcb.UpdateTime;
 
+        public bool TryGetProcess<T>(out T process)
+        {
+            return pcb.Process.TryGetProcess(out process);
+        }
+        
         public int RemainingRuntime(int runtime, int multiplier = 1000) => runtime - (int)UpdateTime * multiplier;
     }
     

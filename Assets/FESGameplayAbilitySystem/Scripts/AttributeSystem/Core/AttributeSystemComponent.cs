@@ -114,8 +114,6 @@ namespace FESGameplayAbilitySystem
         
         public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool runEvents = true)
         {
-            Debug.Log($"Modifying attribute {attribute} by {sourcedModifiedValue}");
-            
             if (!AttributeCache.ContainsKey(attribute)) return;
 
             // Create a temp value to track during change events
@@ -133,6 +131,8 @@ namespace FESGameplayAbilitySystem
             // Relay impact to source
             var impactData = AbilityImpactData.Generate(System, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
             sourcedModifiedValue.BaseDerivation.GetSource().AbilitySystem.ProvideFrameImpact(impactData);
+            
+            Debug.Log($"Modifying attribute {attribute} by {sourcedModifiedValue} ({impactData.RealImpact})");
         }
 
         public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)

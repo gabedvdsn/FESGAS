@@ -41,6 +41,10 @@ namespace FESGameplayAbilitySystem
             data = processData;
         }
 
+        /// <summary>
+        /// Called via ProcessControl after the process is Created
+        /// </summary>
+        /// <param name="relay">Process Relay</param>
         public virtual void WhenInitialize(ProcessRelay relay)
         {
             if (data.TryGetPayload<Vector3>(InitialPositionTarget, GameRoot.PositionTag, InitialPositionValue, out var pos))
@@ -68,18 +72,36 @@ namespace FESGameplayAbilitySystem
             else transform.SetParent(GameRoot.Instance.transform);
         }
         
+        /// <summary>
+        /// Called via Step in ProcessControl as determined by the process's StepUpdateTiming
+        /// </summary>
+        /// <param name="relay">Process Relay</param>
         public abstract void WhenUpdate(ProcessRelay relay);
 
+        /// <summary>
+        /// Called via ProcessControl when the process is set to Waiting
+        /// </summary>
+        /// <param name="relay">Process Relay</param>
         public virtual void WhenWait(ProcessRelay relay)
         {
             processActive = false;
         }
 
+        /// <summary>
+        /// Called via ProcessControl when the process is set to Terminated
+        /// </summary>
+        /// <param name="relay">Process Relay</param>
         public virtual void WhenTerminate(ProcessRelay relay)
         {
             processActive = false;
         }
         
+        /// <summary>
+        /// Called via ProcessControl when the process is set to Running
+        /// </summary>
+        /// <param name="relay">Process Relay</param>
+        /// <param name="token">Cancellation token</param>
+        /// <returns></returns>
         public abstract UniTask RunProcess(ProcessRelay relay, CancellationToken token);
 
         public int StepPriority => ProcessStepPriority;

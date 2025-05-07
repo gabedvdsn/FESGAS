@@ -270,7 +270,6 @@ namespace FESGameplayAbilitySystem
 
         private void ClaimActive(AbilitySpecContainer container)
         {
-            Debug.Log($"claimed {container}");
             abilityActive = true;
 
             
@@ -292,7 +291,6 @@ namespace FESGameplayAbilitySystem
 
         private void ReleaseClaim(AbilitySpecContainer container)
         {
-            Debug.Log($"released {container}");
             if (activeContainer == container)
             {
                 activeContainer = null;

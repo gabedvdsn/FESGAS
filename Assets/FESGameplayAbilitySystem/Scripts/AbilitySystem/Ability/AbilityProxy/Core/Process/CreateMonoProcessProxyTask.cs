@@ -12,27 +12,16 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Create Mono Processes")]
         
-        public List<MonoProcessPacket> MonoProcesses;
+        public List<AbstractMonoProcess> MonoProcesses;
         
         public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
         {
-            foreach (var packet in MonoProcesses)
+            foreach (var process in MonoProcesses)
             {
-                ProcessControl.Instance.Register(packet, data, out _);
+                ProcessControl.Instance.Register(process, data, out _);
             }
             
             await UniTask.CompletedTask;
-        }
-    }
-
-    [Serializable]
-    public struct MonoProcessPacket
-    {
-        public AbstractMonoProcess MonoProcess;
-
-        public MonoProcessPacket(AbstractMonoProcess monoProcess) : this()
-        {
-            MonoProcess = monoProcess;
         }
     }
 }

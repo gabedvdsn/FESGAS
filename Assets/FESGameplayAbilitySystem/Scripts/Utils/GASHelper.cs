@@ -126,7 +126,7 @@ namespace FESGameplayAbilitySystem
         
         public static bool ValidateImpactTypes(EImpactType impactType, EImpactTypeAny validation)
         {
-            if (impactType == EImpactType.NotApplicable) return false;
+            if (impactType == EImpactType.NotApplicable && validation != EImpactTypeAny.Any) return false;
             
             return validation switch
             {

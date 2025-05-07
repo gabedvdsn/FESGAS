@@ -67,6 +67,18 @@ namespace FESGameplayAbilitySystem
             await activeMono.RunProcess(relay, token);
         }
 
+        public bool TryGetProcess<T>(out T process)
+        {
+            if (activeMono is T cast)
+            {
+                process = cast;
+                return true;
+            }
+
+            process = default;
+            return false;
+        }
+
         public string ProcessName => activeMono ? activeMono.name : "[ ]";
         public int StepPriority => activeMono.StepPriority;
         public EProcessUpdateTiming StepTiming => activeMono.StepTiming;

@@ -50,15 +50,6 @@ namespace FESGameplayAbilitySystem
 
         protected abstract void PrepareSystem();
         
-        /*private void Update()
-        {
-            TickEffectShelf();
-            
-            if (needsCleaning) ClearFinishedEffects();
-            
-            TagCache.TickTagWorkers();
-        }*/
-        
         #region Process Parameters
         
         // Process

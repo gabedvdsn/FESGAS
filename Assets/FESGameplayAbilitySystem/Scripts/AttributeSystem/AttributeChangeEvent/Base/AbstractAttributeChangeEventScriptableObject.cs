@@ -28,6 +28,11 @@ namespace FESGameplayAbilitySystem
             InternalValidate();
         }
 
+        public override string ToString()
+        {
+            return name;
+        }
+
         public enum EChangeEventTiming
         {
             PreChange,

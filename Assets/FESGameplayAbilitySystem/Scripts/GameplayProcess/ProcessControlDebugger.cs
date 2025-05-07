@@ -8,7 +8,8 @@ namespace FESGameplayAbilitySystem
 {
     public class ProcessControlDebugger : EditorWindow
     {
-        bool showProcessControls = true;
+        private EProcessDebuggerPolicy Policy = EProcessDebuggerPolicy.Simple;
+        private Vector2 scrollPos;
         
         [MenuItem("FESGameplayAbilitySystem/Process Debugger")]
         public static void ShowWindow()
@@ -27,7 +28,7 @@ namespace FESGameplayAbilitySystem
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField($"State: {ProcessControl.Instance.State}  |  {ProcessControl.Instance.Active}/{ProcessControl.Instance.Created}");
 
-            showProcessControls = EditorGUILayout.Toggle("Show Process Controls", showProcessControls);
+            Policy = (EProcessDebuggerPolicy)EditorGUILayout.EnumPopup("Weapon", Policy);
             
             EditorGUILayout.BeginHorizontal("box");
             EditorGUI.BeginDisabledGroup(ProcessControl.Instance.State == EProcessControlState.Ready);
@@ -78,12 +79,49 @@ namespace FESGameplayAbilitySystem
             
             EditorGUILayout.Space();
 
-            if (showProcessControls) ShowFull();
-            else ShowSimple();
+            switch (Policy)
+            {
+
+                case EProcessDebuggerPolicy.Minimum:
+                    ShowMinimum();
+                    break;
+                case EProcessDebuggerPolicy.Simple:
+                    ShowSimple();
+                    break;
+                case EProcessDebuggerPolicy.Full:
+                    ShowFull();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private void ShowMinimum()
+        {
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+            try
+            {
+                foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
+                {
+                    var relay = kvp.Value.GetRelay();
+                    if (relay.Process is null) continue;
+
+                    EditorGUILayout.BeginVertical("box");
+
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.State} -> {relay.QueuedState} | {relay.UpdateTime:F2} / {relay.Lifetime:F2} ({relay.Process.StepTiming})");
+                    
+                    EditorGUILayout.EndVertical();
+                }
+                
+            }
+            catch (InvalidOperationException) { }
+            EditorGUILayout.EndScrollView();
         }
 
         private void ShowSimple()
         {
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
             try
             {
                 foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
@@ -103,17 +141,19 @@ namespace FESGameplayAbilitySystem
                     
                     EditorGUILayout.BeginHorizontal("box");
                     EditorGUILayout.LabelField($"UpdateTime: {relay.UpdateTime:F2} seconds");
-                    EditorGUILayout.LabelField($"Lifetime: {relay.UnscaledLifetime:F2} seconds");
+                    EditorGUILayout.LabelField($"Lifetime: {relay.Lifetime:F2} seconds");
                     EditorGUILayout.EndHorizontal();
                     
                     EditorGUILayout.EndVertical();
                 }
             }
             catch (InvalidOperationException) { }
+            EditorGUILayout.EndScrollView();
         }
 
         private void ShowFull()
         {
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
             try
             {
                 foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
@@ -166,6 +206,7 @@ namespace FESGameplayAbilitySystem
                 }
             }
             catch (InvalidOperationException) { }
+            EditorGUILayout.EndScrollView();
         }
         
         private void OnInspectorUpdate()
@@ -173,6 +214,13 @@ namespace FESGameplayAbilitySystem
             Repaint();
         }
 
+    }
+
+    public enum EProcessDebuggerPolicy
+    {
+        Minimum,
+        Simple,
+        Full
     }
 }
 #endif

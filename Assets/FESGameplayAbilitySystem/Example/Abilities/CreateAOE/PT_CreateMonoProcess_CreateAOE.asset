@@ -17,4 +17,4 @@ MonoBehaviour:
     and Clean is always called after the APT is finished activating, regardless of
     the manner the activation is resolved.'
   MonoProcesses:
-  - MonoProcess: {fileID: 3210473624934245448, guid: 1c6034833ba3e5249acd8f824af1612d, type: 3}
+  - {fileID: 3210473624934245448, guid: 1c6034833ba3e5249acd8f824af1612d, type: 3}

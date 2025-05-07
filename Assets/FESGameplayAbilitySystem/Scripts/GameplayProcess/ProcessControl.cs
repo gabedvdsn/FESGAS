@@ -19,14 +19,6 @@ namespace FESGameplayAbilitySystem
         public EProcessControlState StartState = EProcessControlState.Ready;
         public new bool DontDestroyOnLoad = true;
         
-        [Space]
-        
-        public GameplayTagScriptableObject ControlTag;
-        
-        public MonoProcessPacket TestMonoST;  // Testing purposes only, won't be included in shipped version
-        public MonoProcessPacket TestMonoRTW;  // Testing purposes only, won't be included in shipped version
-        public MonoProcessPacket TestMonoRC;  // Testing purposes only, won't be included in shipped version
-
         public EProcessControlState State { get; private set; }
 
         private Dictionary<int, ProcessControlBlock> active = new();
@@ -57,32 +49,6 @@ namespace FESGameplayAbilitySystem
         private void Update()
         {
             Step(EProcessUpdateTiming.Update);
-            
-            // For testing purposes only
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                //var process = new TestClassProcess();
-                Instance.Register(TestMonoST, new ProcessDataPacket(), out _);
-            }
-            
-            if (Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                //var process = new TestClassProcess();
-                Instance.Register(TestMonoRTW, new ProcessDataPacket(), out _);
-            }
-            
-            if (Input.GetKeyDown(KeyCode.Alpha3))
-            {
-                //var process = new TestClassProcess();
-                Instance.Register(TestMonoRC, new ProcessDataPacket(), out _);
-            }
-            
-            if (Input.GetKeyDown(KeyCode.Alpha4))
-            {
-                //var process = new TestClassProcess();
-                var process = new TestClassProcess();
-                Instance.Register(process, null, out _);
-            }
         }
 
         private void LateUpdate()
@@ -155,15 +121,14 @@ namespace FESGameplayAbilitySystem
             return true;
         }
         
-        public void Register(MonoProcessPacket packet, ProcessDataPacket data, out ProcessRelay relay)
+        public bool Register(AbstractMonoProcess process, ProcessDataPacket data, out ProcessRelay relay)
         {
-            Register
+            return Register
             (
-                new MonoWrapperProcess(packet.MonoProcess, data),
+                new MonoWrapperProcess(process, data),
                 data.Handler,
                 out relay
             );
-            data.Handler?.HandlerSubscribeProcess(relay);
         }
         
         // Unregister a PCB

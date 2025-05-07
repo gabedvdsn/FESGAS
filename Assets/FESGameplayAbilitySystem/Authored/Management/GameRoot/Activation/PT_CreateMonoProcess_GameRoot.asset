@@ -10,19 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f5df4d009acc324da13eb79bff8002d, type: 3}
-  m_Name: PT_CreateMonoProcess_Bootstrap
+  m_Name: PT_CreateMonoProcess_GameRoot
   m_EditorClassIdentifier: 
   ReadOnlyDescription: 'This is an Ability Proxy Task (APT). APTs implement 3 methods:
     Prepare, Activate, and Clean. Prepare is always called before the APT is activated,
     and Clean is always called after the APT is finished activating, regardless of
     the manner the activation is resolved.'
-  UseDefaultParameters: 1
-  Parameters: {fileID: 0}
   MonoProcesses:
-  - MonoProcess: {fileID: 4471479272133613396, guid: af582417aa7090d4ab1dd007535c30d3, type: 3}
-    Transform: 0
-    TransformTarget: 0
-    Position: 0
-    PositionTarget: 0
-    Rotation: 0
-    RotationTarget: 0
+  - {fileID: 3013273466423406370, guid: 95213f5f21ba7444d863734736e30b8f, type: 3}
