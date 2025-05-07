@@ -17,57 +17,36 @@
 - [Acknowledgements](#12-acknoledgements)
 
 ## 2. Introduction
-FESGAS is a modular, composition-inspired, and extensible ability-handling system that supports a built-in attribute system. This framework provides the material necessary to build complex abilities and gameplay effects, as well as monitor and manage interactions between systems.
+FESGAS is a modular and extensible **Gameplay Ability System** framework for Unity, designed for high-performance, flexibility, and scalability. The framework offers a unique take on traditional GAS features in addition to a powerful process management controller. FESGAS empowers designers and engineers to manage attribute-based systems, create complex abilities, and handle runtime processes performantly. This framework is built with modularity at the forefront of development, such that most aspects of integration are wrapped under derivable logic systems built with extensibility in mind. While it is originally inspired by @sjai013's [Unity Gameplay Ability System](https://github.com/sjai013/unity-gameplay-ability-system) and Unreal Engine's [Gameplay Ability System](https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-ability-system-for-unreal-engine), FESGAS differs in some key aspects, which this README will demonstrate in detail. Thank you for checking out my framework!
 
-**Goals:**
-- Modular, reusable, and extendable code
-- Highly customizable abilities and gameplay effects
-- Optimized for large pools of actors in real-time gameplay
-- Close monitoring and control over every stage of system interaction
+### 2.1 Preliminary Acknowledgements
+This framework is the culmination of my journey into game development through university and is a project purely born of passion and excitement for the craft. I would not have been able to develop this without the encouragement and support of my mentors, professors, and peers. While it has been a laborious process developing, testing, and deploying this framework, the fruits of labor are immensely exciting, and I cannot wait to integrate this framework into my next Unity project.
 
 ## 3. Features
-This framework is inspired by @sjai013 [Unity Gameplay Ability System](https://github.com/sjai013/unity-gameplay-ability-system), which was itself inspired by Unreal Engine's [GAS](https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-ability-system-for-unreal-engine). My initial experience working with GAS came with @sjai013's system, but I found that it didn't meet all the needs of my projects; I wanted a framework that was just as modular, with less redundancy, and greater control over an ability's behavior.
-
 - Ability System
-    - Master Ability class (no subclassing)
-    - Modular control structures to manage magnitude-related scaling
-    - Non-exclusive support for passive, active, toggled, and triggered abilities
-    - Proxy Tasks
-        - Completely modular, extensible definitions of ability-related behaviors
-        - Integration with Unity's animation system
-- Ability Handling
-    - Ability use validation
-    - Cooldown and cost management
-    - Implicit instructions to activated abilities
+    - Task-Based Ability Definition
+    - UniTask
 - Attribute System
-    - Efficient handling of impacted attributes
-    - Pre and post-attribute impact monitoring and management
+- Process Management
 
 ## 4. Getting Started
 
-#### 4.1 Prerequisites
+### 4.1 Requirements
+- Unity 2022.3 LTS or newer
+- [UniTask](https://github.com/Cysharp/UniTask) package installed (@Cysharp)
+    - Follow the instructions [here](https://github.com/Cysharp/UniTask?tab=readme-ov-file#upm-package) under "_Install via GIT URL_"
+ - [SerializedDictionary](https://assetstore.unity.com/packages/tools/utilities/serialized-dictionary-243052) package installed (@AYellowPaper)
 
-- Unity Version 2022.3.37f1
-- Dependencies
-    - `SerializedDictionary` from [@AYellowPaper]() on the [Unity Asset Store](https://assetstore.unity.com/packages/tools/utilities/serialized-dictionary-243052)
-        - Install via the Unity Asset Store (using the link above) and add to project via the `Project Manager` window in Unity
-    - `UniTask` from @Cysharp on [GitHub](https://github.com/Cysharp/UniTask)
-        - Follow the instructions [here](https://github.com/Cysharp/UniTask?tab=readme-ov-file#upm-package) under "Instal via GIT URL"
-     
-#### 4.2 Installation
-- Instructions ...
+### 4.2 Installation
+1. Clone or download the repository
+2. Import the project into Unity
+3. Install UniTask via UPM or manual package import
+4. (Optional) Import _Demo_ directory
 
-#### 4.3 Basic Setup
-- Scene Actors
-    - Add the `GASComponent` script to the actor (this will automatically add the `AbilitySystemComponent` and `AttributeSystemComponent` scripts)
-    - Within the `AttributeSystemComponent`, assign an `AttributeSet` data and any `AttributeChangeEvent` datas
-    - Within the `AbilitySystemComponent`, assign the max number of abilities
-    - Within the `GASComponent`, assign starting abilities and starting level
-- Create `Ability` datas by right-clicking, then navigating to `FESGAS/Abilities/Ability`
-    - Create and implement `ProxyTask` datas (see under [5.2 Ability Proxy Tasks](#5-2-ability-proxy-tasks))
-- Create `GameplayEffect` datas by right-clicking, then navigating to `FESGAS/Gameplay Effect`
-- Create `MagnitudeModifier` datas by right-clicking, then navigating to `FESGAS/Magnitude Modifier/...`
-- Create `Attribute` datas by right-clicking, then navigating to `FESGAS/Attribute`
+#### 4.3 Setting Up
+- GAS Actors
+    - Add the `GASComponent` component to your actors (this will automatically add the `AttributeSystemComponent` and `AbilitySystemComponent` components)
+    - 
 
 ## 5. Architecture Overview
 
