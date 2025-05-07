@@ -8,13 +8,10 @@
 - [Features](#3-features)
 - [Getting Started](#4-getting-started)
 - [Architecture Overview](#5-architecture-overview)
-- [API Documentation](#6-api-documentation)
-- [Examples](#7-ability-examples)
-- [Customization](#8-customization)
-- [Best Practices](#9-best-practices)
-- [Contributing](#10-contributing)
-- [License](#11-license)
-- [Acknowledgements](#12-acknoledgements)
+- [Customization](#6-customization)
+- [Contributing](#7-contributing)
+- [License](#8-license)
+- [Acknowledgements](#9-acknowledgements)
 
 ## 2. Introduction
 FESGAS is a modular and extensible **Gameplay Ability System** framework for Unity, designed for high-performance, flexibility, and scalability. The framework offers a unique take on traditional GAS features in addition to a powerful process management controller. FESGAS empowers designers and engineers to manage attribute-based systems, create complex abilities, and handle runtime processes performantly. This framework is built with modularity at the forefront of development, such that most aspects of integration are wrapped under derivable logic systems built with extensibility in mind. While it is originally inspired by @sjai013's [Unity Gameplay Ability System](https://github.com/sjai013/unity-gameplay-ability-system) and Unreal Engine's [Gameplay Ability System](https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-ability-system-for-unreal-engine), FESGAS differs in some key aspects, which this README will demonstrate in detail. Thank you for checking out my framework!
@@ -97,7 +94,7 @@ Integrating FESGAS into an existing project well into development can be very tr
 - Utilizes UniTask for highly scalable and lightweight deployment of hundreds of active processes
 - Define custom `MonoProcessInstantiator` classes to handle custom logic behind MonoBehaviour process instantiation (e.g. object pooling)
 
-### 5.2 A Deeper Look
+### 5.1 A Deeper Look
 Let's take a deeper look at some of the core systems. 
 
 #### Setting Up Your Attributes
@@ -130,6 +127,8 @@ Gameplay effects are the heart and soul of any GAS framework. The setup for GEs 
 
 ![image](https://github.com/user-attachments/assets/e881be2c-7596-4e3e-88a9-5735f2d932bc)
 
+If the situation arises where you must create a GE outside of a ScriptableObject, utilize the `EffectBuilder` factory class to create custom effects during runtime. 
+
 #### Process Handling
 There are two types of processes: MonoBehaviour processes and non-MonoBehaviour processes. Any MonoBehaviour process must inherit from the `AbstractMonoProcess` class, and it is recommended to subclass directly from the `LazyMonoProcess` class, which predefines some helpful logic.
 
@@ -139,15 +138,14 @@ The most-used method for registering mono processes is via a `CreateMonoProcessP
 
 ![image](https://github.com/user-attachments/assets/f523481c-0e77-4d18-8653-b0f99d2d02ac)
 
-
 ## 6. Customization
+The FESGAS framework is highly extensible due to its consistent focus on ScriptableObject-based development. Easily extend modular events, proxy tasks, and processes to fit the needs of your project.
 
-## 7. Best Practices
+## 7. Contributing
+Contributions are welcome! If you have suggestions, bug reports, or enhancements, please submit an issue or pull request.
 
-## 8. Contributing
-
-## 9. License
+## 8. License
 FESGAS is licensed under the MIT License. See the LICENSE file for details.
 
-## 10. Acknowledgements
+## 9. Acknowledgements
 Special thanks to @sjai013 for kickstarting this adventure by inspiring me to create my own. I utilized his framework for my individual Game Development Capstone project at university. Thank you to my professors and peers for advice and guidance.
