@@ -15,7 +15,7 @@ MonoBehaviour:
   ActivationPolicy: 2
   MaxAbilities: 99
   StartingAbilities:
-  - {fileID: 11400000, guid: 2f4f962a331e64346ad51ca233b4c6d6, type: 2}
+  - {fileID: 11400000, guid: 52647be4e729fee4fb1dd5d64733dfc6, type: 2}
   - {fileID: 11400000, guid: 27df64c1e597f0e408f75518a0bd4d54, type: 2}
   - {fileID: 11400000, guid: 92dc1764b69317a468e5beb024d1f57d, type: 2}
   - {fileID: 11400000, guid: 2591653c2045c3544a18675e2cc7d2f7, type: 2}

@@ -256,7 +256,6 @@ GameObject:
   - component: {fileID: 300278061427502924}
   - component: {fileID: 8187711989095766374}
   - component: {fileID: 6522454651518866029}
-  - component: {fileID: 2289458907666650706}
   m_Layer: 2
   m_Name: PlayerBar
   m_TagString: Untagged
@@ -301,7 +300,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2630250891751603483}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 723b0d24efbb4a940a44c18f2b169acd, type: 3}
+  m_Script: {fileID: 11500000, guid: 0c70b64141c2d8648993a8f648cda94b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Source: {fileID: 9019127144255776080}
@@ -309,20 +308,6 @@ MonoBehaviour:
   CurrentText: {fileID: 4070756608700094628}
   BaseText: {fileID: 425464922948145410}
   ValueSlider: {fileID: 169949267757744932}
---- !u!114 &2289458907666650706
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2630250891751603483}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afe12c1a0808e2447bd7fac618509bcd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Source: {fileID: 9019127144255776080}
-  AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
 --- !u!1 &2983149421921660109
 GameObject:
   m_ObjectHideFlags: 0
