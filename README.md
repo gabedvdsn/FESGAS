@@ -19,59 +19,82 @@
 ## 2. Introduction
 FESGAS is a modular and extensible **Gameplay Ability System** framework for Unity, designed for high-performance, flexibility, and scalability. The framework offers a unique take on traditional GAS features in addition to a powerful process management controller. FESGAS empowers designers and engineers to manage attribute-based systems, create complex abilities, and handle runtime processes performantly. This framework is built with modularity at the forefront of development, such that most aspects of integration are wrapped under derivable logic systems built with extensibility in mind. While it is originally inspired by @sjai013's [Unity Gameplay Ability System](https://github.com/sjai013/unity-gameplay-ability-system) and Unreal Engine's [Gameplay Ability System](https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-ability-system-for-unreal-engine), FESGAS differs in some key aspects, which this README will demonstrate in detail. Thank you for checking out my framework!
 
-### 2.1 Preliminary Acknowledgements
+### About FESGAS
+This framework is the combination of two powerful systems folded into one. The first is the **Gameplay Ability System**, which handles abilities, attributes, effects, and various related events. This component is most similar to traditional GAS systems with two key differences: how abilities are defined and the use of ScriptableObject-based events throughout the lifecycle of effects. The second component in the framework is the **ProcessControl** system, which is a powerful management tool for managing processes within your game, utilizing UniTask for zero-allocation, performant deployment of MonoBehaviour and non-MonoBehaviour tasks alike.
+
+### Preliminary Acknowledgements
 This framework is the culmination of my journey into game development through university and is a project purely born of passion and excitement for the craft. I would not have been able to develop this without the encouragement and support of my mentors, professors, and peers. While it has been a laborious process developing, testing, and deploying this framework, the fruits of labor are immensely exciting, and I cannot wait to integrate this framework into my next Unity project.
+
+### Definitions
+- **_Process_**
+    - **Process** refers to MonoBehaviour and non-MonoBehaviour tasks which run via a UniTask async container and/or Unity's Update/LateUpdate/FixedUpdate loop.
+    - Example: Projectiles, Actors, Observers
 
 ## 3. Features
 - Ability System
-    - Task-Based Ability Definition
-    - UniTask
 - Attribute System
+- Modular Events
 - Process Management
 
 ## 4. Getting Started
 
-### 4.1 Requirements
+### Requirements
 - Unity 2022.3 LTS or newer
 - [UniTask](https://github.com/Cysharp/UniTask) package installed (@Cysharp)
     - Follow the instructions [here](https://github.com/Cysharp/UniTask?tab=readme-ov-file#upm-package) under "_Install via GIT URL_"
  - [SerializedDictionary](https://assetstore.unity.com/packages/tools/utilities/serialized-dictionary-243052) package installed (@AYellowPaper)
 
-### 4.2 Installation
+### Installation
 1. Clone or download the repository
 2. Import the project into Unity
 3. Install UniTask via UPM or manual package import
 4. (Optional) Import _Demo_ directory
 
-#### 4.3 Setting Up
+### Setting Up
+- Boostrapper (Critical)
+    - Create a `Bootstrapper` object in your scene (a default prefab is provided in the _Demo_ directory)
+    - Assign the `ProcessControl` and `GameRoot` prefabs (also provided) in the `Bootstrapper` inspector window
+- GAS System Data
+    - Assign `Ability`s, `ImpactWorker`s, `AttributeSet`, `AttributeChangeEvent`s, and `TagWorker`s
 - GAS Actors
     - Add the `GASComponent` component to your actors (this will automatically add the `AttributeSystemComponent` and `AbilitySystemComponent` components)
-    - 
+    - Assign `GASSystemData` to your actors
+ 
+##### Disclaimer
+Integrating FESGAS into an existing project well into development can be very tricky because of how FESGAS expects processes to be managed.
 
 ## 5. Architecture Overview
 
-#### 5.1 Core Components
-The GAS component is the heart and soul of the framework. It ties together the `AttributeSystemComponent` and `AbilitySystemComponent` into one cohesive system. What follows is a brief breakdown of how the different components work together and interact:
+### Attribute System
+- Tracks gameplay attributes dynamically at runtime (e.g. Health, MoveSpeed, Armor)
+- Easy extension for any variety of custom attributes and attribute-derived values
 
-- `GASComponent`
-    - The conduit through which all external systems interact with and impact an Actor
-    - Handle `GameplayEffect` application, removal, update, and validation with respect to the `AttributeSystemComponent`
-    - Give, revoke, manage, and activate `Abilities` via the `AbilitySystemComponent`
-- `AttributeSystemComponent`
-    - Monitor and manage frame-by-frame modification of `Attributes`
-    - Activate `AttributeChangeEvent` before and after `Attributes` are modified
-- `AbilitySystemComponent`
-    - Monitor, give & revoke, validate, and activate `Abilities`
- 
-#### 5.2 Ability Proxy Tasks
-The unique behavior of an `Ability` is encapsulated in an `AbilityProxySpecification` data, which is translated to an `AbilityProxy` object at runtime. Within the `AbilityProxySpecification` data, the `Ability's` behavioral lifecycle is defined as a list of semi-independent, sequential `AbilityProxyStages`. These `AbilityProxyStages` define a collection of `AbilityProxyTasks`. An `Ability's` behavioral lifecycle is the execution of any/all `AbilityProxyTasks` within each `AbilityProxyStage`, sequentially. If an `AbilityProxyTask` fails at any point, any actively executing `AbilityProxyTasks` are interrupted, and the `Ability` is deactivated. This lifecycle is described as:
+### Modular Events
+- Manage and react to changes within the system
+    - `AttributeChangeEvent`: Manipulate impacts and attribute values (e.g. clamp health, damage amplification/reduction)
+    - `ImpactWorker`: React to attribute impact (e.g. lifesteal, damage reflection)
+    - `TagWorker`: Perform actions when/while tags are applied or removed (e.g. apply flame particles while the _burning_ tag is applied)
+    - `EffectWorker`: Monitor systems while an effect is applied (e.g. Dota 2's Ancient Apparition's Ice Blast kills when below a certain threshold)
 
-1. `Ability` activation is requested, validated, and relayed to the `AbilitySystemComponent`
-2. The `AbilitySystemComponent` activates (and *awaits* the active lifecycle of) the `AbilityProxy`
-3. The `AbilityProxy` activates the first, yet-to-be-activated `AbilityProxyStage`\
-   a. Each `AbilityProxyTask` receives a `ProxyDataPacket` from/to which it can read/write data that is passed between `AbilityProxyStages`\
-   b. Activate and *await* the conclusion of any/all `AbilityProxyTask`\
-   c. Continue from **Step 3**
+### Gameplay Effects
+- Modify target attributes under a variety of parameters, including duration, tick rate, and reversing impact after removal
+- Define as **Instant**, **Durational**, or **Infinite**
+- Supports application, ongoing, and removal requirements
+
+### Gameplay Abilities
+- Encapsulate complex gameplay logic through modular, reusable components
+- Supports activation conditions, cooldowns/costs, and lifecycle steps
+- Designed to separate logic (how the ability executes) from data (what an ability does)
+
+### Proxy Task System
+- Lightweight, modular, async tasks that build ability behaviours as chains of operations
+- Allows precise control over the lifecycle of an ability
+- Designed to minimize coupling between the ability and what it executes
+
+### Gameplay Processes
+- Runtime systems (e.g. projectiles, AOEs, timers) managed via the centralized `ProcessControl`
+- Supports Self-Terminating, RunThenWait, and ExternalControl lifecycles
+- Utilizes UniTask for highly scalable and lightweight deployment of hundreds of active processes
 
 #### 5.3 Gameplay Tags
 ...
