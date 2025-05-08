@@ -169,8 +169,8 @@ Given an Ability that creates a Damaging Pit that damages enemies that walk into
         b. PDP.AddPayload<GAS>(Source, GameRoot.GAS, source: GAS) => The source GAS system that activated the Ability
 2. The Ability's targeting is activated\
         a. PDP.AddPayload<Vector3>(Data, GameRoot.Position, initialPosition: Vector3) => The initial position of the Pit
-3. The Ability's `CreateMonoProcess` task is activated, which stores a prefab of the Fireball prefab\
-        a. PDP.GetPayload(Data, GameRoot.Position, out Vector3 initialPosition) -> Fireball.position = initialPosition
+3. The Ability's `CreateMonoProcess` task is activated, which stores a prefab of the Pit prefab\
+        a. PDP.GetPayload(Data, GameRoot.Position, out Vector3 initialPosition) -> Pit.position = initialPosition
 4. A GAS actor walks into the Pit\
         a. PDP.GetPaylaod(Data, GameRoot.Derivation, derivation: EffectDerivation) -> if (actor.Affiliation != derivation.Affiliation) ...
 
