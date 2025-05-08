@@ -16,15 +16,16 @@ MonoBehaviour:
   GrantedTags: []
   ImpactSpecification:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
-    ValueTarget: 0
+    TargetImpact: 0
     ImpactOperation: 0
+    AffiliationPolicy: 2
     ImpactType: 2
     ReverseImpactOnRemoval: 0
     ReApplicationPolicy: 0
     Magnitude: -15
     MagnitudeCalculation: {fileID: 11400000, guid: 8b98301f00d2b9a45b72cf61ed7c50b3, type: 2}
     MagnitudeCalculationOperation: 0
-    ContainedEffect: {fileID: 0}
+    Packets: []
   DurationSpecification:
     DurationPolicy: 0
     TickOnApplication: 0
@@ -35,10 +36,9 @@ MonoBehaviour:
     TickCalculation: {fileID: 0}
     TickCalculationOperation: 0
     Rounding: 0
-    UseDefaultTickRate: 0
+    PresetTickRatePolicy: 0
   Workers:
   - {fileID: 11400000, guid: c718d1e2f2e606c4683e152660844c51, type: 2}
-  - {fileID: 11400000, guid: 880d1961d14eb104ca1b8b9aedd2a324, type: 2}
   SourceRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   TargetRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   RemoveEffectsWithTag: []

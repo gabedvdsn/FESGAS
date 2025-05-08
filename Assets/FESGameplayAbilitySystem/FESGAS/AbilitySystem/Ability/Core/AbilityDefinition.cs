@@ -22,7 +22,8 @@ namespace FESGameplayAbilitySystem
         [Header("Activation")]
         
         public EAbilityType Type;
-        public bool ActivateImmediately; 
-        
+        public bool ActivateImmediately;
+        public bool AlwaysValidToActivate;
+
     }
 }

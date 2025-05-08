@@ -230,6 +230,11 @@ namespace FESGameplayAbilitySystem
 
         private bool ProcessActivationRequest(int abilityIndex)
         {
+            if (AbilityCache[abilityIndex].Spec.Base.Definition.AlwaysValidToActivate)
+            {
+                return ActivateAbility(AbilityCache[abilityIndex]);
+            }
+            
             return activationPolicy switch
             {
                 EAbilityActivationPolicy.NoRestrictions => ActivateAbility(AbilityCache[abilityIndex]),
@@ -283,7 +288,11 @@ namespace FESGameplayAbilitySystem
                 case EAbilityActivationPolicy.NoRestrictions:
                     break;
                 case EAbilityActivationPolicy.SingleActive:
-                    if (activeContainer is not null) activeContainer.Interrupt();
+                    if (activeContainer is not null)
+                    {
+                        if (container.Spec.Base.Definition.AlwaysValidToActivate) return;
+                        activeContainer.Interrupt();
+                    }
                     activeContainer = container;
                     break;
                 case EAbilityActivationPolicy.SingleActiveQueue:
