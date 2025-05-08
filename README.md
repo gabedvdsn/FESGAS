@@ -174,6 +174,26 @@ Given an Ability that creates a Damaging Pit that damages enemies that walk into
 4. A GAS actor walks into the Pit\
         a. PDP.GetPaylaod(Data, GameRoot.Derivation, derivation: EffectDerivation) -> if (actor.Affiliation != derivation.Affiliation) ...
 
+## API
+
+### Gameplay Effects
+
+Always create a `Tag` to reflect the GE's identity; think of it like an asset tag. Include any tags you want applied to the target while the GE is applied. Note that the tags associated with Instant GEs are applied and removed in the same frame, and that `TagWorker` logic is still run. Similarly, the application and removal behaviour of any `EffectWorkers` associated with an Instant GE are run as well. Under Interactions, you can list any number of tags, and any actively applied GE with any of those tags will be removed. This setup is to avoid having to include common requirements behaviour across many/all GEs (e.g. purging).
+
+**Impact Specification**
+
+Under the impact specification part of the GE, set the target attribute and impact parameters, such as which component of the attribute is impacted, affiliation screening, and impact type. Use a magnitude calculation (commonly called a _MagnitudeModifier_) which scales the impact magnitude by level.
+
+Also available are **contained effects**, which are other GEs that should be applied at certain events in the effects lifecycle.
+
+**Duration Specification**
+
+Here you can define the most critical aspects of the effect. FESGAS supports Instant, Durational, and Infinite effects. For durational or infinite effects, set the duration, number of ticks, and magnitude calculations for each. Note that the ticks field measures exactly how many ticks are applied over the course of the duration, not the tick rate. If you want to predefine certain tick rates, utilize the _PresetTickRatePolicy_ field, which references pre-defined tick rate speeds you can manually set in the `GASRateNormals.cs` file; it will automatically change the _Ticks_ field to reflect the rate (Duration * TickRate). Note that setting the _TickOnApplication_ field to `true` will silently increase the number of ticks by 1. If the duration policy is Instant, any other duration parameters are unnecessary.
+
+**Requirements**
+
+A default _EmptyRequirements_ asset is included in the framework demo, which passes all validation checks. Requirements are validated against currently applied tags. Note that you can nest multiple sets of requirements together.
+
 ## 6. Customization
 The FESGAS framework is highly extensible due to its consistent focus on ScriptableObject-based development. Easily extend modular events, proxy tasks, and processes to fit the needs of your project.
 
