@@ -10,13 +10,19 @@ namespace FESGameplayAbilitySystem
     public abstract class AbstractAbilityProxyTaskScriptableObject : ScriptableObject
     {
         [HideInInspector] public string ReadOnlyDescription = "This is an Ability Proxy Task (APT). APTs implement 3 methods: Prepare, Activate, and Clean. Prepare is always called before the APT is activated, and Clean is always called after the APT is finished activating, regardless of the manner the activation is resolved.";
-        
-        public virtual UniTask Prepare(ProxyDataPacket data) => UniTask.CompletedTask;
+
+        public virtual void Prepare(ProxyDataPacket data)
+        {
+            
+        }
 
         public abstract UniTask Activate(ProxyDataPacket data, CancellationToken token);
 
 
-        public virtual UniTask Clean(ProxyDataPacket data) => UniTask.CompletedTask;
+        public virtual void Clean(ProxyDataPacket data)
+        {
+            
+        }
     }
 
     public struct DataValue<T>

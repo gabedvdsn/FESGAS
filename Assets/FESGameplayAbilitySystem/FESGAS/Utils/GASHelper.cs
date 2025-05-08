@@ -123,6 +123,17 @@ namespace FESGameplayAbilitySystem
         #endregion
         
         #region Validation Utils
+
+        public static bool ValidateAffiliationPolicy(EAffiliationPolicy policy, GameplayTagScriptableObject a, GameplayTagScriptableObject b)
+        {
+            return policy switch
+            {
+                EAffiliationPolicy.IsEnemy => a != b,
+                EAffiliationPolicy.IsAlly => a == b,
+                EAffiliationPolicy.IsAny => true,
+                _ => throw new ArgumentOutOfRangeException(nameof(policy), policy, null)
+            };
+        }
         
         public static bool ValidateImpactTypes(EImpactType impactType, EImpactTypeAny validation)
         {

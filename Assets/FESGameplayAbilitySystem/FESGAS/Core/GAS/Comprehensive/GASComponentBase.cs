@@ -351,26 +351,8 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectApplicationRequirements(GameplayEffectSpec spec)
         {
-            var affiliation = spec.Derivation.GetAffiliation();
-            Debug.Log($"spec aff: {affiliation}, my aff: {Identity.Affiliation}");
-            return spec.Base.GetAffiliationPolicy() switch
-            {
-                EAffiliationPolicy.IsEnemy => Identity.Affiliation != affiliation,
-                EAffiliationPolicy.IsAlly => Identity.Affiliation == affiliation,
-                EAffiliationPolicy.IsAny => true,
-                _ => throw new ArgumentOutOfRangeException()
-            } && spec.Base.ValidateApplicationRequirements(spec);
-        }
-        
-        /// <summary>
-        /// Are the application requirements met? (i.e. should the effect be applied?)
-        /// </summary>
-        /// <param name="requirements"></param>
-        /// <returns></returns>
-        private bool ValidateEffectApplicationRequirements(GameplayEffectRequirements requirements)
-        {
-            return true;
-            // return requirements.CheckApplicationRequirements(GetAppliedTags());
+            return GASHelper.ValidateAffiliationPolicy(spec.Base.GetAffiliationPolicy(), Identity.Affiliation, spec.Derivation.GetAffiliation())
+                && spec.Base.ValidateApplicationRequirements(spec);
         }
         
         /// <summary>
@@ -381,22 +363,6 @@ namespace FESGameplayAbilitySystem
         private bool ValidateEffectOngoingRequirements(GameplayEffectSpec spec)
         {
             return spec.Base.ValidateOngoingRequirements(spec);
-            
-            /*// Validate source application requirements
-            return spec.Base.TargetRequirements.CheckOngoingRequirements(GetAppliedTags()) &&
-                   // Validate target application requirements
-                   spec.Source.ValidateEffectOngoingRequirements(spec.Base.SourceRequirements);*/
-        }
-        
-        /// <summary>
-        /// Are the ongoing requirements met? (i.e. should the effect remain ongoing?)
-        /// </summary>
-        /// <param name="requirements"></param>
-        /// <returns></returns>
-        private bool ValidateEffectOngoingRequirements(GameplayEffectRequirements requirements)
-        {
-            return true;
-            // return requirements.CheckOngoingRequirements(GetAppliedTags());
         }
         
         /// <summary>
@@ -407,22 +373,6 @@ namespace FESGameplayAbilitySystem
         private bool ValidateEffectRemovalRequirements(GameplayEffectSpec spec)
         {
             return spec.Base.ValidateRemovalRequirements(spec);
-            
-            /*// Validate source application requirements
-            return spec.Base.TargetRequirements.CheckRemovalRequirements(GetAppliedTags()) ||
-                   // Validate target application requirements
-                   spec.Source.ValidateEffectRemovalRequirements(spec.Base.SourceRequirements);*/
-        }
-
-        /// <summary>
-        /// Are the removal requirements met? (i.e. should the effect be removed?)
-        /// </summary>
-        /// <param name="requirements"></param>
-        /// <returns></returns>
-        private bool ValidateEffectRemovalRequirements(GameplayEffectRequirements requirements)
-        {
-            return true;
-            // return requirements.CheckRemovalRequirements(TagCache.GetAppliedTags());
         }
         
         #endregion

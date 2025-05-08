@@ -40,6 +40,9 @@ MonoBehaviour:
     - TaskPolicy: 0
       Tasks:
       - {fileID: 11400000, guid: 09832152976b9da4f96c26a1b06207bf, type: 2}
+    - TaskPolicy: 0
+      Tasks:
+      - {fileID: 11400000, guid: 0fc3e114ede8a364bb120b9c9e64f74e, type: 2}
   StartingLevel: 1
   MaxLevel: 4
   IgnoreWhenLevelZero: 1

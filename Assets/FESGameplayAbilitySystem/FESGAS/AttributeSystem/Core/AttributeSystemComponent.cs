@@ -131,8 +131,6 @@ namespace FESGameplayAbilitySystem
             // Relay impact to source
             var impactData = AbilityImpactData.Generate(System, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
             sourcedModifiedValue.BaseDerivation.GetSource().AbilitySystem.ProvideFrameImpact(impactData);
-            
-            Debug.Log($"Modifying attribute {attribute} by {sourcedModifiedValue} ({impactData.RealImpact})");
         }
 
         public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)

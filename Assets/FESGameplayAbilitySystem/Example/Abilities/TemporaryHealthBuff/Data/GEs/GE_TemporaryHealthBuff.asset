@@ -19,6 +19,7 @@ MonoBehaviour:
     AttributeTarget: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     TargetImpact: 1
     ImpactOperation: 0
+    AffiliationPolicy: 1
     ImpactType: 3
     ReverseImpactOnRemoval: 1
     ReApplicationPolicy: 1
@@ -36,7 +37,7 @@ MonoBehaviour:
     TickCalculation: {fileID: 11400000, guid: 74af1321439c00c40869fcd332e92025, type: 2}
     TickCalculationOperation: 0
     Rounding: 0
-    UseDefaultTickRate: 0
+    PresetTickRatePolicy: 0
   Workers: []
   SourceRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}
   TargetRequirements: {fileID: 11400000, guid: 0f4442c074bfefd4a8bfe917164ded88, type: 2}

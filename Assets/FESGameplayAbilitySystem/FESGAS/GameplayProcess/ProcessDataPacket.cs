@@ -47,7 +47,6 @@ namespace FESGameplayAbilitySystem
         {
             if (!Payload.ContainsKey(key)) Payload[key] = new Dictionary<ESourceTargetData, List<object>>();
             Payload[key].SafeAdd(sourceTarget, value);
-            Debug.Log($"Payload added: [{key}][{sourceTarget}] => {value}<{typeof(T)}>");
         }
 
         public void AddPayloadRange<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, List<T> values)

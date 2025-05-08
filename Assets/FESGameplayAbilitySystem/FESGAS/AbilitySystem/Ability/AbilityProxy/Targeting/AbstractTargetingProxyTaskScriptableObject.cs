@@ -6,23 +6,20 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractTargetingProxyTaskScriptableObject : AbstractAbilityProxyTaskScriptableObject
     {
-        public override UniTask Prepare(ProxyDataPacket data)
+        public override void Prepare(ProxyDataPacket data)
         {
             // Hook into input handler here
             if (!ConnectInputHandler(data))
             {
-                if (data.Spec.GetOwner().AbilitySystem.InjectInterrupt()) return UniTask.CompletedTask;
+                // Can add logic if interrupt injection failed
+                data.Spec.GetOwner().AbilitySystem.InjectInterrupt();
             }
-            
-            return base.Prepare(data);
         }
         
-        public override UniTask Clean(ProxyDataPacket data)
+        public override void Clean(ProxyDataPacket data)
         {
             // Unhook from input handler here
             DisconnectInputHandler(data);
-            
-            return base.Clean(data);
         }
 
         /// <summary>

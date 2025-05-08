@@ -67,6 +67,7 @@ namespace FESGameplayAbilitySystem
         
         public bool HasAbility(AbilityScriptableObject ability)
         {
+            return false;
             return AbilityCache.Values.Any(c => c.Spec.Base == ability);
         }
 
@@ -214,7 +215,9 @@ namespace FESGameplayAbilitySystem
 
         public bool CanActivateAbility(int index)
         {
-            return AbilityCache.TryGetValue(index, out AbilitySpecContainer container) && container.Spec.ValidateActivationRequirements() && (!container.Spec.Base.IgnoreWhenLevelZero || container.Spec.Level > 0);
+            return AbilityCache.TryGetValue(index, out AbilitySpecContainer container)
+                   && container.Spec.ValidateActivationRequirements()
+                   && (!container.Spec.Base.IgnoreWhenLevelZero || container.Spec.Level > 0);
         }
 
         public bool TryActivateAbility(int abilityIndex)
@@ -236,6 +239,7 @@ namespace FESGameplayAbilitySystem
 
         private bool ActivateAbility(AbilitySpecContainer container)
         {
+            Debug.Log($"activating {container.Spec.Base.Tags.AssetTag}");
             container.Spec.ApplyUsageEffects();
             return container.Spec.Base.Proxy.UseImplicitInstructions 
                 ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, container.Spec.Base.Proxy.OwnerAs)) 
@@ -244,6 +248,7 @@ namespace FESGameplayAbilitySystem
 
         private bool QueueAbilityActivation(int abilityIndex)
         {
+            Debug.Log($"queuing {abilityIndex}");
             activationQueue.Enqueue(abilityIndex);
 
             return true;
@@ -270,8 +275,8 @@ namespace FESGameplayAbilitySystem
 
         private void ClaimActive(AbilitySpecContainer container)
         {
+            Debug.Log($"{container.Spec.Base.Tags.AssetTag} claimed");
             abilityActive = true;
-
             
             switch (activationPolicy)
             {
@@ -291,12 +296,17 @@ namespace FESGameplayAbilitySystem
 
         private void ReleaseClaim(AbilitySpecContainer container)
         {
+            Debug.Log($"{container.Spec.Base.Tags.AssetTag} released");
             if (activeContainer == container)
             {
                 activeContainer = null;
                 abilityActive = false;
             }
-            if (activationPolicy == EAbilityActivationPolicy.SingleActiveQueue && activationQueue.Count > 0) TryActivateAbility(activationQueue.Dequeue());
+
+            if (activationPolicy == EAbilityActivationPolicy.SingleActiveQueue && activationQueue.Count > 0)
+            {
+                TryActivateAbility(activationQueue.Dequeue());
+            }
         }
         
         #endregion
@@ -384,6 +394,7 @@ namespace FESGameplayAbilitySystem
                     catch (OperationCanceledException)
                     {
                         // Ability in execution is interrupted (cancelled)
+                        Debug.Log($"Cancelled!");
                     }
                     finally
                     {

@@ -69,41 +69,37 @@ namespace FESGameplayAbilitySystem
             StageIndex += 1;
             if (StageIndex < Specification.Stages.Count)
             {
-                // Debug.Log($"{Specification.Stages.Count} {StageIndex} {Specification.Stages[StageIndex].Tasks[0]}");
+                Debug.Log($"{Specification.Stages.Count} {StageIndex} {Specification.Stages[StageIndex].Tasks[0]}");
                 Specification.Stages[StageIndex].Tasks.ForEach(task => task.Prepare(data));
                 await ActivateStage(Specification.Stages[StageIndex], data, token);
                 Specification.Stages[StageIndex].Tasks.ForEach(task => task.Clean(data));
-                
-                ActivateNextStage(data, token).Forget();
+
+                await ActivateNextStage(data, token);
             }
         }
 
         private async UniTask ActivateStage(AbilityProxyStage stage, ProxyDataPacket data, CancellationToken token)
         {
-            using (var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            {
-                CancellationToken stageToken = stageCts.Token;
+            var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            var stageToken = stageCts.Token;
                 
-                List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(data, stageToken)).ToList();
+            List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(data, stageToken)).ToList();
 
-                if (tasks.Count > 0)
+            if (tasks.Count > 0)
+            {
+                switch (stage.TaskPolicy)
                 {
-                    switch (stage.TaskPolicy)
-                    {
-                        case EAnyAllPolicy.Any:
-                            await UniTask.WhenAny(tasks);
-                            stageCts.Cancel();
-                            break;
-                        case EAnyAllPolicy.All:
-                            await UniTask.WhenAll(tasks);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    case EAnyAllPolicy.Any:
+                        await UniTask.WhenAny(tasks);
+                        stageCts.Cancel();
+                        break;
+                    case EAnyAllPolicy.All:
+                        await UniTask.WhenAll(tasks);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
-            
-            // ActivateNextStage(data, token).Forget();
         }
 
         public override string ToString()

@@ -7,7 +7,7 @@ namespace FESGameplayAbilitySystem
 {
     public class DemoInputHandler : MonoBehaviour
     {
-        public GASComponentBase System;
+        [HideInInspector] public GASComponentBase System;
         public List<KeyCode> AbilityKeyMaps;
 
         private void Update()

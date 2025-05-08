@@ -10,16 +10,14 @@ namespace FESGameplayAbilitySystem
         public float ChannelDuration;
         public PlayerLoopTiming Timing = PlayerLoopTiming.Update;
         
-        public override UniTask Prepare(ProxyDataPacket data)
+        public override void Prepare(ProxyDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(true);
-            return base.Prepare(data);
         }
 
-        public override UniTask Clean(ProxyDataPacket data)
+        public override void Clean(ProxyDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(false);
-            return base.Prepare(data);
         }
 
         private void OnValidate()

@@ -18,7 +18,6 @@ namespace FESGameplayAbilitySystem
         public void SubscribeModifiableAttribute(AttributeScriptableObject attribute)
         {
             cache[attribute] = new List<SourcedModifiedAttributeValue>();
-            Debug.Log($"Subscribed attribute: {attribute}");
         }
 
         public bool AttributeIsActive(AttributeScriptableObject attribute) => cache.ContainsKey(attribute) && cache[attribute].Count > 0;
