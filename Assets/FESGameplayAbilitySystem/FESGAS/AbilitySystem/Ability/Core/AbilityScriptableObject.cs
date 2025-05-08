@@ -35,7 +35,7 @@ namespace FESGameplayAbilitySystem
 
         public override string ToString()
         {
-            return Definition.Name;
+            return Tags.AssetTag.Name;
         }
     }
 

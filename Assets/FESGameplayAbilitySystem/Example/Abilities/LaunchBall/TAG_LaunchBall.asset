@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0c617fefc5e8e94c914f46d5475e586, type: 3}
   m_Name: TAG_LaunchBall
   m_EditorClassIdentifier: 
-  Name: Launch Ball
+  Name: LAUNCH_BALL

@@ -14,6 +14,7 @@ namespace FESGameplayAbilitySystem
         protected int maxAbilities;
         protected List<AbstractImpactWorkerScriptableObject> impactWorkers;
         protected List<AbilityScriptableObject> startingAbilities;
+        protected bool allowDuplicateAbilities;
         
         private GASComponentBase System;
         private Dictionary<int, AbilitySpecContainer> AbilityCache = new();
@@ -42,6 +43,7 @@ namespace FESGameplayAbilitySystem
             maxAbilities = systemData.MaxAbilities;
             impactWorkers = systemData.ImpactWorkers;
             startingAbilities = systemData.StartingAbilities;
+            allowDuplicateAbilities = systemData.AllowDuplicateAbilities;
             
             ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
         }
@@ -67,7 +69,7 @@ namespace FESGameplayAbilitySystem
         
         public bool HasAbility(AbilityScriptableObject ability)
         {
-            return false;
+            if (allowDuplicateAbilities) return false;
             return AbilityCache.Values.Any(c => c.Spec.Base == ability);
         }
 
@@ -239,7 +241,6 @@ namespace FESGameplayAbilitySystem
 
         private bool ActivateAbility(AbilitySpecContainer container)
         {
-            Debug.Log($"activating {container.Spec.Base.Tags.AssetTag}");
             container.Spec.ApplyUsageEffects();
             return container.Spec.Base.Proxy.UseImplicitInstructions 
                 ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, container.Spec.Base.Proxy.OwnerAs)) 
@@ -248,7 +249,6 @@ namespace FESGameplayAbilitySystem
 
         private bool QueueAbilityActivation(int abilityIndex)
         {
-            Debug.Log($"queuing {abilityIndex}");
             activationQueue.Enqueue(abilityIndex);
 
             return true;
@@ -275,7 +275,7 @@ namespace FESGameplayAbilitySystem
 
         private void ClaimActive(AbilitySpecContainer container)
         {
-            Debug.Log($"{container.Spec.Base.Tags.AssetTag} claimed");
+            Debug.Log($"[ ABIL-{System.Identity.DistinctName}-CLAIM ] {container} ");
             abilityActive = true;
             
             switch (activationPolicy)
@@ -296,7 +296,7 @@ namespace FESGameplayAbilitySystem
 
         private void ReleaseClaim(AbilitySpecContainer container)
         {
-            Debug.Log($"{container.Spec.Base.Tags.AssetTag} released");
+            Debug.Log($"[ ABIL-{System.Identity.DistinctName}-RELEASE ] {container} ");
             if (activeContainer == container)
             {
                 activeContainer = null;
@@ -452,7 +452,7 @@ namespace FESGameplayAbilitySystem
 
             public override string ToString()
             {
-                return $"{Spec} ({IsActive})";
+                return $"{Spec}";
             }
         }
     }

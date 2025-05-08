@@ -11,9 +11,7 @@ namespace FESGameplayAbilitySystem
         
         public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
         {
-            Debug.Log($"start delay");
             await UniTask.Delay(DelayMilliseconds, cancellationToken: token);
-            Debug.Log($"end delay");
         }
     }
 }

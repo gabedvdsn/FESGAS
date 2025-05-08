@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ABIL_LaunchBall
   m_EditorClassIdentifier: 
   Definition:
-    Name: 
+    Name: Launch Ball
     Description: 
     UnlearnedIcon: {fileID: 0}
     NormalIcon: {fileID: 0}

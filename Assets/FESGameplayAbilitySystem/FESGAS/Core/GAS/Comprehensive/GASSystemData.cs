@@ -11,6 +11,7 @@ namespace FESGameplayAbilitySystem
         public EAbilityActivationPolicy ActivationPolicy;
         public int MaxAbilities;
         public List<AbilityScriptableObject> StartingAbilities;
+        public bool AllowDuplicateAbilities;
         
         [Space(5)]
         
