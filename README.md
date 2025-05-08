@@ -141,25 +141,38 @@ The most-used method for registering mono processes is via a `CreateMonoProcessP
 #### Working With `ProcessDataPackets`
 Used to hold and disseminate information across decoupled instances. PDPs store data in a generic dictionary guarded by a classifier `GameplayTag` and an enum target. The PDP itself will never know the scope of its use; instead, the decoupled instances are responsible for providing and procuring information across relevant classifiers. There are two types of `ProcessDataPackets`, being `ProxyDataPacket` and `ProcessDataPacket`. The only difference is that the former always originates from Abilities and contains a reference to the calling Ability.
 
-An instance that provides information is called a _supplier_, and an instance that procures information is called a _consumer_. Instances can be a supplier, consumer, or both. There are 6 distinct classifier tags used by default, which are defined in the `GameRoot` singleton; any instance along the use-path of a PDV can supply and/or procure information. These predefined tags are: **Generic**, **GAS**, **Derivation**, **Position**, **Rotation**, and **Transform**.  
+An instance that provides information is called a _supplier_, and an instance that procures information is called a _consumer_. Instances can be a supplier, consumer, or both. There are 6 distinct classifier tags used by default, which are defined in the `GameRoot` singleton; any instance along the use-path of a PDV can supply and/or procure information. These predefined tags are: **Generic**, **GAS**, **Derivation**, **Position**, **Rotation**, and **Transform**. It is _critical_ to have a solid and consistent strategy about how data is supplied and retrieved. For example, the initial position, rotation, and parent transform of a new MonoBehaviour process should always be stored under the Data target classifier.
 
-The data within a PDP is called its _payload_, and is set up with the following structure: **Payload[Tag][Target] = List<_object_>**.
+The data within a PDP is called its _payload_, and is set up with the following structure: **Payload[Tag][Target] = List<_object_>**. Let's run through an example:
 
-##### Example
-Given an Ability that creates a Fireball that follows its target until it collides with it.
+##### Example: Tracking Fireball
+Given an Ability that creates a Fireball that follows its target until it collides with it:
 
-1. The Ability is activated and creates a new PDP. Implicit data is added to the PDP.
-    a. PDP.AddPayload<GAS>(Source, GameRoot.GAS, source: GAS) => The calling GAS system
-    b. PDP.AddPayload<Vector3>(Data, GameRoot.Position, initialPosition: Vector3) => The position to spawn the Fireball at
-2. The Ability's targeting is activated
-    a. PDP.AddPayload<GAS>(Target, GameRoot.GAS, target: GAS)
-    b. PDP.AddPayload<Quaternion>(Data, GameRoot.Rotation, initialRotation: Quaternion) => The initial rotation of the Fireball
-3. The Ability's `CreateMonoProcess` task is activated, which stores a prefab of the Fireball prefab
-4. 
+1. The Ability is activated and creates a new PDP. Implicit data is added to the PDP.\
+        a. PDP.AddPayload<EffectDerivation>(Data, GameRoot.Derivation, derivation: EffectDerivation) => The activated ability\
+        b. PDP.AddPayload<GAS>(Source, GameRoot.GAS, source: GAS) => The source GAS system that activated the Ability\
+        c. PDP.AddPayload<Transform>(Data, GameRoot.Position, initialPosition: Transform) => The firepoint Transform at which to spawn the Fireball
+2. The Ability's targeting is activated\
+        a. PDP.GetPayload(Data, GameRoot.Derivation, out EffectDerivation derivation) -> if (derivation.Affiliation != target.Affiliation) ...\
+        b. PDP.AddPayload<GAS>(Target, GameRoot.GAS, target: GAS) => The target GAS that the Fireball will track\
+        c. PDP.AddPayload<Quaternion>(Data, GameRoot.Rotation, initialRotation: Quaternion) => The initial rotation of the Fireball
+3. The Ability's `CreateMonoProcess` task is activated, which stores a prefab of the Fireball prefab\
+        a. PDP.GetPayload(Data, GameRoot.Position, out Transform initialPosition) -> Fireball.position = initialPosition.position\
+        b. PDP.GetPayload(Data, GameRoot.Rotation, out Quaternion initialRotation) -> Fireball.rotation = initialRotation\
+        c. PDP.GetPayload(Target, GameRoot.GAS, out GAS target) -> Fireball.target = target
 
-## 6. API
+##### Example: Damaging Pit
+Given an Ability that creates a Damaging Pit that damages enemies that walk into it:
 
-
+1. The Ability is activated and creates a new PDP. Implicit data is added to the PDP.\
+        a. PDP.AddPayload<EffectDerivation>(Data, GameRoot.Derivation, derivation: EffectDerivation) => The activated ability\
+        b. PDP.AddPayload<GAS>(Source, GameRoot.GAS, source: GAS) => The source GAS system that activated the Ability
+2. The Ability's targeting is activated\
+        a. PDP.AddPayload<Vector3>(Data, GameRoot.Position, initialPosition: Vector3) => The initial position of the Pit
+3. The Ability's `CreateMonoProcess` task is activated, which stores a prefab of the Fireball prefab\
+        a. PDP.GetPayload(Data, GameRoot.Position, out Vector3 initialPosition) -> Fireball.position = initialPosition
+4. A GAS actor walks into the Pit\
+        a. PDP.GetPaylaod(Data, GameRoot.Derivation, derivation: EffectDerivation) -> if (actor.Affiliation != derivation.Affiliation) ...
 
 ## 6. Customization
 The FESGAS framework is highly extensible due to its consistent focus on ScriptableObject-based development. Easily extend modular events, proxy tasks, and processes to fit the needs of your project.
