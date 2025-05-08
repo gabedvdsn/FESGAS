@@ -8,10 +8,10 @@
 - [Features](#3-features)
 - [Getting Started](#4-getting-started)
 - [Architecture Overview](#5-architecture-overview)
-- [Customization](#6-customization)
-- [Contributing](#7-contributing)
-- [License](#8-license)
-- [Acknowledgements](#9-acknowledgements)
+- [API](#6-api)
+- [Customization](#7-customization)
+- [Contributing](#8-contributing)
+- [License](#9-license)
 
 ## 2. Introduction
 FESGAS is a modular and extensible **Gameplay Ability System** framework for Unity, designed for high-performance, flexibility, and scalability. The framework offers a unique take on traditional GAS features in addition to a powerful process management controller. FESGAS empowers designers and engineers to manage attribute-based systems, create complex abilities, and handle runtime processes performantly. This framework is built with modularity at the forefront of development, such that most aspects of integration are wrapped under derivable logic systems built with extensibility in mind. While it is originally inspired by @sjai013's [Unity Gameplay Ability System](https://github.com/sjai013/unity-gameplay-ability-system) and Unreal Engine's [Gameplay Ability System](https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-ability-system-for-unreal-engine), FESGAS differs in some key aspects, which this README will demonstrate in detail. Thank you for checking out my framework!
@@ -174,7 +174,7 @@ Given an Ability that creates a Damaging Pit that damages enemies that walk into
 4. A GAS actor walks into the Pit\
         a. PDP.GetPaylaod(Data, GameRoot.Derivation, derivation: EffectDerivation) -> if (actor.Affiliation != derivation.Affiliation) ...
 
-## API
+## 6. API
 
 ### Gameplay Effects
 
@@ -194,13 +194,13 @@ Here you can define the most critical aspects of the effect. FESGAS supports Ins
 
 A default _EmptyRequirements_ asset is included in the framework demo, which passes all validation checks. Requirements are validated against currently applied tags. Note that you can nest multiple sets of requirements together.
 
-## 6. Customization
+## 7. Customization
 The FESGAS framework is highly extensible due to its consistent focus on ScriptableObject-based development. Easily extend modular events, proxy tasks, and processes to fit the needs of your project.
 
-## 7. Contributing
+## 8. Contributing
 Contributions are welcome! If you have suggestions, bug reports, or enhancements, please submit an issue or pull request.
 
-## 8. License
+## 9. License
 FESGAS is licensed under the MIT License. See the LICENSE file for details.
 
 ## 9. Acknowledgements
