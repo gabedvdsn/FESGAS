@@ -129,6 +129,8 @@ MonoBehaviour:
   InitialRotationValue: 0
   ParentTransformTarget: 0
   ParentTransformValue: 0
+  Effects:
+  - {fileID: 11400000, guid: 85deb71fe8b74f44bb7c548e301692c2, type: 2}
 --- !u!54 &4567416403912194427
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -37,19 +37,20 @@ namespace FESGameplayAbilitySystem
 
         #region Core
         
-        public void AddPayload(ESourceTargetData sourceTarget, GASComponentBase component, bool noDuplicates = true)
+        public void AddPayload(GASComponentBase component, ESourceTargetData sourceTarget, bool noDuplicates = true)
         {
-            if (noDuplicates && PayloadContains(component, sourceTarget, GameRoot.GASTag)) return;
-            AddPayload(sourceTarget, GameRoot.GASTag, component);
+            if (noDuplicates && PayloadContains(component, GameRoot.GASTag, sourceTarget)) return;
+            AddPayload(GameRoot.GASTag, sourceTarget, component);
         }
 
-        public void AddPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, T value)
+        public void AddPayload<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, T value)
         {
             if (!Payload.ContainsKey(key)) Payload[key] = new Dictionary<ESourceTargetData, List<object>>();
             Payload[key].SafeAdd(sourceTarget, value);
+            Debug.Log($"Payload added: [{key}][{sourceTarget}] => {value}<{typeof(T)}>");
         }
 
-        public void AddPayloadRange<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, List<T> values)
+        public void AddPayloadRange<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, List<T> values)
         {
             if (!Payload.ContainsKey(key)) Payload[key] = new Dictionary<ESourceTargetData, List<object>>();
 
@@ -58,7 +59,7 @@ namespace FESGameplayAbilitySystem
             Payload[key][sourceTarget].AddRange(values);
         }
         
-        public bool TryGetPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        public bool TryGetPayload<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, EProxyDataValueTarget target, out T value)
         {
             value = default;
             
@@ -80,7 +81,7 @@ namespace FESGameplayAbilitySystem
             return value is not null;
         }
 
-        public bool TryGetPayload<T>(ESourceTargetData sourceTarget, GameplayTagScriptableObject key, out DataValue<T> dataValue)
+        public bool TryGetPayload<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, out DataValue<T> dataValue)
         {
             if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget))
             {
@@ -100,20 +101,20 @@ namespace FESGameplayAbilitySystem
 
         public bool TryGetTarget<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
         {
-            return TryGetPayload<T>(ESourceTargetData.Target, key, target, out value);
+            return TryGetPayload<T>(key, ESourceTargetData.Target, target, out value);
         }
         
         public bool TryGetSource<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
         {
-            return TryGetPayload<T>(ESourceTargetData.Source, key, target, out value);
+            return TryGetPayload<T>(key, ESourceTargetData.Source, target, out value);
         }
         
         public bool TryGetData<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
         {
-            return TryGetPayload<T>(ESourceTargetData.Data, key, target, out value);
+            return TryGetPayload<T>(key, ESourceTargetData.Data, target, out value);
         }
         
-        public bool PayloadContains<T>(T value, ESourceTargetData sourceTarget, GameplayTagScriptableObject key)
+        public bool PayloadContains<T>(T value, GameplayTagScriptableObject key, ESourceTargetData sourceTarget)
         {
             if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget)) return false;
             

@@ -59,6 +59,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb12c4e02de446ac80150e0878c20138, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  abilityActive: 0
 --- !u!114 &8523792534654553425
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85,12 +86,16 @@ MonoBehaviour:
     Level: 1
     MaxLevel: 15
     NameTag: {fileID: 11400000, guid: 2906513287c01c84fb16f09fee7606fc, type: 2}
+    Affiliation: {fileID: 0}
   AttributeSystem: {fileID: 0}
   AbilitySystem: {fileID: 0}
   SystemData: {fileID: 11400000, guid: c734f86cc12b2a748ab8b4e6b448b9e0, type: 2}
   CreateProcessTasks:
   - {fileID: 11400000, guid: 401957d38f650394fb3a83fd422a9133, type: 2}
   DefaultDataParameters: {fileID: 11400000, guid: 8ba3d11e952b5de46ae1f7437d927e14, type: 2}
+  MasterTag: {fileID: 11400000, guid: e47f7557aae49ff4a9da7028ac3b3df1, type: 2}
+  AllyTag: {fileID: 11400000, guid: 126befe9dacdecc4996af2a4c116ca97, type: 2}
+  EnemyTag: {fileID: 11400000, guid: b48163612fe453a479e3397de8e2eaf8, type: 2}
 --- !u!1 &1579060203003192241
 GameObject:
   m_ObjectHideFlags: 0

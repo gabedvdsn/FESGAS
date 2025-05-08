@@ -21,14 +21,14 @@ namespace FESGameplayAbilitySystem
             switch (sourceTarget)
             {
                 case ESourceTargetExpanded.Target:
-                    data.AddPayload(ESourceTargetData.Target, component);
+                    data.AddPayload(component, ESourceTargetData.Target);
                     break;
                 case ESourceTargetExpanded.Source:
-                    data.AddPayload(ESourceTargetData.Source, component);
+                    data.AddPayload(component, ESourceTargetData.Source);
                     break;
                 case ESourceTargetExpanded.Both:
-                    data.AddPayload(ESourceTargetData.Target, component);
-                    data.AddPayload(ESourceTargetData.Source, component);
+                    data.AddPayload(component, ESourceTargetData.Target);
+                    data.AddPayload(component, ESourceTargetData.Source);
                     break;
                 case ESourceTargetExpanded.Neither:
                     break;

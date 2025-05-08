@@ -56,7 +56,7 @@ namespace FESGameplayAbilitySystem
             base.WhenInitialize(relay);
 
             // Attempt to find affiliation
-            if (data.TryGetData(GameRoot.GenericTag, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
+            if (data.TryGetPayload(GameRoot.GenericTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
             {
                 Identity.Affiliation = affiliation;
             }
@@ -352,11 +352,11 @@ namespace FESGameplayAbilitySystem
         private bool ValidateEffectApplicationRequirements(GameplayEffectSpec spec)
         {
             var affiliation = spec.Derivation.GetAffiliation();
+            Debug.Log($"spec aff: {affiliation}, my aff: {Identity.Affiliation}");
             return spec.Base.GetAffiliationPolicy() switch
             {
-
-                EAffiliationPolicy.IsOther => Identity.Affiliation != affiliation,
-                EAffiliationPolicy.IsSame => Identity.Affiliation == affiliation,
+                EAffiliationPolicy.IsEnemy => Identity.Affiliation != affiliation,
+                EAffiliationPolicy.IsAlly => Identity.Affiliation == affiliation,
                 EAffiliationPolicy.IsAny => true,
                 _ => throw new ArgumentOutOfRangeException()
             } && spec.Base.ValidateApplicationRequirements(spec);
@@ -465,11 +465,6 @@ namespace FESGameplayAbilitySystem
         }
         
         #endregion
-
-        private void OnTriggerEnter(Collider other)
-        {
-            UnityEngine.Debug.Log(other);
-        }
 
         public override string ToString()
         {

@@ -19,7 +19,8 @@ namespace FESGameplayAbilitySystem
             base.WhenInitialize(relay);
 
             var playerData = new ProcessDataPacket();
-            playerData.AddPayload(ESourceTargetData.Data, GameRoot.PositionTag, PlayerPosition);
+            playerData.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, PlayerPosition);
+            playerData.AddPayload(GameRoot.GenericTag, ESourceTargetData.Data, GameRoot.Instance.AllyTag);
 
             ProcessControl.Instance.Register(PlayerPrefab, playerData, out var playerRelay);
             if (playerRelay.TryGetProcess(out GASComponentBase player))
@@ -28,7 +29,8 @@ namespace FESGameplayAbilitySystem
             }
             
             var enemyData = new ProcessDataPacket();
-            enemyData.AddPayload(ESourceTargetData.Data, GameRoot.PositionTag, EnemyPosition);
+            enemyData.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, EnemyPosition);
+            enemyData.AddPayload(GameRoot.GenericTag, ESourceTargetData.Data, GameRoot.Instance.EnemyTag);
             
             ProcessControl.Instance.Register(EnemyPrefab, enemyData, out _);
         }

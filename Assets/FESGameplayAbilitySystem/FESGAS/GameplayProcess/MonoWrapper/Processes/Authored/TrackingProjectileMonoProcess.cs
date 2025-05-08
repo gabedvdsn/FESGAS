@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
     public class TrackingProjectileMonoProcess : AbstractEffectingMonoProcess
     {
         private GASComponentBase targetGAS;
-        public Transform target;
+        private Transform target;
         private Rigidbody rb;
 
         private void Awake()

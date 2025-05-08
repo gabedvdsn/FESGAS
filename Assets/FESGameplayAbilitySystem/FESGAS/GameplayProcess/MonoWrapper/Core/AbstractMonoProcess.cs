@@ -47,25 +47,30 @@ namespace FESGameplayAbilitySystem
         /// <param name="relay">Process Relay</param>
         public virtual void WhenInitialize(ProcessRelay relay)
         {
-            if (data.TryGetPayload<Vector3>(InitialPositionTarget, GameRoot.PositionTag, InitialPositionValue, out var pos))
+            if (data.TryGetPayload(GameRoot.GenericTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
+            {
+                
+            }
+            
+            if (data.TryGetPayload<Vector3>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var pos))
             {
                 transform.position = pos;
             }
-            else if (data.TryGetPayload<GASComponent>(InitialPositionTarget, GameRoot.GASTag, InitialPositionValue, out var gasPos))
+            else if (data.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialPositionTarget, InitialPositionValue, out var gasPos))
             {
                 transform.position = gasPos.transform.position;
             }
             
-            if (data.TryGetPayload<Quaternion>(InitialRotationTarget, GameRoot.RotationTag, InitialRotationValue, out var rot))
+            if (data.TryGetPayload<Quaternion>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var rot))
             {
                 transform.rotation = rot;
             }
-            else if (data.TryGetPayload<GASComponent>(InitialRotationTarget, GameRoot.GASTag, InitialRotationValue, out var gasRot))
+            else if (data.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialRotationTarget, InitialRotationValue, out var gasRot))
             {
                 transform.rotation = gasRot.transform.rotation;
             }
             
-            if (data.TryGetPayload<Transform>(ParentTransformTarget, GameRoot.TransformTag, ParentTransformValue, out var pt))
+            if (data.TryGetPayload<Transform>(GameRoot.TransformTag, ParentTransformTarget, ParentTransformValue, out var pt))
             {
                 transform.SetParent(pt);
             }

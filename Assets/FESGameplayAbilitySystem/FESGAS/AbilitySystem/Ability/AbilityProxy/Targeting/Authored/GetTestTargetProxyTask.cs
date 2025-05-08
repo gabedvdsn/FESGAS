@@ -19,7 +19,7 @@ namespace FESGameplayAbilitySystem
             {
                 if (comp != source && comp != GameRoot.Instance)
                 {
-                    data.AddPayload(ESourceTargetData.Target, GameRoot.GASTag, comp);
+                    data.AddPayload(GameRoot.GASTag, ESourceTargetData.Target, comp);
                     break;
                 }
             }

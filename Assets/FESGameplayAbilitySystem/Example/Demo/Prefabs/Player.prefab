@@ -848,7 +848,8 @@ MonoBehaviour:
   Identity:
     Level: 1
     MaxLevel: 15
-    NameTag: {fileID: 0}
+    NameTag: {fileID: 11400000, guid: e2b0847fc4b69e2429cd462dc8c3099f, type: 2}
+    Affiliation: {fileID: 0}
   AttributeSystem: {fileID: 0}
   AbilitySystem: {fileID: 0}
   SystemData: {fileID: 11400000, guid: ac963ba4f0c40f14683a968033580954, type: 2}

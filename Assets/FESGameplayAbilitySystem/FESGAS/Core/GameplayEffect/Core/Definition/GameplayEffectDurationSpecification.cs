@@ -23,7 +23,7 @@ namespace FESGameplayAbilitySystem
         public AbstractMagnitudeModifierScriptableObject TickCalculation;
         public EMagnitudeOperation TickCalculationOperation;
         public TickCalculationRounding Rounding;
-        public bool UseDefaultTickRate;
+        public EDefaultTickRate PresetTickRatePolicy;
 
         public void ApplyDurationSpecifications(AbstractGameplayEffectShelfContainer container)
         {
@@ -98,5 +98,14 @@ namespace FESGameplayAbilitySystem
     {
         Floor,
         Ceil
+    }
+
+    public enum EDefaultTickRate
+    {
+        None,
+        Slow,
+        Normal,
+        Fast,
+        VeryFast
     }
 }

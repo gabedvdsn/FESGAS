@@ -99,8 +99,8 @@ namespace FESGameplayAbilitySystem
 
     public enum EAffiliationPolicy
     {
-        IsOther,
-        IsSame,
+        IsEnemy,
+        IsAlly,
         IsAny
     }
 }

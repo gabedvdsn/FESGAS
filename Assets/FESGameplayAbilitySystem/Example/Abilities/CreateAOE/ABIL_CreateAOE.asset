@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ABIL_CreateAOE
   m_EditorClassIdentifier: 
   Definition:
-    Name: 
+    Name: Create AOE
     Description: 
     UnlearnedIcon: {fileID: 0}
     NormalIcon: {fileID: 0}

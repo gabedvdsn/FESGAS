@@ -142,10 +142,9 @@ namespace FESGameplayAbilitySystem
 
         private void OnValidate()
         {
-            if (DurationSpecification.UseDefaultTickRate && DurationSpecification.Duration > 0f)
+            if (DurationSpecification.PresetTickRatePolicy != EDefaultTickRate.None)
             {
-                DurationSpecification.TickOnApplication = false;
-                DurationSpecification.Ticks = Mathf.FloorToInt(DurationSpecification.Duration * (1 / GASRateNormals.DEFAULT_TICK_PERIOD));
+                DurationSpecification.Ticks = Mathf.FloorToInt(DurationSpecification.Duration * GASRateNormals.GetDefaultTickRate(DurationSpecification.PresetTickRatePolicy));
             }
         }
 

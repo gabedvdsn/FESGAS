@@ -44,7 +44,7 @@ namespace FESGameplayAbilitySystem
                 activeMono = Object.Instantiate(MonoPrefab);
             }
             
-            DataPacket.AddPayload(ESourceTargetData.Data, GameRoot.TransformTag, GameRoot.Instance.transform);
+            DataPacket.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
             activeMono.SendProcessData(DataPacket);
             activeMono.WhenInitialize(relay);
         }
