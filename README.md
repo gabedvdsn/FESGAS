@@ -203,5 +203,9 @@ Contributions are welcome! If you have suggestions, bug reports, or enhancements
 ## 9. License
 FESGAS is licensed under the MIT License. See the LICENSE file for details.
 
-## 9. Acknowledgements
+## 10. Acknowledgements
 Special thanks to @sjai013 for kickstarting this adventure by inspiring me to create my own. I utilized his framework for my individual Game Development Capstone project at university. Thank you to my professors and peers for advice and guidance.
+
+## 11. Upcoming
+- Non-ticking durational effects (e.g. Atrophy aura, Dota 2)
+- More event demos (e.g. death)
