@@ -134,9 +134,32 @@ There are two types of processes: MonoBehaviour processes and non-MonoBehaviour 
 
 The most-used method for registering mono processes is via a `CreateMonoProcessProxyTask`. Non-MonoBehaviour processes can be registered as required by accessing `ProcessControl.Instance.Register(...)` as needed. For MonoBehaviour processes specifically, a `ProcessDataPacket` is passed into the `ProcessControl.Register` call, which should contain any pertinent data the process may require. As you define processes, please be aware of the following critical aspects:
 1. Processes define their own lifecycle, from initialization to termination. Processes are excluded from any Unity event loops by default.
-2. When a process accesses its `ProcessDataPacket`, it is assuming that the data was categorized correctly before registration. This logic must be clearly outlined when setting up processes and when adding data to the `ProcessDataPacket`. If the process attempts to gather data but cannot find any, a default value will be used.
+2. When a process accesses its `ProcessDataPacket`, it is assuming that the data was categorized correctly before registration. This logic must be clearly outlined when setting up processes and when adding data to the `ProcessDataPacket`. If the process attempts to gather data but cannot find any, a default value will be used. See below for more information on `ProcessDataValues`.
 
 ![image](https://github.com/user-attachments/assets/f523481c-0e77-4d18-8653-b0f99d2d02ac)
+
+#### Working With `ProcessDataPackets`
+Used to hold and disseminate information across decoupled instances. PDPs store data in a generic dictionary guarded by a classifier `GameplayTag` and an enum target. The PDP itself will never know the scope of its use; instead, the decoupled instances are responsible for providing and procuring information across relevant classifiers. There are two types of `ProcessDataPackets`, being `ProxyDataPacket` and `ProcessDataPacket`. The only difference is that the former always originates from Abilities and contains a reference to the calling Ability.
+
+An instance that provides information is called a _supplier_, and an instance that procures information is called a _consumer_. Instances can be a supplier, consumer, or both. There are 6 distinct classifier tags used by default, which are defined in the `GameRoot` singleton; any instance along the use-path of a PDV can supply and/or procure information. These predefined tags are: **Generic**, **GAS**, **Derivation**, **Position**, **Rotation**, and **Transform**.  
+
+The data within a PDP is called its _payload_, and is set up with the following structure: **Payload[Tag][Target] = List<_object_>**.
+
+##### Example
+Given an Ability that creates a Fireball that follows its target until it collides with it.
+
+1. The Ability is activated and creates a new PDP. Implicit data is added to the PDP.
+    a. PDP.AddPayload<GAS>(Source, GameRoot.GAS, source: GAS) => The calling GAS system
+    b. PDP.AddPayload<Vector3>(Data, GameRoot.Position, initialPosition: Vector3) => The position to spawn the Fireball at
+2. The Ability's targeting is activated
+    a. PDP.AddPayload<GAS>(Target, GameRoot.GAS, target: GAS)
+    b. PDP.AddPayload<Quaternion>(Data, GameRoot.Rotation, initialRotation: Quaternion) => The initial rotation of the Fireball
+3. The Ability's `CreateMonoProcess` task is activated, which stores a prefab of the Fireball prefab
+4. 
+
+## 6. API
+
+
 
 ## 6. Customization
 The FESGAS framework is highly extensible due to its consistent focus on ScriptableObject-based development. Easily extend modular events, proxy tasks, and processes to fit the needs of your project.
