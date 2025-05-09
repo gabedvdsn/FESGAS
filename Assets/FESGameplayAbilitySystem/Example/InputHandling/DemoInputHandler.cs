@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using AYellowpaper.SerializedCollections;
 using UnityEngine;
 
-namespace FESGameplayAbilitySystem
+namespace FESGameplayAbilitySystem.Demo
 {
     public class DemoInputHandler : MonoBehaviour
     {

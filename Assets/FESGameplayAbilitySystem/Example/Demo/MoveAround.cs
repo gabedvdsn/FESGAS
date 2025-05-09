@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace FESGameplayAbilitySystem
+namespace FESGameplayAbilitySystem.Demo
 {
     public class MoveAround : MonoBehaviour
     {

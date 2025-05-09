@@ -5,7 +5,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
-namespace FESGameplayAbilitySystem
+namespace FESGameplayAbilitySystem.Demo
 {
     public class UIControlAbilitiesLevel : MonoBehaviour
     {
