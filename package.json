@@ -11,5 +11,5 @@
   "dependencies": {
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git#2.3.3",
     "com.ayellowpaper.serializedcollections": "https://github.com/AYellowPaper/serialized-collections.git#release"
-  },
+  }
 }
