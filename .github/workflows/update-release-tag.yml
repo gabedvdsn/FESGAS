@@ -11,8 +11,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set release tag
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Set and push 'release' tag
         run: |
           git fetch --tags
           git tag -f release ${{ github.event.release.tag_name }}
-          git push origin -f release
+          git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} release
