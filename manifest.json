@@ -1,0 +1,12 @@
+{
+  "name": "com.gabedavidson.fesgas-project",
+  "version": "1.0.0",
+  "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git#2.3.3",
+    "com.ayellowpaper.serializedcollections": "https://github.com/AYellowPaper/serialized-collections.git#release",
+    "com.gabedavidson.fesgas": "https://github.com/gabedvdsn/FESGAS.git#release"
+  },
+  "registry": "https://packages.unity.com",
+  "scopedRegistries": [],
+  "unity": "2020.3.0f1"
+}
