@@ -1,0 +1,18 @@
+name: Update release tag
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  tag-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set release tag
+        run: |
+          git fetch --tags
+          git tag -f release ${{ github.event.release.tag_name }}
+          git push origin -f release
