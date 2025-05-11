@@ -4,7 +4,7 @@
   "dependencies": {
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git#2.3.3",
     "com.ayellowpaper.serializedcollections": "https://github.com/AYellowPaper/serialized-collections.git#release",
-    "com.gabedavidson.fesgas": "https://github.com/gabedvdsn/FESGAS.git#v1.1.0"
+    "com.gabedavidson.fesgas": "https://github.com/gabedvdsn/FESGAS.git#v1.2.0"
   },
   "registry": "https://packages.unity.com",
   "scopedRegistries": [],
