@@ -1,6 +1,6 @@
 {
   "name": "com.gabedavidson.fesgas",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "displayName": "FESGAS",
   "description": "FESGAS is a flexible and extensible gameplay ability system designed for Unity.",
   "unity": "2020.3",
