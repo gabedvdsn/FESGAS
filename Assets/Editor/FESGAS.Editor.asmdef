@@ -1,0 +1,11 @@
+{
+	"name": "FESGAS.Editor",
+	"references": [
+		"FESGAS.Runtime",
+		"UniTask",
+		"AYellowpaper.SerializedCollections"
+	],
+	"includePlatforms": [
+		"Editor"
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "FESGAS.Runtime",
+	"references": [
+		"UniTask",
+		"AYellowpaper.SerializedCollections",
+		"Unity.TextMeshPro"
+	]
+}
