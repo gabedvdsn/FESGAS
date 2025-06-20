@@ -31,7 +31,7 @@ namespace FESGameplayAbilitySystem
         protected Dictionary<int, ProcessRelay> Relays;
         
         // Component Coffer
-        protected BuriedComponentCoffer Coffer;
+        public BuriedComponentCoffer Coffer;
         
         protected virtual void Awake()
         {
@@ -414,20 +414,6 @@ namespace FESGameplayAbilitySystem
             }
 
             return new GameplayEffectDuration(longestDuration, longestRemaining);
-        }
-        
-        #endregion
-        
-        #region Other
-
-        public bool AddCoffer<T>(T arg) where T : Component
-        {
-            return Coffer.Add<T>(arg);
-        }
-        
-        public T GetCoffer<T>() where T : Component
-        {
-            return Coffer.Get<T>();
         }
         
         #endregion

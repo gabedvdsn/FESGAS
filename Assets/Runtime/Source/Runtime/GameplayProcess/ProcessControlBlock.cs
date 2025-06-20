@@ -15,6 +15,8 @@ namespace FESGameplayAbilitySystem
         public readonly int CacheIndex;
         private Dictionary<EProcessUpdateTiming, int> StepIndices;
         public int StepIndex(EProcessUpdateTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
+
+        public List<int> AdjacentProcesses;
         
         public EProcessState State { get; private set; }
         public EProcessState queuedState { get; private set; }
@@ -42,12 +44,13 @@ namespace FESGameplayAbilitySystem
 
         protected ProcessRelay relay;
 
-        protected ProcessControlBlock(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
+        protected ProcessControlBlock(int cacheIndex, IGameplayProcess process, IGameplayProcessHandler handler)
         {
             relay = new ProcessRelay(this);
 
             CacheIndex = cacheIndex;
             StepIndices = new Dictionary<EProcessUpdateTiming, int>();
+            AdjacentProcesses = new List<int>();
             
             Process = process;
             Handler = handler;
@@ -57,14 +60,21 @@ namespace FESGameplayAbilitySystem
             updateTime = 0;
         }
 
-        public static ProcessControlBlock Generate(int cacheIndex, int stepIndex, IGameplayProcess process, IGameplayProcessHandler handler)
+        public static ProcessControlBlock Generate(int cacheIndex, IGameplayProcess process, IGameplayProcessHandler handler)
         {
-            return new ProcessControlBlock(cacheIndex, stepIndex, process, handler);
+            return new ProcessControlBlock(cacheIndex, process, handler);
+        }
+
+        public void AssignAdjacency(int adjIndex)
+        {
+            if (AdjacentProcesses.Contains(adjIndex)) return;
+            AdjacentProcesses.Add(adjIndex);
         }
 
         public async UniTask ForceIntoState(EProcessState state)
         {
             if (State == EProcessState.Running && state != EProcessState.Running) Interrupt();
+            foreach (int adjIndex in AdjacentProcesses)
             await UniTask.NextFrame();
             queuedState = state;
             SetQueuedState();

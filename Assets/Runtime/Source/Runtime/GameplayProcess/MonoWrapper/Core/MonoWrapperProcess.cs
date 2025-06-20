@@ -49,11 +49,13 @@ namespace FESGameplayAbilitySystem
             activeMono.WhenInitialize(relay);
             
             // Register adjacent processes
-            ProcessDataPacket packet = 
             foreach (AbstractMonoProcess adjProcess in activeMono.GetComponentsInChildren<AbstractMonoProcess>())
             {
                 if (adjProcess == activeMono) continue;
-                ProcessControl.Instance.Register(adjProcess);
+                if (adjProcess.IsInitialized) continue;  // Don't register registered processes
+                
+                ProcessControl.Instance.Register(adjProcess, DataPacket, out var adjRelay);
+                ProcessControl.Instance.AssignAdjacentProcess(relay, adjRelay);
             }
         }
 
@@ -69,6 +71,11 @@ namespace FESGameplayAbilitySystem
 
         public void WhenTerminate(ProcessRelay relay)
         {
+            WhenTerminateSafe(relay);
+            if (activeMono is not null) Object.Destroy(activeMono.gameObject);
+        }
+        public void WhenTerminateSafe(ProcessRelay relay)
+        {
             if (!activeMono) return;
             
             activeMono.WhenTerminate(relay);
@@ -76,9 +83,8 @@ namespace FESGameplayAbilitySystem
             {
                 activeMono.Instantiator.CleanProcess(activeMono);
             }
-            if (activeMono is not null) Object.Destroy(activeMono.gameObject);
         }
-        
+
         public async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
             await activeMono.RunProcess(relay, token);
@@ -95,6 +101,7 @@ namespace FESGameplayAbilitySystem
             process = default;
             return false;
         }
+        public bool IsInitialized => activeMono && activeMono.IsInitialized;
 
         public string ProcessName => activeMono ? activeMono.name : "[ ]";
         public int StepPriority => activeMono.StepPriority;

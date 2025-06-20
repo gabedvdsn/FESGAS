@@ -15,6 +15,12 @@ namespace FESGameplayAbilitySystem
             Handler = spec.GetOwner();
         }
 
+        public static ProxyDataPacket GenerateDefault(IEffectDerivation spec)
+        {
+            ProxyDataPacket data = new ProxyDataPacket(spec);
+            return data;
+        }
+
         public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, GASComponentBase component, ESourceTargetExpanded sourceTarget)
         {
             ProxyDataPacket data = new ProxyDataPacket(spec);
@@ -36,6 +42,13 @@ namespace FESGameplayAbilitySystem
                     throw new ArgumentOutOfRangeException(nameof(sourceTarget), sourceTarget, null);
             }
             
+            return data;
+        }
+
+        public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, GameplayTagScriptableObject tag, GASComponentBase character, ESourceTargetData target)
+        {
+            var data = new ProxyDataPacket(spec);
+            data.AddPayload(tag, target, character);
             return data;
         }
         

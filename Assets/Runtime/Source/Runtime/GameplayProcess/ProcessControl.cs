@@ -106,7 +106,7 @@ namespace FESGameplayAbilitySystem
                 or EProcessControlState.TerminatedImmediately) return false;
             
             var pcb = ProcessControlBlock.Generate(
-                NextCacheIndex, -1,
+                NextCacheIndex,
                 process, handler
             );
 
@@ -137,6 +137,11 @@ namespace FESGameplayAbilitySystem
             pcb.Handler?.HandlerVoidProcess(pcb.CacheIndex);
             
             return active.Remove(pcb.CacheIndex);
+        }
+
+        public void AssignAdjacentProcess(ProcessRelay source, ProcessRelay adjacent)
+        {
+            active[source.CacheIndex].AssignAdjacency(adjacent.CacheIndex);
         }
 
         public Dictionary<int, ProcessControlBlock> FetchActiveProcesses()

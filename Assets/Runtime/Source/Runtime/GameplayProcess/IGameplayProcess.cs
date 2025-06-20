@@ -13,11 +13,13 @@ namespace FESGameplayAbilitySystem
         public void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay);  // Called whenever the PCB is updated
         public void WhenWait(ProcessRelay relay);  // Called whenever the process is set to Wait state
         public void WhenTerminate(ProcessRelay relay);  // Called whenever the process is terminated
+        public void WhenTerminateSafe(ProcessRelay relay);  // Called whenever an adjacent process is terminated (typically for MonoProcesses, such that the GO is not destroyed twice)
 
         public UniTask RunProcess(ProcessRelay relay, CancellationToken token);
 
         public bool TryGetProcess<T>(out T process);
 
+        public bool IsInitialized { get; }
         public string ProcessName { get; }
         public int StepPriority { get; }
         public EProcessUpdateTiming StepTiming { get; }

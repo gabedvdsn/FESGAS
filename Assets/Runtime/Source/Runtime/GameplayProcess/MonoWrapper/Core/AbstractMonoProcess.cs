@@ -35,6 +35,9 @@ namespace FESGameplayAbilitySystem
         
         protected ProcessDataPacket regData;
         protected bool processActive;
+
+        private bool _initialized;
+        public bool IsInitialized => _initialized;
         
         public void SendProcessData(ProcessDataPacket processData)
         {
@@ -47,6 +50,8 @@ namespace FESGameplayAbilitySystem
         /// <param name="relay">Process Relay</param>
         public virtual void WhenInitialize(ProcessRelay relay)
         {
+            _initialized = true;
+            
             if (regData.TryGetPayload(GameRoot.GenericTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
             {
                 
@@ -97,6 +102,11 @@ namespace FESGameplayAbilitySystem
         /// </summary>
         /// <param name="relay">Process Relay</param>
         public virtual void WhenTerminate(ProcessRelay relay)
+        {
+            processActive = false;
+        }
+        
+        public void WhenTerminateSafe(ProcessRelay relay)
         {
             processActive = false;
         }
