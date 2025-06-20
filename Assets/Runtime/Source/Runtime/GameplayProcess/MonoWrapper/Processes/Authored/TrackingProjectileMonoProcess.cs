@@ -23,7 +23,7 @@ namespace FESGameplayAbilitySystem
         {
             base.WhenInitialize(relay);
             
-            if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out targetGAS)) Debug.Log($"Whelp!");
+            if (!regData.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out targetGAS)) Debug.Log($"Whelp!");
             target = targetGAS.transform;
 
             var to = Quaternion.LookRotation(target.position - transform.position);

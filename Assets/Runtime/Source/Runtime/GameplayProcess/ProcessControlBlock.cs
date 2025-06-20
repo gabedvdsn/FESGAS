@@ -13,7 +13,8 @@ namespace FESGameplayAbilitySystem
         public readonly IGameplayProcessHandler Handler;
 
         public readonly int CacheIndex;
-        public int StepIndex { get; private set; }
+        private Dictionary<EProcessUpdateTiming, int> StepIndices;
+        public int StepIndex(EProcessUpdateTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
         
         public EProcessState State { get; private set; }
         public EProcessState queuedState { get; private set; }
@@ -46,7 +47,7 @@ namespace FESGameplayAbilitySystem
             relay = new ProcessRelay(this);
 
             CacheIndex = cacheIndex;
-            StepIndex = stepIndex;
+            StepIndices = new Dictionary<EProcessUpdateTiming, int>();
             
             Process = process;
             Handler = handler;
@@ -61,9 +62,10 @@ namespace FESGameplayAbilitySystem
             return new ProcessControlBlock(cacheIndex, stepIndex, process, handler);
         }
 
-        public void ForceIntoState(EProcessState state)
+        public async UniTask ForceIntoState(EProcessState state)
         {
             if (State == EProcessState.Running && state != EProcessState.Running) Interrupt();
+            await UniTask.NextFrame();
             queuedState = state;
             SetQueuedState();
         }
@@ -178,12 +180,11 @@ namespace FESGameplayAbilitySystem
             cts?.Cancel();
         }
 
-        public void Step()
+        public void Step(EProcessUpdateTiming timing)
         {
-            Process.WhenUpdate(relay);
+            Process.WhenUpdate(timing, relay);
             
             updateTime += Time.deltaTime;
-            // lifetime += Time.unscaledDeltaTime;
         }
         
         private async UniTask RunProcess()
@@ -218,7 +219,10 @@ namespace FESGameplayAbilitySystem
             return relay;
         }
         
-        public void SetStepIndex(int stepIndex) => StepIndex = stepIndex;
+        public void SetStepIndex(EProcessUpdateTiming timing, int stepIndex)
+        {
+            StepIndices[timing] = stepIndex;
+        }
     }
 
     public class ProcessRelay

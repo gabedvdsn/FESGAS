@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -63,7 +64,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (var priority in stepping[timing])
             {
-                foreach (var cacheIndex in priority.Value) active[cacheIndex].Step();
+                foreach (var cacheIndex in priority.Value) active[cacheIndex].Step(timing);
             }
         }
         
@@ -173,13 +174,15 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public bool TerminateImmediate(int cacheIndex)
+        public async UniTask TerminateImmediate(int cacheIndex)
         {
-            if (!active.ContainsKey(cacheIndex)) return false;
+            if (!active.ContainsKey(cacheIndex))
+            {
+                await UniTask.CompletedTask;
+                return;
+            }
             
-            active[cacheIndex].ForceIntoState(EProcessState.Terminated);
-
-            return true;
+            await active[cacheIndex].ForceIntoState(EProcessState.Terminated);
         }
         
         public void TerminateAll()
@@ -188,13 +191,9 @@ namespace FESGameplayAbilitySystem
             foreach (int cacheIndex in indices) Terminate(cacheIndex);
         }
 
-        public void TerminateAllImmediately()
+        public async UniTask TerminateAllImmediately()
         {
-            List<int> indices = active.Keys.ToList();
-            foreach (int cacheIndex in indices)
-            {
-                active[cacheIndex].ForceIntoState(EProcessState.Terminated);
-            }
+            await UniTask.WhenAll(active.Keys.Select(index => active[index].ForceIntoState(EProcessState.Terminated)));
         }
         
         #endregion
@@ -240,33 +239,92 @@ namespace FESGameplayAbilitySystem
 
         private void MoveToStepping(ProcessControlBlock pcb)
         {
-            if (pcb.StepIndex >= 0) return;
-            
             var timing = pcb.Process.StepTiming;
             int priority = pcb.Process.StepPriority;
 
+            switch (timing)
+            {
+
+                case EProcessUpdateTiming.None:
+                case EProcessUpdateTiming.Update:
+                case EProcessUpdateTiming.LateUpdate:
+                case EProcessUpdateTiming.FixedUpdate:
+                    SetStepping(pcb, priority, timing);
+                    break;
+                case EProcessUpdateTiming.UpdateAndLate:
+                    SetStepping(pcb, priority, EProcessUpdateTiming.Update);
+                    SetStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
+                    break;
+                case EProcessUpdateTiming.UpdateAndFixed:
+                    SetStepping(pcb, priority, EProcessUpdateTiming.Update);
+                    SetStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                    break;
+                case EProcessUpdateTiming.LateAndFixed:
+                    SetStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
+                    SetStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        
+        private void SetStepping(ProcessControlBlock pcb, int priority, EProcessUpdateTiming timing)
+        {
             if (!stepping[timing].ContainsKey(priority))
             {
                 stepping[timing][priority] = new List<int>();
             }
             
-            pcb.SetStepIndex(stepping[pcb.Process.StepTiming][priority].Count);
-            stepping[pcb.Process.StepTiming][priority].Add(pcb.CacheIndex);
+            pcb.SetStepIndex(timing, stepping[timing][priority].Count);
+            stepping[timing][priority].Add(pcb.CacheIndex);
         }
         
         private void RemoveFromStepping(ProcessControlBlock pcb)
         {
-            if (pcb.StepIndex < 0) return;
+            //if (pcb.StepIndex < 0) return;
             
             var timing = pcb.Process.StepTiming;
             int priority = pcb.Process.StepPriority;
+
+            switch (timing)
+            {
+
+                case EProcessUpdateTiming.None:
+                case EProcessUpdateTiming.Update:
+                case EProcessUpdateTiming.LateUpdate:
+                case EProcessUpdateTiming.FixedUpdate:
+                    RemoveStepping(pcb, priority, timing);
+                    break;
+                case EProcessUpdateTiming.UpdateAndLate:
+                    RemoveStepping(pcb, priority, EProcessUpdateTiming.Update);
+                    RemoveStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
+                    break;
+                case EProcessUpdateTiming.UpdateAndFixed:
+                    RemoveStepping(pcb, priority, EProcessUpdateTiming.Update);
+                    RemoveStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                    break;
+                case EProcessUpdateTiming.LateAndFixed:
+                    RemoveStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
+                    RemoveStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            
+        }
+
+        private void RemoveStepping(ProcessControlBlock pcb, int priority, EProcessUpdateTiming timing)
+        {
+            int stepIndex = pcb.StepIndex(timing);
+            if (stepIndex < 0) return;
+            
             int lastIndex = stepping[timing][priority].Count - 1;
             
-            if (pcb.StepIndex != lastIndex)
+            if (stepIndex != lastIndex)
             {
                 int lastCacheIndex = stepping[timing][priority][lastIndex];
-                stepping[timing][priority][pcb.StepIndex] = lastCacheIndex;
-                active[lastCacheIndex].SetStepIndex(pcb.StepIndex);
+                stepping[timing][priority][stepIndex] = lastCacheIndex;
+                active[lastCacheIndex].SetStepIndex(timing, stepIndex);
             }
 
             stepping[timing][priority].RemoveAt(lastIndex);
@@ -274,10 +332,37 @@ namespace FESGameplayAbilitySystem
             if (stepping[timing][priority].Count == 0) stepping[timing].Remove(priority);
         }
 
+        public void SetWaitingStepIndex(ProcessControlBlock pcb)
+        {
+            switch (pcb.Process.StepTiming)
+            {
+                case EProcessUpdateTiming.None:
+                case EProcessUpdateTiming.Update:
+                case EProcessUpdateTiming.LateUpdate:
+                case EProcessUpdateTiming.FixedUpdate:
+                    pcb.SetStepIndex(pcb.Process.StepTiming, -1);
+                    break;
+                case EProcessUpdateTiming.UpdateAndLate:
+                    pcb.SetStepIndex(EProcessUpdateTiming.Update, -1);
+                    pcb.SetStepIndex(EProcessUpdateTiming.LateUpdate, -1);
+                    break;
+                case EProcessUpdateTiming.UpdateAndFixed:
+                    pcb.SetStepIndex(EProcessUpdateTiming.Update, -1);
+                    pcb.SetStepIndex(EProcessUpdateTiming.FixedUpdate, -1);
+                    break;
+                case EProcessUpdateTiming.LateAndFixed:
+                    pcb.SetStepIndex(EProcessUpdateTiming.LateUpdate, -1);
+                    pcb.SetStepIndex(EProcessUpdateTiming.FixedUpdate, -1);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        
         private void MoveToWaiting(ProcessControlBlock pcb)
         {
             waiting.Add(pcb.CacheIndex);
-            pcb.SetStepIndex(-1);
+            SetWaitingStepIndex(pcb);
         }
 
         private void RemoveFromWaiting(ProcessControlBlock pcb)

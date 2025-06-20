@@ -12,7 +12,7 @@ namespace FESGameplayAbilitySystem
             Debug.Log($"Process initialized");
         }
 
-        public void WhenUpdate(ProcessRelay relay)
+        public void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay)
         {
             //Debug.Log($"Process updated");// (lifetime: {lifespan})");
         }

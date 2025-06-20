@@ -47,9 +47,17 @@ namespace FESGameplayAbilitySystem
             DataPacket.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
             activeMono.SendProcessData(DataPacket);
             activeMono.WhenInitialize(relay);
+            
+            // Register adjacent processes
+            ProcessDataPacket packet = 
+            foreach (AbstractMonoProcess adjProcess in activeMono.GetComponentsInChildren<AbstractMonoProcess>())
+            {
+                if (adjProcess == activeMono) continue;
+                ProcessControl.Instance.Register(adjProcess);
+            }
         }
 
-        public void WhenUpdate(ProcessRelay relay)
+        public void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay)
         {
             activeMono.WhenUpdate(relay);
         }

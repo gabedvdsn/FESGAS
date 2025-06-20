@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
     {
         public void WhenInitialize(ProcessRelay relay);  // Called once when the process is first moved to Ready state
         
-        public void WhenUpdate(ProcessRelay relay);  // Called whenever the PCB is updated
+        public void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay);  // Called whenever the PCB is updated
         public void WhenWait(ProcessRelay relay);  // Called whenever the process is set to Wait state
         public void WhenTerminate(ProcessRelay relay);  // Called whenever the process is terminated
 
@@ -29,7 +29,10 @@ namespace FESGameplayAbilitySystem
         None = 0,
         Update = 1,
         LateUpdate = 2,
-        FixedUpdate = 3
+        FixedUpdate = 3,
+        UpdateAndLate = 4,
+        UpdateAndFixed = 5,
+        LateAndFixed = 6
     }
 
     public enum EProcessLifecycle

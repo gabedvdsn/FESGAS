@@ -12,7 +12,7 @@ namespace FESGameplayAbilitySystem
 
         protected void ApplyEffects(GASComponentBase target)
         {
-            if (!data.TryGetPayload(GameRoot.DerivationTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out IEffectDerivation derivation))
+            if (!regData.TryGetPayload(GameRoot.DerivationTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out IEffectDerivation derivation))
             {
                 derivation = GameRoot.Instance;
             }

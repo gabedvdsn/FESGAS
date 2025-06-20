@@ -33,12 +33,12 @@ namespace FESGameplayAbilitySystem
         public ESourceTargetData ParentTransformTarget = ESourceTargetData.Data;
         public EProxyDataValueTarget ParentTransformValue = EProxyDataValueTarget.Primary;
         
-        protected ProcessDataPacket data;
+        protected ProcessDataPacket regData;
         protected bool processActive;
         
         public void SendProcessData(ProcessDataPacket processData)
         {
-            data = processData;
+            regData = processData;
         }
 
         /// <summary>
@@ -47,30 +47,30 @@ namespace FESGameplayAbilitySystem
         /// <param name="relay">Process Relay</param>
         public virtual void WhenInitialize(ProcessRelay relay)
         {
-            if (data.TryGetPayload(GameRoot.GenericTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
+            if (regData.TryGetPayload(GameRoot.GenericTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
             {
                 
             }
             
-            if (data.TryGetPayload<Vector3>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var pos))
+            if (regData.TryGetPayload<Vector3>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var pos))
             {
                 transform.position = pos;
             }
-            else if (data.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialPositionTarget, InitialPositionValue, out var gasPos))
+            else if (regData.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialPositionTarget, InitialPositionValue, out var gasPos))
             {
                 transform.position = gasPos.transform.position;
             }
             
-            if (data.TryGetPayload<Quaternion>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var rot))
+            if (regData.TryGetPayload<Quaternion>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var rot))
             {
                 transform.rotation = rot;
             }
-            else if (data.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialRotationTarget, InitialRotationValue, out var gasRot))
+            else if (regData.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialRotationTarget, InitialRotationValue, out var gasRot))
             {
                 transform.rotation = gasRot.transform.rotation;
             }
             
-            if (data.TryGetPayload<Transform>(GameRoot.TransformTag, ParentTransformTarget, ParentTransformValue, out var pt))
+            if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, ParentTransformTarget, ParentTransformValue, out var pt))
             {
                 transform.SetParent(pt);
             }
