@@ -16,7 +16,7 @@ MonoBehaviour:
   - Attribute: {fileID: 11400000, guid: 0a328d00944e1c94ca9122b21679a891, type: 2}
     Target: 0
     CollisionPolicy: 0
-    Magnitude: 100
+    Magnitude: 1000
     Overflow:
       Policy: 0
       Floor:

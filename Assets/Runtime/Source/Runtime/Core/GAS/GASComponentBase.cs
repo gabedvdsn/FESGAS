@@ -30,6 +30,9 @@ namespace FESGameplayAbilitySystem
         // Process
         protected Dictionary<int, ProcessRelay> Relays;
         
+        // Component Coffer
+        protected BuriedComponentCoffer Coffer;
+        
         protected virtual void Awake()
         {
             AttributeSystem = GetComponent<AttributeSystemComponent>();
@@ -39,6 +42,7 @@ namespace FESGameplayAbilitySystem
             FinishedEffects = new List<AbstractGameplayEffectShelfContainer>();
 
             Relays = new Dictionary<int, ProcessRelay>();
+            Coffer = new BuriedComponentCoffer();
             
             Identity.Initialize(this);
             
@@ -410,6 +414,20 @@ namespace FESGameplayAbilitySystem
             }
 
             return new GameplayEffectDuration(longestDuration, longestRemaining);
+        }
+        
+        #endregion
+        
+        #region Other
+
+        public bool AddCoffer<T>(T arg) where T : Component
+        {
+            return Coffer.Add<T>(arg);
+        }
+        
+        public T GetCoffer<T>() where T : Component
+        {
+            return Coffer.Get<T>();
         }
         
         #endregion
