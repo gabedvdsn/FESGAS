@@ -4,7 +4,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace FESGameplayAbilitySystem.Demo
+namespace FESGameplayAbilitySystem
 {
     public class TestMonoProcess : AbstractMonoProcess
     {

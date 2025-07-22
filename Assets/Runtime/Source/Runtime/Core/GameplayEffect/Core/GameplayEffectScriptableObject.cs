@@ -166,6 +166,9 @@ namespace FESGameplayAbilitySystem
         StackExtend  // Stacks and extend the duration of each stack
     }
 
+    /// <summary>
+    /// Effect Derivations are sources which store effects (attribute impact derivations)
+    /// </summary>
     public interface IEffectDerivation
     {
         public GASComponentBase GetOwner();

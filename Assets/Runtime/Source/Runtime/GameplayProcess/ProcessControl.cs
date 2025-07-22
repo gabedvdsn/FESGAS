@@ -40,7 +40,7 @@ namespace FESGameplayAbilitySystem
             Instance = this;
             if (DontDestroyOnLoad) DontDestroyOnLoad(gameObject);
             
-            ResetProcessControl(StartState);
+            ResetProcessControl(StartState).Forget();
         }
 
         private void Update()
@@ -81,9 +81,9 @@ namespace FESGameplayAbilitySystem
             SetAllProcessesUponStateChange();
         }
 
-        private void ResetProcessControl(EProcessControlState nextState)
+        private async UniTask ResetProcessControl(EProcessControlState nextState)
         {
-            TerminateAllImmediately();
+            await TerminateAllImmediately();
 
             active = new Dictionary<int, ProcessControlBlock>();
             stepping = new Dictionary<EProcessUpdateTiming, SortedDictionary<int, List<int>>>();
@@ -97,7 +97,7 @@ namespace FESGameplayAbilitySystem
         }
         
         // Register a new process and handler to a PCB
-        public bool Register(IGameplayProcess process, IGameplayProcessHandler handler, out ProcessRelay relay)
+        public bool Register(AbstractProcessWrapper process, IGameplayProcessHandler handler, out ProcessRelay relay)
         {
             relay = default;
             if (State is EProcessControlState.Closed 
@@ -109,7 +109,9 @@ namespace FESGameplayAbilitySystem
                 NextCacheIndex,
                 process, handler
             );
-
+            
+            Debug.Log($"[ REG ] {process.ProcessName} => {handler}");
+            
             SetProcess(pcb);
             
             relay = pcb.GetRelay();
@@ -152,6 +154,24 @@ namespace FESGameplayAbilitySystem
         #endregion
         
         #region Control
+
+        public bool Set(int cacheIndex, EProcessState state)
+        {
+            return state switch
+            {
+
+                EProcessState.Created => false,
+                EProcessState.Running => Run(cacheIndex),
+                EProcessState.Waiting => Wait(cacheIndex),
+                EProcessState.Terminated => Terminate(cacheIndex),
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
+            };
+        }
+
+        public async UniTask ForceSet(int cacheIndex, EProcessState state)
+        {
+            await active[cacheIndex].ForceIntoState(state);
+        }
 
         public bool Run(int cacheIndex)
         {
@@ -208,24 +228,28 @@ namespace FESGameplayAbilitySystem
         private void SetProcess(ProcessControlBlock pcb)
         {
             if (pcb.State == EProcessState.Created) PrepareCreatedProcess();
-            var state = GetDefaultTransitionState(pcb);
             
+            var state = GetDefaultTransitionState(pcb);
             pcb.QueueNextState(state);
             
             return;
 
             void PrepareCreatedProcess()
             {
-                pcb.Initialize();
+                pcb.Process.InitializeWrapper();
+                
+                SetWaitingStepIndex(pcb);
 
                 waiting.Add(pcb.CacheIndex);
                 active[pcb.CacheIndex] = pcb;
+                
+                pcb.Initialize();
             }
         }
         
         private void SetAllProcessesUponStateChange()
         {
-            if (State == EProcessControlState.TerminatedImmediately) TerminateAllImmediately();
+            if (State == EProcessControlState.TerminatedImmediately) TerminateAllImmediately().Forget();
             else if (State == EProcessControlState.Terminated) TerminateAll();
             else
             {
@@ -235,7 +259,7 @@ namespace FESGameplayAbilitySystem
                     else
                     {
                         var setState = GetDefaultStateWhenControlChanged(pcb);
-                        if (State is EProcessControlState.Ready or EProcessControlState.Waiting or EProcessControlState.ClosedWaiting) pcb.ForceIntoState(setState);
+                        if (State is EProcessControlState.Ready or EProcessControlState.Waiting or EProcessControlState.ClosedWaiting) pcb.ForceIntoState(setState).Forget();
                         else pcb.QueueNextState(setState);
                     }
                 }

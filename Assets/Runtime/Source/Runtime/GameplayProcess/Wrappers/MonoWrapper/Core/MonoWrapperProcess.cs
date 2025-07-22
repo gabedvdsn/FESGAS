@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public class MonoWrapperProcess : IGameplayProcess
+    public class MonoWrapperProcess : AbstractProcessWrapper
     {
         private AbstractMonoProcess MonoPrefab;
         private ProcessDataPacket DataPacket;
@@ -17,34 +17,29 @@ namespace FESGameplayAbilitySystem
             DataPacket = data;
         }
 
-        public void WhenInitialize(ProcessRelay relay)
+        public override void InitializeWrapper()
         {
             // Check if is an instance
             if (MonoPrefab.gameObject.scene.name is not null)
             {
                 activeMono = MonoPrefab;
-                activeMono.SendProcessData(DataPacket);
-                activeMono.WhenInitialize(relay);
                 return;
             }
             
             if (MonoPrefab.Instantiator is not null)
             {
-                activeMono = MonoPrefab.Instantiator.InstantiateProcess(MonoPrefab);
-                if (activeMono)
-                {
-                    activeMono.SendProcessData(DataPacket);
-                    activeMono.WhenInitialize(relay);
-                    
-                    return;
-                }
+                activeMono = MonoPrefab.Instantiator.InstantiateProcess(MonoPrefab, DataPacket);
             }
             else
             {
                 activeMono = Object.Instantiate(MonoPrefab);
+                activeMono.name = activeMono.name.Replace("(Clone)", "");
+                DataPacket.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
             }
-            
-            DataPacket.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+        }
+        
+        public override void WhenInitialize(ProcessRelay relay)
+        {
             activeMono.SendProcessData(DataPacket);
             activeMono.WhenInitialize(relay);
             
@@ -59,22 +54,22 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay)
+        public override void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay)
         {
             activeMono.WhenUpdate(relay);
         }
         
-        public void WhenWait(ProcessRelay relay)
+        public override void WhenWait(ProcessRelay relay)
         {
             activeMono.WhenWait(relay);
         }
 
-        public void WhenTerminate(ProcessRelay relay)
+        public override void WhenTerminate(ProcessRelay relay)
         {
             WhenTerminateSafe(relay);
-            if (activeMono is not null) Object.Destroy(activeMono.gameObject);
+            if (activeMono) Object.Destroy(activeMono.gameObject);
         }
-        public void WhenTerminateSafe(ProcessRelay relay)
+        public override void WhenTerminateSafe(ProcessRelay relay)
         {
             if (!activeMono) return;
             
@@ -85,12 +80,12 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
+        public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
             await activeMono.RunProcess(relay, token);
         }
 
-        public bool TryGetProcess<T>(out T process)
+        public override bool TryGetProcess<T>(out T process)
         {
             if (activeMono is T cast)
             {
@@ -101,11 +96,10 @@ namespace FESGameplayAbilitySystem
             process = default;
             return false;
         }
-        public bool IsInitialized => activeMono && activeMono.IsInitialized;
 
-        public string ProcessName => activeMono ? activeMono.name : "[ ]";
-        public int StepPriority => activeMono.StepPriority;
-        public EProcessUpdateTiming StepTiming => activeMono.StepTiming;
-        public EProcessLifecycle Lifecycle => activeMono.Lifecycle;
+        public override string ProcessName => activeMono ? activeMono.name : "[ ]";
+        public override int StepPriority => activeMono.StepPriority;
+        public override EProcessUpdateTiming StepTiming => activeMono.StepTiming;
+        public override EProcessLifecycle Lifecycle => activeMono.Lifecycle;
     }
 }

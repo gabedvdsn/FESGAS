@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
+    /// <summary>
+    /// Attribute impact derivations are sources of attribute impact (impact carriers)
+    /// </summary>
     public interface IAttributeImpactDerivation
     {
         public AttributeScriptableObject GetAttribute();

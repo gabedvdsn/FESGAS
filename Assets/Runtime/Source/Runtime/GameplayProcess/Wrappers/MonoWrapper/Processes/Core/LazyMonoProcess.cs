@@ -7,7 +7,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     /// <summary>
-    /// The Lazy process is a process that does absolutely nothing and runs until termination
+    /// The Lazy process is a process (typically self-terminating) that runs until Waited or Terminated.
     /// </summary>
     public class LazyMonoProcess : AbstractMonoProcess
     {

@@ -9,14 +9,15 @@ namespace FESGameplayAbilitySystem
 {
     public class ProcessControlBlock
     {
-        public readonly IGameplayProcess Process;
+        public readonly AbstractProcessWrapper Process;
         public readonly IGameplayProcessHandler Handler;
 
         public readonly int CacheIndex;
         private Dictionary<EProcessUpdateTiming, int> StepIndices;
         public int StepIndex(EProcessUpdateTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
 
-        public List<int> AdjacentProcesses;
+        public List<int> ParentProcesses;  // Parent processes (hierarchical)
+        public List<int> AdjacentProcesses;  // Composed & child processes (hierarchical)
         
         public EProcessState State { get; private set; }
         public EProcessState queuedState { get; private set; }
@@ -44,7 +45,7 @@ namespace FESGameplayAbilitySystem
 
         protected ProcessRelay relay;
 
-        protected ProcessControlBlock(int cacheIndex, IGameplayProcess process, IGameplayProcessHandler handler)
+        protected ProcessControlBlock(int cacheIndex, AbstractProcessWrapper process, IGameplayProcessHandler handler)
         {
             relay = new ProcessRelay(this);
 
@@ -56,11 +57,10 @@ namespace FESGameplayAbilitySystem
             Handler = handler;
             
             State = EProcessState.Created;
-
             updateTime = 0;
         }
 
-        public static ProcessControlBlock Generate(int cacheIndex, IGameplayProcess process, IGameplayProcessHandler handler)
+        public static ProcessControlBlock Generate(int cacheIndex, AbstractProcessWrapper process, IGameplayProcessHandler handler)
         {
             return new ProcessControlBlock(cacheIndex, process, handler);
         }
@@ -74,8 +74,10 @@ namespace FESGameplayAbilitySystem
         public async UniTask ForceIntoState(EProcessState state)
         {
             if (State == EProcessState.Running && state != EProcessState.Running) Interrupt();
-            foreach (int adjIndex in AdjacentProcesses)
-            await UniTask.NextFrame();
+            foreach (var adjIndex in AdjacentProcesses) ProcessControl.Instance.ForceSet(adjIndex, state).Forget();
+            
+            await UniTask.CompletedTask;
+            
             queuedState = state;
             SetQueuedState();
         }
@@ -83,6 +85,8 @@ namespace FESGameplayAbilitySystem
         public void QueueNextState(EProcessState state)
         {
             if (state == State) return;
+            
+            foreach (var adjIndex in AdjacentProcesses) ProcessControl.Instance.Set(adjIndex, state);
             
             switch (state)
             {
@@ -118,7 +122,7 @@ namespace FESGameplayAbilitySystem
             queuedState = EProcessState.Running;
             if (State != EProcessState.Running) SetQueuedState();
         }
-
+        
         public bool Run()
         {
             if (State != EProcessState.Running) return false;

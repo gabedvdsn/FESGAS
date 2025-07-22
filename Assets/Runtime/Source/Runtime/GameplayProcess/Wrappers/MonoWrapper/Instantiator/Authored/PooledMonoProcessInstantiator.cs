@@ -6,7 +6,7 @@ namespace FESGameplayAbilitySystem.Instantiator
     public class PooledMonoProcessInstantiator : AbstractMonoProcessInstantiatorScriptableObject
     {
 
-        public override AbstractMonoProcess InstantiateProcess(AbstractMonoProcess process)
+        public override AbstractMonoProcess InstantiateProcess(AbstractMonoProcess process, ProcessDataPacket data)
         {
             // Pooling logic
             return null;
