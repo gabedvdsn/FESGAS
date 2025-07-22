@@ -102,7 +102,7 @@ namespace FESGameplayAbilitySystem
         {
             return DurationSpecification.TickOnApplication;
         }
-        public List<IEffectBase> GetContainedEffects(EApplyDuringRemove policy)
+        public List<IEffectBase> GetContainedEffects(EApplyTickRemove policy)
         {
             return ImpactSpecification.GetContainedEffects(policy).Cast<IEffectBase>().ToList();
         }
@@ -117,7 +117,7 @@ namespace FESGameplayAbilitySystem
         public bool ValidateApplicationRequirements(GameplayEffectSpec spec)
         {
             var targetTags = spec.Target.TagCache.GetAppliedTags();
-            var sourceTags = spec.Source.TagCache.GetAppliedTags();
+            var sourceTags = spec.Source.GetAppliedTags();
             return TargetRequirements.CheckApplicationRequirements(targetTags)
                    && !TargetRequirements.CheckRemovalRequirements(targetTags)
                    && SourceRequirements.CheckApplicationRequirements(sourceTags)
@@ -126,12 +126,12 @@ namespace FESGameplayAbilitySystem
         public bool ValidateRemovalRequirements(GameplayEffectSpec spec)
         {
             return TargetRequirements.CheckRemovalRequirements(spec.Target.TagCache.GetAppliedTags())
-                   && SourceRequirements.CheckRemovalRequirements(spec.Source.TagCache.GetAppliedTags());
+                   && SourceRequirements.CheckRemovalRequirements(spec.Source.GetAppliedTags());
         }
         public bool ValidateOngoingRequirements(GameplayEffectSpec spec)
         {
             return TargetRequirements.CheckOngoingRequirements(spec.Target.TagCache.GetAppliedTags())
-                   && SourceRequirements.CheckOngoingRequirements(spec.Source.TagCache.GetAppliedTags());
+                   && SourceRequirements.CheckOngoingRequirements(spec.Source.GetAppliedTags());
         }
         public void ApplyDurationSpecifications(AbstractGameplayEffectShelfContainer container)
         {
@@ -171,7 +171,7 @@ namespace FESGameplayAbilitySystem
     /// </summary>
     public interface IEffectDerivation
     {
-        public GASComponentBase GetOwner();
+        public ISource GetOwner();
         public List<GameplayTagScriptableObject> GetContextTags();
         public GameplayTagScriptableObject GetAssetTag();
         public int GetLevel();
@@ -180,7 +180,7 @@ namespace FESGameplayAbilitySystem
         public string GetName();
         public GameplayTagScriptableObject GetAffiliation();
 
-        public static SourceEffectDerivation GenerateSourceDerivation(GASComponentBase source)
+        public static SourceEffectDerivation GenerateSourceDerivation(ISource source)
         {
             return new SourceEffectDerivation(source);
         }
@@ -188,44 +188,44 @@ namespace FESGameplayAbilitySystem
 
     public class SourceEffectDerivation : IEffectDerivation
     {
-        private GASComponentBase Owner;
+        private ISource Owner;
 
-        public SourceEffectDerivation(GASComponentBase owner)
+        public SourceEffectDerivation(ISource owner)
         {
             Owner = owner;
         }
 
-        public GASComponentBase GetOwner()
+        public ISource GetOwner()
         {
             return Owner;
         }
         public List<GameplayTagScriptableObject> GetContextTags()
         {
-            return new List<GameplayTagScriptableObject>() { Owner.Identity.NameTag };
+            return Owner.GetContextTags();
         }
         public GameplayTagScriptableObject GetAssetTag()
         {
-            return Owner.Identity.NameTag;
+            return Owner.GetAssetTag();
         }
         public int GetLevel()
         {
-            return Owner.Identity.Level;
+            return Owner.GetLevel();
         }
         public void SetLevel(int level)
         {
-            Owner.Identity.Level = level;
+            Owner.SetLevel(level);
         }
         public float GetRelativeLevel()
         {
-            return (Owner.Identity.Level - 1) / (float)(Owner.Identity.MaxLevel - 1);
+            return (Owner.GetLevel() - 1) / (float)(Owner.GetMaxLevel() - 1);
         }
         public string GetName()
         {
-            return Owner.Identity.DistinctName;
+            return Owner.GetName();
         }
         public GameplayTagScriptableObject GetAffiliation()
         {
-            return Owner.Identity.Affiliation;
+            return Owner.GetAffiliation();
         }
     }
 

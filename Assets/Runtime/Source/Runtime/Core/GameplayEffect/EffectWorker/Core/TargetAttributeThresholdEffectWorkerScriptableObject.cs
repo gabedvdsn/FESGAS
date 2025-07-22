@@ -34,7 +34,7 @@ namespace FESGameplayAbilitySystem
 
         protected void PerformThresholdWork(IAttributeImpactDerivation derivation)
         {
-            if (!derivation.GetTarget().AttributeSystem.TryGetAttributeValue(TargetAttribute, out AttributeValue value)) return;
+            if (!derivation.GetTarget().FindAttributeSystem(out var attrSystem) || !attrSystem.TryGetAttributeValue(TargetAttribute, out AttributeValue value)) return;
             switch (Policy)
             {
 

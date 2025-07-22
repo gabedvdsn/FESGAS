@@ -113,7 +113,7 @@ namespace FESGameplayAbilitySystem
         
         #region Effect Derivation
         
-        public GASComponentBase GetOwner()
+        public ISource GetOwner()
         {
             return this;
         }

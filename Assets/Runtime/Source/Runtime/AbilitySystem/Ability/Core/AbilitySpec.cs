@@ -55,11 +55,11 @@ namespace FESGameplayAbilitySystem
         public bool CanCoverCost()
         {
             if (!Base.Cost || !Base.Cost.ImpactSpecification.AttributeTarget) return true;
-            if (!Owner.AttributeSystem.TryGetAttributeValue(Base.Cost.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return false;
+            if (!Owner.FindAttributeSystem(out var attr) || !attr.TryGetAttributeValue(Base.Cost.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return false;
             return attributeValue.CurrentValue >= Base.Cost.ImpactSpecification.GetMagnitude(Owner.GenerateEffectSpec(this, Base.Cost));
         }
 
-        public GASComponentBase GetOwner() => Owner;
+        public ISource GetOwner() => Owner;
         public List<GameplayTagScriptableObject> GetContextTags()
         {
             return Base.Tags.ContextTags;

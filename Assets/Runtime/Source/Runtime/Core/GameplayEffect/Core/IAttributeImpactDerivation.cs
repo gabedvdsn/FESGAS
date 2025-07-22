@@ -10,8 +10,8 @@ namespace FESGameplayAbilitySystem
     {
         public AttributeScriptableObject GetAttribute();
         public IEffectDerivation GetEffectDerivation();
-        public GASComponentBase GetSource();
-        public GASComponentBase GetTarget();
+        public ISource GetSource();
+        public ITarget GetTarget();
         public EImpactType GetImpactType();
         public bool RetainAttributeImpact();
         public void TrackImpact(AbilityImpactData impactData);
@@ -23,7 +23,7 @@ namespace FESGameplayAbilitySystem
         public void RunEffectRemovalWorkers();
         public void RunEffectImpactWorkers(AbilityImpactData impactData);
         
-        public static SourceAttributeDerivation GenerateSourceDerivation(GASComponentBase source, AttributeScriptableObject attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
+        public static SourceAttributeDerivation GenerateSourceDerivation(ISource source, AttributeScriptableObject attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
         {
             return new SourceAttributeDerivation(source, attribute, impactType, retainImpact);
         }
@@ -36,12 +36,12 @@ namespace FESGameplayAbilitySystem
 
     public class SourceAttributeDerivation : IAttributeImpactDerivation
     {
-        private GASComponentBase Source;
+        private ISource Source;
         public AttributeScriptableObject Attribute;
         private EImpactType ImpactType;
         private bool RetainImpact;
 
-        public SourceAttributeDerivation(GASComponentBase source, AttributeScriptableObject attribute, EImpactType impactType, bool retainImpact = true)
+        public SourceAttributeDerivation(ISource source, AttributeScriptableObject attribute, EImpactType impactType, bool retainImpact = true)
         {
             Source = source;
             Attribute = attribute;
@@ -57,11 +57,11 @@ namespace FESGameplayAbilitySystem
         {
             return IEffectDerivation.GenerateSourceDerivation(Source);
         }
-        public GASComponentBase GetSource()
+        public ISource GetSource()
         {
             return Source;
         }
-        public GASComponentBase GetTarget()
+        public ITarget GetTarget()
         {
             return Source;
         }
@@ -92,7 +92,7 @@ namespace FESGameplayAbilitySystem
         }
         public List<GameplayTagScriptableObject> GetContextTags()
         {
-            return new List<GameplayTagScriptableObject>() { Source.Identity.NameTag };
+            return Source.GetContextTags();
         }
         public void RunEffectApplicationWorkers()
         {

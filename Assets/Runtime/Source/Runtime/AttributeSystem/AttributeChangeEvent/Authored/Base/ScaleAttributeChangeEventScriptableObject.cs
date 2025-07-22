@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
             
             IAttributeImpactDerivation scaleDerivation = IAttributeImpactDerivation.GenerateSourceDerivation(change.Value, EImpactType.NotApplicable, false);
             SourcedModifiedAttributeValue scaleAmount = new SourcedModifiedAttributeValue(scaleDerivation, delta, 0f, false);
-            system.AttributeSystem.ModifyAttribute(TargetAttribute, scaleAmount, runEvents: false);
+            if (system.FindAttributeSystem(out var attr)) attr.ModifyAttribute(TargetAttribute, scaleAmount, runEvents: false);
         }
 
         public override bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, ChangeValue change)

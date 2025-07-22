@@ -54,7 +54,7 @@ namespace FESGameplayAbilitySystem
             };
         }
 
-        public List<GameplayEffectScriptableObject> GetContainedEffects(EApplyDuringRemove policy)
+        public List<GameplayEffectScriptableObject> GetContainedEffects(EApplyTickRemove policy)
         {
             return Packets.Where(packet => packet.Policy == policy).Select(p => p.ContainedEffect).ToList();
         }
@@ -63,7 +63,7 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public struct ContainedEffectPacket
     {
-        public EApplyDuringRemove Policy;
+        public EApplyTickRemove Policy;
         public GameplayEffectScriptableObject ContainedEffect;
     }
 
@@ -90,7 +90,7 @@ namespace FESGameplayAbilitySystem
         CurrentOrBase
     }
 
-    public enum EApplyDuringRemove
+    public enum EApplyTickRemove
     {
         OnApply,
         OnTick,

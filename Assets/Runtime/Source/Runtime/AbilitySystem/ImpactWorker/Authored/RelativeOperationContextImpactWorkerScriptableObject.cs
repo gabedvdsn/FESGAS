@@ -20,7 +20,7 @@ namespace FESGameplayAbilitySystem
         protected override void PerformImpactResponse(AbilityImpactData impactData)
         {
             // Extract the relative attribute (e.g. lifesteal attribute)
-            if (!impactData.SourcedModifier.Derivation.GetSource().AttributeSystem.TryGetAttributeValue(RelativeAttribute, out AttributeValue relValue)) return;
+            if (!impactData.SourcedModifier.Derivation.GetSource().FindAttributeSystem(out var attr) || !attr.TryGetAttributeValue(RelativeAttribute, out AttributeValue relValue)) return;
             AttributeValue attributeValue;
 
             switch (Operation)
@@ -45,7 +45,7 @@ namespace FESGameplayAbilitySystem
                 attributeValue.CurrentValue, attributeValue.BaseValue,
                 WorkerImpactWorkable
             );
-            impactData.SourcedModifier.Derivation.GetSource().AttributeSystem.ModifyAttribute(WorkAttribute, sourcedModifier);
+            attr.ModifyAttribute(WorkAttribute, sourcedModifier);
         }
 
         public override bool ValidateWorkFor(AbilityImpactData impactData)
@@ -53,8 +53,8 @@ namespace FESGameplayAbilitySystem
             if (!base.ValidateWorkFor(impactData)) return false;
             return WithRespectTo switch
             {
-                ESourceTarget.Target => impactData.Target.AttributeSystem.DefinesAttribute(RelativeAttribute),
-                ESourceTarget.Source => impactData.SourcedModifier.BaseDerivation.GetSource().AttributeSystem.DefinesAttribute(RelativeAttribute),
+                ESourceTarget.Target => impactData.Target.FindAttributeSystem(out var attr) && attr.DefinesAttribute(RelativeAttribute),
+                ESourceTarget.Source => impactData.SourcedModifier.BaseDerivation.GetSource().FindAttributeSystem(out var attr) && attr.DefinesAttribute(RelativeAttribute),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

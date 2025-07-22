@@ -22,11 +22,11 @@ namespace FESGameplayAbilitySystem
             switch (CaptureFrom)
             {
                 case ESourceTarget.Source:
-                    if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue sourceAttributeValue)) break;
+                    if (!spec.Source.FindAttributeSystem(out var attr) || !attr.TryGetAttributeValue(CaptureAttribute, out AttributeValue sourceAttributeValue)) break;
                     spec.SourceCapturedAttributes[this] = sourceAttributeValue;
                     break;
                 case ESourceTarget.Target:
-                    if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue targetAttributeValue)) break;
+                    if (!spec.Target.FindAttributeSystem(out var attr2) || !attr2.TryGetAttributeValue(CaptureAttribute, out AttributeValue targetAttributeValue)) break;
                     spec.SourceCapturedAttributes[this] = targetAttributeValue;
                     break;
                 default:
@@ -48,7 +48,7 @@ namespace FESGameplayAbilitySystem
 
             if (CaptureFrom == ESourceTarget.Source)
             {
-                if (!spec.Source.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue attributeValue)) return 0f;
+                if (!spec.Source.FindAttributeSystem(out var attr) || !attr.TryGetAttributeValue(CaptureAttribute, out AttributeValue attributeValue)) return 0f;
                 return ScalingPolicy switch
                 {
 
@@ -59,7 +59,7 @@ namespace FESGameplayAbilitySystem
             }
             else
             {
-                if (!spec.Target.AttributeSystem.TryGetAttributeValue(CaptureAttribute, out AttributeValue attributeValue)) return 0f;
+                if (!spec.Target.FindAttributeSystem(out var attr) || !attr.TryGetAttributeValue(CaptureAttribute, out AttributeValue attributeValue)) return 0f;
                 return ScalingPolicy switch
                 {
 

@@ -68,7 +68,7 @@ namespace FESGameplayAbilitySystem
                     new SourcedModifiedAttributeValue(Spec, this, negatedImpact.CurrentValue, negatedImpact.BaseValue, false));
             }
             
-            foreach (var containedEffect in Spec.Base.GetContainedEffects(EApplyDuringRemove.OnRemove))
+            foreach (var containedEffect in Spec.Base.GetContainedEffects(EApplyTickRemove.OnRemove))
             {
                 Spec.GetSource().ApplyGameplayEffect(Spec.Derivation, containedEffect);
             }
@@ -82,11 +82,11 @@ namespace FESGameplayAbilitySystem
         {
             return Spec.GetEffectDerivation();
         }
-        public GASComponentBase GetSource()
+        public ISource GetSource()
         {
             return Spec.GetSource();
         }
-        public GASComponentBase GetTarget()
+        public ITarget GetTarget()
         {
             return Spec.Target;
         }

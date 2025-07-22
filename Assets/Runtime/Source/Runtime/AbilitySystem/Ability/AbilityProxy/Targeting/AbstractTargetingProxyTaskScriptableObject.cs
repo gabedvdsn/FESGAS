@@ -9,11 +9,9 @@ namespace FESGameplayAbilitySystem
         public override void Prepare(ProxyDataPacket data)
         {
             // Hook into input handler here
-            if (!ConnectInputHandler(data))
-            {
-                // Can add logic if interrupt injection failed
-                data.Spec.GetOwner().AbilitySystem.InjectInterrupt();
-            }
+            if (ConnectInputHandler(data)) return;
+            // Can add logic if interrupt injection failed
+            if (data.Spec.GetOwner().FindAbilitySystem(out var abil)) abil.InjectInterrupt();
         }
         
         public override void Clean(ProxyDataPacket data)

@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
         public float RelativeLevel;
 
         public IEffectDerivation Derivation;
-        public GASComponentBase Source;
+        public ISource Source;
         public GASComponentBase Target;
 
         private List<AbstractEffectWorkerScriptableObject> Workers;
@@ -131,11 +131,11 @@ namespace FESGameplayAbilitySystem
         {
             return Derivation;
         }
-        public GASComponentBase GetSource()
+        public ISource GetSource()
         {
             return Source;
         }
-        public GASComponentBase GetTarget()
+        public ITarget GetTarget()
         {
             return Target;
         }

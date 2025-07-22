@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class GASComponentBase : LazyMonoProcess, IGameplayProcessHandler
+    public abstract class GASComponentBase : LazyMonoProcess, IGameplayProcessHandler, ISource
     {
         [Header("Gameplay Ability System")]
         
@@ -130,7 +130,7 @@ namespace FESGameplayAbilitySystem
                     throw new ArgumentOutOfRangeException();
             }
             
-            foreach (var containedEffect in spec.Base.GetContainedEffects(EApplyDuringRemove.OnApply))
+            foreach (var containedEffect in spec.Base.GetContainedEffects(EApplyTickRemove.OnApply))
             {
                 ApplyGameplayEffect(spec.Derivation, containedEffect);
             }
@@ -150,6 +150,16 @@ namespace FESGameplayAbilitySystem
         {
             GameplayEffectSpec spec = GenerateEffectSpec(derivation, GameplayEffect);
             return ApplyGameplayEffect(spec);
+        }
+        public bool FindAttributeSystem(out AttributeSystemComponent attrSystem)
+        {
+            attrSystem = AttributeSystem;
+            return AttributeSystem is not null;
+        }
+        public bool FindAbilitySystem(out AbilitySystemComponent abilSystem)
+        {
+            abilSystem = AbilitySystem;
+            return AbilitySystem is not null;
         }
 
         public void RemoveGameplayEffect(IEffectBase effect)
@@ -240,7 +250,7 @@ namespace FESGameplayAbilitySystem
             
             container.RunEffectApplicationWorkers();
             
-            foreach (var containedEffect in container.Spec.Base.GetContainedEffects(EApplyDuringRemove.OnTick))
+            foreach (var containedEffect in container.Spec.Base.GetContainedEffects(EApplyTickRemove.OnTick))
             {
                 ApplyGameplayEffect(container.Spec.Derivation, containedEffect);
             }
@@ -422,5 +432,40 @@ namespace FESGameplayAbilitySystem
         {
             return $"{Identity}";
         }
+        
+        #region Derivation Source
+        public List<GameplayTagScriptableObject> GetContextTags()
+        {
+            return new List<GameplayTagScriptableObject>();
+        }
+        public GameplayTagScriptableObject GetAssetTag()
+        {
+            return Identity.NameTag;
+        }
+        public int GetLevel()
+        {
+            return Identity.Level;
+        }
+        public int GetMaxLevel()
+        {
+            return Identity.MaxLevel;
+        }
+        public void SetLevel(int level)
+        {
+            Identity.Level = level;
+        }
+        public string GetName()
+        {
+            return Identity.DistinctName;
+        }
+        public GameplayTagScriptableObject GetAffiliation()
+        {
+            return Identity.Affiliation;
+        }
+        public List<GameplayTagScriptableObject> GetAppliedTags()
+        {
+            return TagCache.GetAppliedTags();
+        }
+        #endregion
     }
 }

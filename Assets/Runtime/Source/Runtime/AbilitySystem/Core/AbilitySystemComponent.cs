@@ -364,7 +364,7 @@ namespace FESGameplayAbilitySystem
             {
                 if (IsActive || IsTargeting) return false;  // Prevent reactivation mid-use
                 
-                Spec.Owner.AbilitySystem.ClaimActive(this);
+                if (Spec.Owner.FindAbilitySystem(out var abil)) abil.ClaimActive(this);
                 implicitData.AddPayload(GameRoot.DerivationTag, ESourceTargetData.Data, Spec);
                 
                 ResetTokens();
@@ -429,7 +429,7 @@ namespace FESGameplayAbilitySystem
                 CleanTargetingToken();
                 CleanActivationToken();
                 
-                Spec.Owner.AbilitySystem.ReleaseClaim(this);
+                if (Spec.Owner.FindAbilitySystem(out var abil)) abil.ReleaseClaim(this);
             }
 
             private void CleanTargetingToken()

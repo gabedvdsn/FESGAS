@@ -15,7 +15,7 @@ namespace FESGameplayAbilitySystem
         public bool GetReverseImpactOnRemoval();
         public EEffectReApplicationPolicy GetReApplicationPolicy();
         public bool GetTickOnApplication();
-        public List<IEffectBase> GetContainedEffects(EApplyDuringRemove policy);
+        public List<IEffectBase> GetContainedEffects(EApplyTickRemove policy);
         public EEffectDurationPolicy GetDurationPolicy();
         public IEnumerable<GameplayTagScriptableObject> GetGrantedTags();
         public bool ValidateApplicationRequirements(GameplayEffectSpec spec);
@@ -293,7 +293,7 @@ namespace FESGameplayAbilitySystem
         public bool GetReverseImpactOnRemoval() => ReverseOnRemoval;
         public EEffectReApplicationPolicy GetReApplicationPolicy() => ReApplicationPolicy;
         public bool GetTickOnApplication() => TickOnApplication;
-        public List<IEffectBase> GetContainedEffects(EApplyDuringRemove policy) => ContainedEffects;
+        public List<IEffectBase> GetContainedEffects(EApplyTickRemove policy) => ContainedEffects;
         public EEffectDurationPolicy GetDurationPolicy() => DurationPolicy;
         public IEnumerable<GameplayTagScriptableObject> GetGrantedTags() => GrantedTags;
         public bool ValidateApplicationRequirements(GameplayEffectSpec spec)
@@ -301,7 +301,7 @@ namespace FESGameplayAbilitySystem
             if (SourceRequirements is null || TargetRequirements is null) return false;
             
             var targetTags = spec.Target.TagCache.GetAppliedTags();
-            var sourceTags = spec.Source.TagCache.GetAppliedTags();
+            var sourceTags = spec.Source.GetAppliedTags();
             return TargetRequirements.CheckApplicationRequirements(targetTags)
                    && !TargetRequirements.CheckRemovalRequirements(targetTags)
                    && SourceRequirements.CheckApplicationRequirements(sourceTags)
@@ -312,14 +312,14 @@ namespace FESGameplayAbilitySystem
             if (SourceRequirements is null || TargetRequirements is null) return true;
             
             return TargetRequirements.CheckRemovalRequirements(spec.Target.TagCache.GetAppliedTags())
-                   && SourceRequirements.CheckRemovalRequirements(spec.Source.TagCache.GetAppliedTags());
+                   && SourceRequirements.CheckRemovalRequirements(spec.Source.GetAppliedTags());
         }
         public bool ValidateOngoingRequirements(GameplayEffectSpec spec)
         {
             if (SourceRequirements is null || TargetRequirements is null) return false;
             
             return TargetRequirements.CheckOngoingRequirements(spec.Target.TagCache.GetAppliedTags())
-                   && SourceRequirements.CheckOngoingRequirements(spec.Source.TagCache.GetAppliedTags());
+                   && SourceRequirements.CheckOngoingRequirements(spec.Source.GetAppliedTags());
         }
         public void ApplyDurationSpecifications(AbstractGameplayEffectShelfContainer container)
         {

@@ -21,6 +21,7 @@ MonoBehaviour:
     OnCooldownIcon: {fileID: 0}
     Type: 0
     ActivateImmediately: 0
+    AlwaysValidToActivate: 0
   Tags:
     AssetTag: {fileID: 11400000, guid: b198ece20f3f0334386ffd278f568a9d, type: 2}
     ContextTags: []
@@ -36,7 +37,10 @@ MonoBehaviour:
     TargetingProxy: {fileID: 0}
     UseImplicitInstructions: 1
     OwnerAs: 1
-    Stages: []
+    Stages:
+    - TaskPolicy: 0
+      Tasks:
+      - {fileID: 11400000, guid: efbacde331b2a384d9cf0926afb55915, type: 2}
   StartingLevel: 1
   MaxLevel: 4
   IgnoreWhenLevelZero: 1
