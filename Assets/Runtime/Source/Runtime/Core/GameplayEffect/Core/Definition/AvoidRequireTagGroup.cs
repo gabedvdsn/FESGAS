@@ -22,7 +22,7 @@ namespace FESGameplayAbilitySystem
             RequireTags = requireTags;
         }
 
-        public bool Validate(List<GameplayTagScriptableObject> appliedTags)
+        public bool Validate(List<ITag> appliedTags)
         {
             if (AvoidTags.Count == 0 && RequireTags.Count == 0) return true;
             return !AvoidTags.Any(appliedTags.Contains) && RequireTags.All(appliedTags.Contains);

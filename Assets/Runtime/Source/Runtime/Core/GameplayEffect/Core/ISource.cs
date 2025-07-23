@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
         public void SetLevel(int level);
         public string GetName();
         public GameplayTagScriptableObject GetAffiliation();
-        public List<GameplayTagScriptableObject> GetAppliedTags();
+        public List<ITag> GetAppliedTags();
     }
     
     public interface ITarget

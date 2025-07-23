@@ -462,7 +462,7 @@ namespace FESGameplayAbilitySystem
         {
             return Identity.Affiliation;
         }
-        public List<GameplayTagScriptableObject> GetAppliedTags()
+        public List<ITag> GetAppliedTags()
         {
             return TagCache.GetAppliedTags();
         }

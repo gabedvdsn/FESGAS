@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -51,7 +49,7 @@ namespace FESGameplayAbilitySystem
         }
         protected override void PrepareSystem()
         {
-            throw new NotImplementedException();
+            TagCache = new TagCache(this);
         }
 
         #region Control
@@ -63,6 +61,8 @@ namespace FESGameplayAbilitySystem
                 IEffectDerivation.GenerateSourceDerivation(this),
                 this, ESourceTargetExpanded.Both
             );
+            
+            NativeDataPacket.AddPayload(ITag.Create(), ESourceTargetData.Source, transform);
             
             RunProcessTasks(CreateProcessTasks);
         }
@@ -119,4 +119,6 @@ namespace FESGameplayAbilitySystem
             return Identity.RelativeLevel;
         }
     }
+
+    
 }

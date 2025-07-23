@@ -21,7 +21,7 @@ namespace FESGameplayAbilitySystem
     /// </summary>
     public class ProcessDataPacket
     {
-        protected Dictionary<GameplayTagScriptableObject, Dictionary<ESourceTargetData, List<object>>> Payload = new();
+        protected Dictionary<ITag, Dictionary<ESourceTargetData, List<object>>> Payload = new(new TagComparer());
 
         public IGameplayProcessHandler Handler;
 
@@ -43,13 +43,13 @@ namespace FESGameplayAbilitySystem
             AddPayload(GameRoot.GASTag, sourceTarget, component);
         }
 
-        public void AddPayload<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, T value)
+        public void AddPayload<T>(ITag key, ESourceTargetData sourceTarget, T value)
         {
             if (!Payload.ContainsKey(key)) Payload[key] = new Dictionary<ESourceTargetData, List<object>>();
             Payload[key].SafeAdd(sourceTarget, value);
         }
         
-        public bool TryGetPayload<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, EProxyDataValueTarget target, out T value)
+        public bool TryGetPayload<T>(ITag key, ESourceTargetData sourceTarget, EProxyDataValueTarget target, out T value)
         {
             value = default;
             
@@ -71,7 +71,7 @@ namespace FESGameplayAbilitySystem
             return value is not null;
         }
 
-        public bool TryGetPayload<T>(GameplayTagScriptableObject key, ESourceTargetData sourceTarget, out DataValue<T> dataValue)
+        public bool TryGetPayload<T>(ITag key, ESourceTargetData sourceTarget, out DataValue<T> dataValue)
         {
             if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget))
             {
@@ -89,26 +89,26 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public bool TryGetTarget<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        public bool TryGetTarget<T>(ITag key, EProxyDataValueTarget target, out T value)
         {
-            return TryGetPayload<T>(key, ESourceTargetData.Target, target, out value);
+            return TryGetPayload(key, ESourceTargetData.Target, target, out value);
         }
         
-        public bool TryGetSource<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        public bool TryGetSource<T>(ITag key, EProxyDataValueTarget target, out T value)
         {
-            return TryGetPayload<T>(key, ESourceTargetData.Source, target, out value);
+            return TryGetPayload(key, ESourceTargetData.Source, target, out value);
         }
         
-        public bool TryGetData<T>(GameplayTagScriptableObject key, EProxyDataValueTarget target, out T value)
+        public bool TryGetData<T>(ITag key, EProxyDataValueTarget target, out T value)
         {
-            return TryGetPayload<T>(key, ESourceTargetData.Data, target, out value);
+            return TryGetPayload(key, ESourceTargetData.Data, target, out value);
         }
         
-        public bool PayloadContains<T>(T value, GameplayTagScriptableObject key, ESourceTargetData sourceTarget)
+        public bool PayloadContains<T>(T value, ITag key, ESourceTargetData sourceTarget)
         {
             if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget)) return false;
             
-            foreach (var o in Payload[key][sourceTarget])
+            foreach (object o in Payload[key][sourceTarget])
             {
                 if (o is T cast && cast.Equals(value)) return true;
             }

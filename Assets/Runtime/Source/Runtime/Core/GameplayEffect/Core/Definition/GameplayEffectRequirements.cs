@@ -17,14 +17,14 @@ namespace FESGameplayAbilitySystem
         
         public List<GameplayEffectRequirements> NestedRequirements;
         
-        public bool CheckApplicationRequirements(List<GameplayTagScriptableObject> tags)
+        public bool CheckApplicationRequirements(List<ITag> tags)
         {
             return !ApplicationRequirements.AvoidTags.Any(tags.Contains) 
                    && ApplicationRequirements.RequireTags.All(tags.Contains) 
                    && NestedRequirements.All(req => req.CheckApplicationRequirements(tags));
         }
 
-        public bool CheckOngoingRequirements(List<GameplayTagScriptableObject> tags)
+        public bool CheckOngoingRequirements(List<ITag> tags)
         {
             if (OngoingRequirements.AvoidTags.Count == 0)
             {
@@ -38,7 +38,7 @@ namespace FESGameplayAbilitySystem
                    && NestedRequirements.All(req => req.CheckOngoingRequirements(tags));;
         }
         
-        public bool CheckRemovalRequirements(List<GameplayTagScriptableObject> tags)
+        public bool CheckRemovalRequirements(List<ITag> tags)
         {
             return RemovalRequirements.AvoidTags.Any(tags.Contains)
                    || RemovalRequirements.RequireTags.Count != 0 && RemovalRequirements.RequireTags.All(tags.Contains)

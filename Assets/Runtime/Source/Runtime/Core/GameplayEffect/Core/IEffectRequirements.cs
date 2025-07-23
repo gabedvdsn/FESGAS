@@ -5,9 +5,9 @@ namespace FESGameplayAbilitySystem
 {
     public interface IEffectRequirements
     {
-        public bool CheckApplicationRequirements(List<GameplayTagScriptableObject> tags);
-        public bool CheckRemovalRequirements(List<GameplayTagScriptableObject> tags);
-        public bool CheckOngoingRequirements(List<GameplayTagScriptableObject> tags);
+        public bool CheckApplicationRequirements(List<ITag> tags);
+        public bool CheckRemovalRequirements(List<ITag> tags);
+        public bool CheckOngoingRequirements(List<ITag> tags);
 
         public static EmptyEffectRequirements GenerateEmptyRequirements()
         {
@@ -40,17 +40,17 @@ namespace FESGameplayAbilitySystem
             Ongoing = ongoing;
         }
 
-        public bool CheckApplicationRequirements(List<GameplayTagScriptableObject> tags)
+        public bool CheckApplicationRequirements(List<ITag> tags)
         {
             return Application.Validate(tags);
         }
         
-        public bool CheckRemovalRequirements(List<GameplayTagScriptableObject> tags)
+        public bool CheckRemovalRequirements(List<ITag> tags)
         {
             return Removal.Validate(tags);
         }
         
-        public bool CheckOngoingRequirements(List<GameplayTagScriptableObject> tags)
+        public bool CheckOngoingRequirements(List<ITag> tags)
         {
             return Ongoing.Validate(tags);
         }
