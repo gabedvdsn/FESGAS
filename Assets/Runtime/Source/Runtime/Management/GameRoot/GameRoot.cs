@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public class GameRoot : GASComponent, IEffectDerivation
+    public class GameRoot : GASComponentBase, IEffectDerivation
     {
         [Header("Game Root")]
         
@@ -49,7 +49,11 @@ namespace FESGameplayAbilitySystem
             // Self initialize when bootstrapper is null
             if (Bootstrapper.Instance is null) Initialize();
         }
-        
+        protected override void PrepareSystem()
+        {
+            throw new NotImplementedException();
+        }
+
         #region Control
         
         public void Initialize()
@@ -105,46 +109,14 @@ namespace FESGameplayAbilitySystem
         }
         
         #endregion
-
-        public override void WhenUpdate(ProcessRelay relay)
-        {
-            transform.Rotate(Vector3.up * (25f * Time.deltaTime));
-        }
-        
-        #region Effect Derivation
         
         public ISource GetOwner()
         {
             return this;
         }
-        public List<GameplayTagScriptableObject> GetContextTags()
-        {
-            return new List<GameplayTagScriptableObject>();
-        }
-        public GameplayTagScriptableObject GetAssetTag()
-        {
-            return Identity.NameTag;
-        }
-        public int GetLevel()
-        {
-            return Identity.Level;
-        }
-        public void SetLevel(int level)
-        {
-            Identity.Level = level;
-        }
         public float GetRelativeLevel()
         {
-            return Identity.Level / (float)Identity.MaxLevel;
+            return Identity.RelativeLevel;
         }
-        public string GetName()
-        {
-            return Identity.DistinctName;
-        }
-        public GameplayTagScriptableObject GetAffiliation()
-        {
-            return MasterTag;
-        }
-        #endregion
     }
 }

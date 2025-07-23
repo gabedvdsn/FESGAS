@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5993434812150869897}
   - component: {fileID: 3210473624934245448}
   - component: {fileID: -8059794354248518655}
+  - component: {fileID: 6510698399038866315}
   m_Layer: 0
   m_Name: TestAOE
   m_TagString: Untagged
@@ -160,3 +161,25 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &6510698399038866315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5313798005240076821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09053541b0a1354182645ca22a0029c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ProcessStepPriority: 0
+  ProcessLifecycle: 0
+  ProcessTiming: 0
+  Instantiator: {fileID: 0}
+  InitialPositionTarget: 1
+  InitialPositionValue: 0
+  InitialRotationTarget: 1
+  InitialRotationValue: 0
+  ParentTransformTarget: 0
+  ParentTransformValue: 0

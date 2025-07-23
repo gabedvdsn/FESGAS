@@ -16,6 +16,11 @@ namespace FESGameplayAbilitySystem
         public EProcessControlState StartState = EProcessControlState.Ready;
         public new bool DontDestroyOnLoad = true;
         
+        [Space]
+        
+        public bool OutputLogs;
+        public bool DetailedLogs = true;
+        
         public EProcessControlState State { get; private set; }
 
         private Dictionary<int, ProcessControlBlock> active = new();
@@ -110,9 +115,13 @@ namespace FESGameplayAbilitySystem
                 process, handler
             );
             
-            Debug.Log($"[ REG ] {process.ProcessName} => {handler}");
-            
             SetProcess(pcb);
+            
+            if (OutputLogs)
+            {
+                if (DetailedLogs) Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] REGISTER \"{process.ProcessName}\" ({handler})");
+                else Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] REGISTER");
+            }
             
             relay = pcb.GetRelay();
             handler?.HandlerSubscribeProcess(relay);
@@ -137,6 +146,11 @@ namespace FESGameplayAbilitySystem
             else RemoveFromStepping(pcb);
 
             pcb.Handler?.HandlerVoidProcess(pcb.CacheIndex);
+
+            if (OutputLogs)
+            {
+                Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] UNREGISTER");
+            }
             
             return active.Remove(pcb.CacheIndex);
         }
@@ -218,7 +232,8 @@ namespace FESGameplayAbilitySystem
 
         public async UniTask TerminateAllImmediately()
         {
-            await UniTask.WhenAll(active.Keys.Select(index => active[index].ForceIntoState(EProcessState.Terminated)));
+            var _active = active.Keys;
+            await UniTask.WhenAll(_active.Select(index => active[index].ForceIntoState(EProcessState.Terminated)));
         }
         
         #endregion
@@ -930,9 +945,9 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
-        private void OnDestroy()
+        private async void OnDestroy()
         {
-            TerminateAllImmediately();
+            await TerminateAllImmediately();
         }
         
         public bool HandlerValidateAgainst(IGameplayProcessHandler handler)

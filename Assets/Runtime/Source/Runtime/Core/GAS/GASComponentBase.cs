@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class GASComponentBase : LazyMonoProcess, IGameplayProcessHandler, ISource
+    public abstract class GASComponentBase : LazyMonoProcess, ISource
     {
         [Header("Gameplay Ability System")]
         

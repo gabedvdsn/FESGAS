@@ -12,6 +12,8 @@ namespace FESGameplayAbilitySystem
         public GameplayTagScriptableObject NameTag;
         [HideInInspector] public GameplayTagScriptableObject Affiliation;
 
+        public float RelativeLevel => (Level - 1f) / (MaxLevel - 1);
+
         private GASComponentBase System;
 
         public void Initialize(GASComponentBase system) => System = system;

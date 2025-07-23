@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
@@ -21,6 +22,11 @@ namespace FESGameplayAbilitySystem
             return data;
         }
 
+        public static ProxyDataPacket GenerateNull()
+        {
+            return new ProxyDataPacket(IEffectDerivation.GenerateSourceDerivation(null));
+        }
+
         public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, GASComponentBase component, ESourceTargetExpanded sourceTarget)
         {
             ProxyDataPacket data = new ProxyDataPacket(spec);
@@ -35,6 +41,30 @@ namespace FESGameplayAbilitySystem
                 case ESourceTargetExpanded.Both:
                     data.AddPayload(component, ESourceTargetData.Target);
                     data.AddPayload(component, ESourceTargetData.Source);
+                    break;
+                case ESourceTargetExpanded.Neither:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sourceTarget), sourceTarget, null);
+            }
+            
+            return data;
+        }
+
+        public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, Transform transform, ESourceTargetExpanded sourceTarget)
+        {
+            var data = new ProxyDataPacket(spec);
+            switch (sourceTarget)
+            {
+                case ESourceTargetExpanded.Target:
+                    data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Target, transform);
+                    break;
+                case ESourceTargetExpanded.Source:
+                    data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Source, transform);
+                    break;
+                case ESourceTargetExpanded.Both:
+                    data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Source, transform);
+                    data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Target, transform);
                     break;
                 case ESourceTargetExpanded.Neither:
                     break;

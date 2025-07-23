@@ -73,7 +73,7 @@ namespace FESGameplayAbilitySystem
         {
             if (!activeMono) return;
             
-            activeMono.WhenTerminate(relay);
+            activeMono.WhenTerminateSafe(relay);
             if (activeMono.Instantiator is not null)
             {
                 activeMono.Instantiator.CleanProcess(activeMono);

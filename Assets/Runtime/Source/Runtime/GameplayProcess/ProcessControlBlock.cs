@@ -16,7 +16,6 @@ namespace FESGameplayAbilitySystem
         private Dictionary<EProcessUpdateTiming, int> StepIndices;
         public int StepIndex(EProcessUpdateTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
 
-        public List<int> ParentProcesses;  // Parent processes (hierarchical)
         public List<int> AdjacentProcesses;  // Composed & child processes (hierarchical)
         
         public EProcessState State { get; private set; }
@@ -258,6 +257,8 @@ namespace FESGameplayAbilitySystem
         public float UnscaledLifetime => pcb.UnscaledLifetime;
         public float Lifetime => pcb.Lifetime;
         public float UpdateTime => pcb.UpdateTime;
+        public List<int> Adjacencies => pcb.AdjacentProcesses;
+        public string FormattedAdjacencies => string.Join(',', pcb.AdjacentProcesses);
 
         public bool TryGetProcess<T>(out T process)
         {

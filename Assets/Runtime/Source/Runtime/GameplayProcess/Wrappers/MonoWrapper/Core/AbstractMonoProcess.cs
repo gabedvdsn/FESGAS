@@ -52,11 +52,14 @@ namespace FESGameplayAbilitySystem
         {
             _initialized = true;
             
-            if (regData.TryGetPayload(GameRoot.GenericTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
+            // Transform
+            if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, ParentTransformTarget, ParentTransformValue, out var pt))
             {
-                
+                transform.SetParent(pt);
             }
+            else transform.SetParent(GameRoot.Instance.transform);
             
+            // Position
             if (regData.TryGetPayload<Vector3>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var pos))
             {
                 transform.position = pos;
@@ -65,7 +68,12 @@ namespace FESGameplayAbilitySystem
             {
                 transform.position = gasPos.transform.position;
             }
+            else if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, InitialPositionTarget, InitialPositionValue, out var tPos))
+            {
+                transform.position = tPos.position;
+            }
             
+            // Rotation
             if (regData.TryGetPayload<Quaternion>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var rot))
             {
                 transform.rotation = rot;
@@ -74,12 +82,11 @@ namespace FESGameplayAbilitySystem
             {
                 transform.rotation = gasRot.transform.rotation;
             }
-            
-            if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, ParentTransformTarget, ParentTransformValue, out var pt))
+            else if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, InitialRotationTarget, InitialRotationValue, out var tRot))
             {
-                transform.SetParent(pt);
+                transform.rotation = tRot.rotation;
             }
-            else transform.SetParent(GameRoot.Instance.transform);
+            
         }
         
         /// <summary>

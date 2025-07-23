@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Debug = System.Diagnostics.Debug;
 using Object = System.Object;
 
 namespace FESGameplayAbilitySystem
@@ -29,11 +30,11 @@ namespace FESGameplayAbilitySystem
             
             if (ProcessControl.Instance is null) Instantiate(ProcessControlPrefab);
             // if (GameRoot.Instance is null) Instantiate(GameRootPrefab);
-            
-            var data = ProxyDataPacket.GenerateFrom(
-                IEffectDerivation.GenerateSourceDerivation(null), 
-                null, ESourceTargetExpanded.Neither);
-            
+
+            var data = ProxyDataPacket.GenerateNull();
+
+
+            Debug.Assert(ProcessControl.Instance != null, "ProcessControl.Instance != null");
             ProcessControl.Instance.Register(GameRootPrefab, data, out _);
 
             Initialize();
@@ -44,7 +45,7 @@ namespace FESGameplayAbilitySystem
 
         private void Initialize()
         {
-            // Any further bootstrap initialization stuff here   
+            // Any further bootstrap initialization here   
         }
         
         public bool HandlerValidateAgainst(IGameplayProcessHandler handler)
