@@ -123,7 +123,7 @@ namespace FESGameplayAbilitySystem
                 else Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] REGISTER");
             }
             
-            relay = pcb.GetRelay();
+            relay = pcb.Relay;
             handler?.HandlerSubscribeProcess(relay);
             
             return true;
@@ -155,15 +155,23 @@ namespace FESGameplayAbilitySystem
             return active.Remove(pcb.CacheIndex);
         }
 
-        public void AssignAdjacentProcess(ProcessRelay source, ProcessRelay adjacent)
+        /// <summary>
+        /// D depends on L (e.g. D is a child of L), such that when L is terminated, D must also be terminated
+        /// </summary>
+        /// <param name="dependant">D</param>
+        /// <param name="leader">L</param>
+        public void AssignDependant(ProcessRelay dependant, ProcessRelay leader)
         {
-            active[source.CacheIndex].AssignAdjacency(adjacent.CacheIndex);
+            active[leader.CacheIndex].AssignAdjacency(true, dependant.CacheIndex);
+            active[dependant.CacheIndex].AssignAdjacency(false, leader.CacheIndex);
         }
 
         public Dictionary<int, ProcessControlBlock> FetchActiveProcesses()
         {
             return active;
         }
+
+        public bool IndexIsRegistered(int cacheIndex) => active.ContainsKey(cacheIndex);
         
         #endregion
         
@@ -957,7 +965,7 @@ namespace FESGameplayAbilitySystem
 
         public bool HandlerProcessIsSubscribed(ProcessRelay relay)
         {
-            return true;
+            return active.ContainsKey(relay.CacheIndex);
         }
 
         public void HandlerSubscribeProcess(ProcessRelay relay)

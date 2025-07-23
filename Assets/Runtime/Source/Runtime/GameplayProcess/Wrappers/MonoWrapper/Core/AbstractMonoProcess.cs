@@ -38,6 +38,7 @@ namespace FESGameplayAbilitySystem
 
         private bool _initialized;
         public bool IsInitialized => _initialized;
+        public ProcessRelay Relay;
         
         public void SendProcessData(ProcessDataPacket processData)
         {
@@ -51,6 +52,7 @@ namespace FESGameplayAbilitySystem
         public virtual void WhenInitialize(ProcessRelay relay)
         {
             _initialized = true;
+            Relay = relay;
             
             // Transform
             if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, ParentTransformTarget, ParentTransformValue, out var pt))

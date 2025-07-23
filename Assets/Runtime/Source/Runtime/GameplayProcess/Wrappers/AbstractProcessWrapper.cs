@@ -6,6 +6,7 @@ namespace FESGameplayAbilitySystem
     public abstract class AbstractProcessWrapper : IGameplayProcess
     {
         private bool _initialized;
+        public ProcessRelay Relay;
         
         public abstract void InitializeWrapper();
         

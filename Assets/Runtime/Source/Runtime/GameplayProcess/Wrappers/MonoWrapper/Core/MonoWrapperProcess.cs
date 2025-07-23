@@ -43,14 +43,17 @@ namespace FESGameplayAbilitySystem
             activeMono.SendProcessData(DataPacket);
             activeMono.WhenInitialize(relay);
             
-            // Register adjacent processes
-            foreach (AbstractMonoProcess adjProcess in activeMono.GetComponentsInChildren<AbstractMonoProcess>())
+            // Register as dependant to leader processes
+            foreach (AbstractMonoProcess adjProcess in activeMono.GetComponentsInParent<AbstractMonoProcess>())
             {
                 if (adjProcess == activeMono) continue;
-                if (adjProcess.IsInitialized) continue;  // Don't register registered processes
+
+                ProcessRelay adjRelay;
+                if (!adjProcess.IsInitialized) ProcessControl.Instance.Register(adjProcess, DataPacket, out adjRelay);
+                else adjRelay = adjProcess.Relay;
                 
-                ProcessControl.Instance.Register(adjProcess, DataPacket, out var adjRelay);
-                ProcessControl.Instance.AssignAdjacentProcess(relay, adjRelay);
+                
+                ProcessControl.Instance.AssignDependant(relay, adjRelay);
             }
         }
 

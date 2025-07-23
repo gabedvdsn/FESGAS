@@ -12,11 +12,13 @@ namespace FESGameplayAbilitySystem
         public readonly AbstractProcessWrapper Process;
         public readonly IGameplayProcessHandler Handler;
 
+        public ProcessRelay Relay => Process?.Relay;
+
         public readonly int CacheIndex;
         private Dictionary<EProcessUpdateTiming, int> StepIndices;
         public int StepIndex(EProcessUpdateTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
 
-        public List<int> AdjacentProcesses;  // Composed & child processes (hierarchical)
+        public Dictionary<int, List<int>> DependantProcesses;  // Composed & child processes (hierarchical)
         
         public EProcessState State { get; private set; }
         public EProcessState queuedState { get; private set; }
@@ -41,19 +43,21 @@ namespace FESGameplayAbilitySystem
         private bool midRun;
 
         private CancellationTokenSource cts;
-
-        protected ProcessRelay relay;
-
+        
         protected ProcessControlBlock(int cacheIndex, AbstractProcessWrapper process, IGameplayProcessHandler handler)
         {
-            relay = new ProcessRelay(this);
-
             CacheIndex = cacheIndex;
             StepIndices = new Dictionary<EProcessUpdateTiming, int>();
-            AdjacentProcesses = new List<int>();
+            DependantProcesses = new Dictionary<int, List<int>>()
+            {
+                { 0, new List<int>() },
+                { 1, new List<int>() }
+            };
             
             Process = process;
             Handler = handler;
+
+            Process.Relay = new ProcessRelay(this);
             
             State = EProcessState.Created;
             updateTime = 0;
@@ -64,16 +68,23 @@ namespace FESGameplayAbilitySystem
             return new ProcessControlBlock(cacheIndex, process, handler);
         }
 
-        public void AssignAdjacency(int adjIndex)
+        /// <summary>
+        /// If asDependant is TRUE, then the adjacency is assigned as a dependant of this process.
+        /// Otherwise, the index is stored to reflect that this process is a dependant of the adjacent process.
+        /// </summary>
+        /// <param name="asDependant">Whether the adjacent process is a dependant of this process.</param>
+        /// <param name="adjIndex">The adjacent process index.</param>
+        public void AssignAdjacency(bool asDependant, int adjIndex)
         {
-            if (AdjacentProcesses.Contains(adjIndex)) return;
-            AdjacentProcesses.Add(adjIndex);
+            int key = asDependant ? 0 : 1;
+            if (DependantProcesses[key].Contains(adjIndex)) return;
+            DependantProcesses[key].Add(adjIndex);
         }
 
         public async UniTask ForceIntoState(EProcessState state)
         {
             if (State == EProcessState.Running && state != EProcessState.Running) Interrupt();
-            foreach (var adjIndex in AdjacentProcesses) ProcessControl.Instance.ForceSet(adjIndex, state).Forget();
+            foreach (var adjIndex in DependantProcesses[0]) ProcessControl.Instance.ForceSet(adjIndex, state).Forget();
             
             await UniTask.CompletedTask;
             
@@ -85,20 +96,17 @@ namespace FESGameplayAbilitySystem
         {
             if (state == State) return;
             
-            foreach (var adjIndex in AdjacentProcesses) ProcessControl.Instance.Set(adjIndex, state);
+            foreach (var adjIndex in DependantProcesses[0]) ProcessControl.Instance.Set(adjIndex, state);
             
             switch (state)
             {
                 case EProcessState.Created:
                     break;
                 case EProcessState.Running:
-                    QueueRun();
-                    break;
                 case EProcessState.Waiting:
-                    QueueWait();
-                    break;
                 case EProcessState.Terminated:
-                    QueueTerminate();
+                    queuedState = state;
+                    if (State != EProcessState.Running) SetQueuedState();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(state), state, null);
@@ -113,13 +121,7 @@ namespace FESGameplayAbilitySystem
             initializeTime = Time.time;
 
             isInitialized = true;
-            Process.WhenInitialize(relay);
-        }
-        
-        private void QueueRun()
-        {
-            queuedState = EProcessState.Running;
-            if (State != EProcessState.Running) SetQueuedState();
+            Process.WhenInitialize(Process.Relay);
         }
         
         public bool Run()
@@ -132,32 +134,20 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        private void QueueWait()
-        {
-            queuedState = EProcessState.Waiting;
-            if (State != EProcessState.Running) SetQueuedState();
-        }
-
         public bool Wait()
         {
             if (State != EProcessState.Waiting) return false;
 
-            Process.WhenWait(relay);
+            Process.WhenWait(Process.Relay);
             
             return true;
         }
-
-        private void QueueTerminate()
-        {
-            queuedState = EProcessState.Terminated;
-            if (State != EProcessState.Running) SetQueuedState();
-        }
-
+        
         public bool Terminate()
         {
             if (State != EProcessState.Terminated) return false;
             
-            Process.WhenTerminate(relay);
+            Process.WhenTerminate(Process.Relay);
             ProcessControl.Instance.Unregister(this);
             
             return true;
@@ -195,7 +185,7 @@ namespace FESGameplayAbilitySystem
 
         public void Step(EProcessUpdateTiming timing)
         {
-            Process.WhenUpdate(timing, relay);
+            Process.WhenUpdate(timing, Process.Relay);
             
             updateTime += Time.deltaTime;
         }
@@ -212,7 +202,7 @@ namespace FESGameplayAbilitySystem
             bool set = true;
             try
             {
-                await Process.RunProcess(relay, cts.Token);
+                await Process.RunProcess(Process.Relay, cts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -225,11 +215,6 @@ namespace FESGameplayAbilitySystem
             cts = null;
 
             if (set) SetQueuedState();
-        }
-
-        public ProcessRelay GetRelay()
-        {
-            return relay;
         }
         
         public void SetStepIndex(EProcessUpdateTiming timing, int stepIndex)
@@ -257,8 +242,9 @@ namespace FESGameplayAbilitySystem
         public float UnscaledLifetime => pcb.UnscaledLifetime;
         public float Lifetime => pcb.Lifetime;
         public float UpdateTime => pcb.UpdateTime;
-        public List<int> Adjacencies => pcb.AdjacentProcesses;
-        public string FormattedAdjacencies => string.Join(',', pcb.AdjacentProcesses);
+        public List<int> Dependants => pcb.DependantProcesses[0];
+        public List<int> Leaders => pcb.DependantProcesses[1];
+        public string FormattedDependants => string.Join(',', pcb.DependantProcesses);
 
         public bool TryGetProcess<T>(out T process)
         {

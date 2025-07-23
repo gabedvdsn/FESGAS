@@ -103,11 +103,11 @@ namespace FESGameplayAbilitySystem
             {
                 foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
                 {
-                    var relay = kvp.Value.GetRelay();
+                    var relay = kvp.Value.Relay;
                     if (relay.Process is null) continue;
 
                     EditorGUILayout.BeginVertical("box");
-                    string adjacencies = relay.Adjacencies.Count > 0 ? $"({relay.FormattedAdjacencies})" : "";
+                    string adjacencies = relay.Dependants.Count > 0 ? $"({relay.FormattedDependants})" : "";
                     EditorGUILayout.LabelField($"{relay.Process.ProcessName}\t{adjacencies}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.State} -> {relay.QueuedState} | {relay.UpdateTime:F2} / {relay.Lifetime:F2} ({relay.Process.StepTiming})");
                     
@@ -126,12 +126,12 @@ namespace FESGameplayAbilitySystem
             {
                 foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
                 {
-                    var relay = kvp.Value.GetRelay();
+                    var relay = kvp.Value.Relay;
                     if (relay.Process is null) continue;
 
                     EditorGUILayout.BeginVertical("box");
 
-                    string adjacencies = relay.Adjacencies.Count > 0 ? $"({relay.FormattedAdjacencies})" : "";
+                    string adjacencies = relay.Dependants.Count > 0 ? $"({relay.FormattedDependants})" : "";
                     EditorGUILayout.LabelField($"{relay.Process.ProcessName}\t{adjacencies}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
@@ -159,12 +159,12 @@ namespace FESGameplayAbilitySystem
             {
                 foreach (var kvp in ProcessControl.Instance.FetchActiveProcesses())
                 {
-                    var relay = kvp.Value.GetRelay();
+                    var relay = kvp.Value.Relay;
                     if (relay.Process is null) continue;
 
                     EditorGUILayout.BeginVertical("box");
                     
-                    string adjacencies = relay.Adjacencies.Count > 0 ? $"({relay.FormattedAdjacencies})" : "";
+                    string adjacencies = relay.Dependants.Count > 0 ? $"({relay.FormattedDependants})" : "";
                     EditorGUILayout.LabelField($"{relay.Process.ProcessName}\t{adjacencies}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
