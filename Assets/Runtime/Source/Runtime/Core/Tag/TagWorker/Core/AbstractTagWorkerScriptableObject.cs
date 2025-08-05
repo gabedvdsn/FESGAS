@@ -21,9 +21,9 @@ namespace FESGameplayAbilitySystem
         public abstract void Tick(GASComponentBase component);
         public abstract void Resolve(GASComponentBase component);
 
-        public abstract AbstractTagWorker Generate(ITagRelated system);
+        public abstract AbstractTagWorker Generate(ITagHandler system);
         
-        public bool ValidateWorkFor(ITagRelated system)
+        public bool ValidateWorkFor(ITagHandler system)
         {
             var appliedTags = system.GetAppliedTags();
             foreach (TagWorkerRequirementPacket packet in Requirements.TagPackets)

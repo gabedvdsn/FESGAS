@@ -7,7 +7,7 @@ namespace FESGameplayAbilitySystem
 {
     public class TagCache
     {
-        private ITagRelated System;
+        private ITagHandler System;
 
         // List of tag worker datas
         private List<AbstractTagWorkerScriptableObject> TagWorkers;
@@ -17,7 +17,7 @@ namespace FESGameplayAbilitySystem
 
         public List<ITag> GetAppliedTags() => TagWeights.Keys.ToList();
 
-        public TagCache(ITagRelated system)
+        public TagCache(ITagHandler system)
         {
             System = system;
 
@@ -26,7 +26,7 @@ namespace FESGameplayAbilitySystem
             ActiveWorkers = new Dictionary<AbstractTagWorkerScriptableObject, List<AbstractTagWorker>>();
         }
 
-        public TagCache(ITagRelated system, List<AbstractTagWorkerScriptableObject> workers)
+        public TagCache(ITagHandler system, List<AbstractTagWorkerScriptableObject> workers)
         {
             System = system;
 
@@ -160,10 +160,5 @@ namespace FESGameplayAbilitySystem
         Require,
         Avoid
     }
-    
-    public interface ITagRelated
-    {
-        public List<ITag> GetAppliedTags();
-        public int GetWeight(ITag _tag);
-    }
+
 }
