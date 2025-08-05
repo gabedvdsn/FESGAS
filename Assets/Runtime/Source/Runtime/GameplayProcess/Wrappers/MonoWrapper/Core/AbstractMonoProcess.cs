@@ -9,9 +9,10 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Mono Gameplay Process")] 
         
-        public int ProcessStepPriority;
         public EProcessLifecycle ProcessLifecycle;
         public EProcessUpdateTiming ProcessTiming;
+        public EProcessStepPriorityMethod PriorityMethod = EProcessStepPriorityMethod.Manual;
+        public int ProcessStepPriority;
         
         [Space(5)]
         
@@ -51,6 +52,7 @@ namespace FESGameplayAbilitySystem
         /// <param name="relay">Process Relay</param>
         public virtual void WhenInitialize(ProcessRelay relay)
         {
+            Debug.Log($"\t\t{this.ToString()} initialized");
             _initialized = true;
             Relay = relay;
             
@@ -59,18 +61,17 @@ namespace FESGameplayAbilitySystem
             {
                 transform.SetParent(pt);
             }
-            else transform.SetParent(GameRoot.Instance.transform);
             
             // Position
             if (regData.TryGetPayload<Vector3>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var pos))
             {
                 transform.position = pos;
             }
-            else if (regData.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialPositionTarget, InitialPositionValue, out var gasPos))
+            else if (regData.TryGetPayload<GASComponent>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var gasPos))
             {
                 transform.position = gasPos.transform.position;
             }
-            else if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, InitialPositionTarget, InitialPositionValue, out var tPos))
+            else if (regData.TryGetPayload<Transform>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var tPos))
             {
                 transform.position = tPos.position;
             }
@@ -80,11 +81,11 @@ namespace FESGameplayAbilitySystem
             {
                 transform.rotation = rot;
             }
-            else if (regData.TryGetPayload<GASComponent>(GameRoot.GASTag, InitialRotationTarget, InitialRotationValue, out var gasRot))
+            else if (regData.TryGetPayload<GASComponent>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var gasRot))
             {
                 transform.rotation = gasRot.transform.rotation;
             }
-            else if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, InitialRotationTarget, InitialRotationValue, out var tRot))
+            else if (regData.TryGetPayload<Transform>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var tRot))
             {
                 transform.rotation = tRot.rotation;
             }
@@ -115,11 +116,6 @@ namespace FESGameplayAbilitySystem
             processActive = false;
         }
         
-        public void WhenTerminateSafe(ProcessRelay relay)
-        {
-            processActive = false;
-        }
-        
         /// <summary>
         /// Called via ProcessControl when the process is set to Running
         /// </summary>
@@ -128,8 +124,16 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         public abstract UniTask RunProcess(ProcessRelay relay, CancellationToken token);
 
-        public int StepPriority => ProcessStepPriority;
-        public EProcessUpdateTiming StepTiming => ProcessTiming;
-        public EProcessLifecycle Lifecycle => ProcessLifecycle;
+        public override string ToString()
+        {
+            return name;
+        }
+    }
+
+    public enum EProcessStepPriorityMethod
+    {
+        Manual,
+        First,
+        Last
     }
 }

@@ -7,8 +7,8 @@ namespace FESGameplayAbilitySystem
 {
     public class AttributeSystemComponent : MonoBehaviour
     {
-        protected AttributeSetScriptableObject attributeSet;
-        protected List<AbstractAttributeChangeEventScriptableObject> attributeChangeEvents;
+        protected IAttributeSet attributeSet;
+        protected List<AbstractAttributeChangeEventScriptableObject> attributeChangeEvents = new();
 
         private AttributeChangeMomentHandler PreChangeHandler;
         private AttributeChangeMomentHandler PostChangeHandler;
@@ -30,10 +30,10 @@ namespace FESGameplayAbilitySystem
             InitializeAttributeSets();
         }
 
-        public void ProvidePrerequisiteData(GASSystemData systemData)
+        public void ProvidePrerequisiteData(ISystemData systemData)
         {
-            attributeSet = systemData.AttributeSet;
-            attributeChangeEvents = systemData.AttributeChangeEvents;
+            attributeSet = systemData.GetAttributeSet();
+            attributeChangeEvents = systemData.GetAttributeChangeEvents();
         }
         
         private void InitializeCaches()
@@ -44,6 +44,8 @@ namespace FESGameplayAbilitySystem
 
         private void InitializeAttributeSets()
         {
+            if (attributeSet is null) return;
+            
             attributeSet.Initialize(this);
             
             foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.GetDefined())

@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "NewAttributeSet", menuName = "FESGAS/Attribute/Set")]
-    public class AttributeSetScriptableObject : ScriptableObject
+    public class AttributeSetScriptableObject : ScriptableObject, IAttributeSet
     {
         [Header("Attribute Set")]
         
@@ -18,8 +18,20 @@ namespace FESGameplayAbilitySystem
         [Space]
         
         public List<AttributeSetScriptableObject> SubSets;
-        public EValueCollisionPolicy AttributeSetCollisionResolution;
+        public EValueCollisionPolicy CollisionResolutionPolicy;
 
+        public List<AttributeSetElement> GetAttributes()
+        {
+            return Attributes;
+        }
+        public List<IAttributeSet> GetSubSets()
+        {
+            return SubSets.Cast<IAttributeSet>().ToList();
+        }
+        public EValueCollisionPolicy GetCollisionResolutionPolicy()
+        {
+            return CollisionResolutionPolicy;
+        }
         public void Initialize(AttributeSystemComponent system)
         {
             AttributeSetMeta meta = new AttributeSetMeta(this);
@@ -51,13 +63,6 @@ namespace FESGameplayAbilitySystem
         CurrentAndBase,
         Base
     }
-
-    /*public enum EEffectImpactTarget
-    {
-        Current,
-        Base,
-        CurrentAndBase
-    }*/
 
     public enum EValueCollisionPolicy
     {
@@ -116,15 +121,15 @@ namespace FESGameplayAbilitySystem
     {
         private Dictionary<AttributeScriptableObject, Dictionary<EAttributeElementCollisionPolicy, List<DefaultAttributeValue>>> matrix; 
 
-        public AttributeSetMeta(AttributeSetScriptableObject attributeSet)
+        public AttributeSetMeta(IAttributeSet attributeSet)
         {
             matrix = new Dictionary<AttributeScriptableObject, Dictionary<EAttributeElementCollisionPolicy, List<DefaultAttributeValue>>>();
             HandleAttributeSet(attributeSet);
         }
 
-        private void HandleAttributeSet(AttributeSetScriptableObject attributeSet)
+        private void HandleAttributeSet(IAttributeSet attributeSet)
         {
-            foreach (AttributeSetElement element in attributeSet.Attributes)
+            foreach (AttributeSetElement element in attributeSet.GetAttributes())
             {
                 if (!matrix.TryGetValue(element.Attribute, out var table))
                 {
@@ -138,16 +143,16 @@ namespace FESGameplayAbilitySystem
                 else matrix[element.Attribute][element.CollisionPolicy].Add(element.ToDefaultAttribute());
             }
             
-            foreach (AttributeSetScriptableObject subSet in attributeSet.SubSets) HandleAttributeSet(subSet);
+            foreach (IAttributeSet subSet in attributeSet.GetSubSets()) HandleAttributeSet(subSet);
         }
 
-        public void InitializeAttributeSystem(AttributeSystemComponent system, AttributeSetScriptableObject attributeSet)
+        public void InitializeAttributeSystem(AttributeSystemComponent system, IAttributeSet attributeSet)
         {
             foreach (AttributeScriptableObject attribute in matrix.Keys)
             {
                 if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseThis, out var defaults))
                 {
-                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.AttributeSetCollisionResolution);
+                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.GetCollisionResolutionPolicy());
                 }
                 else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.Combine, out defaults))
                 {
@@ -158,7 +163,7 @@ namespace FESGameplayAbilitySystem
                 }
                 else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseExisting, out defaults))
                 {
-                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.AttributeSetCollisionResolution);
+                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.GetCollisionResolutionPolicy());
                 }
             }
         }
@@ -194,6 +199,63 @@ namespace FESGameplayAbilitySystem
                 default:
                     throw new ArgumentOutOfRangeException(nameof(resolution), resolution, null);
             }
+        }
+    }
+
+    public interface IAttributeSet
+    {
+        public List<AttributeSetElement> GetAttributes();
+        public List<IAttributeSet> GetSubSets();
+        public EValueCollisionPolicy GetCollisionResolutionPolicy();
+        public void Initialize(AttributeSystemComponent system);
+        public HashSet<AttributeScriptableObject> GetUnique();
+
+        public static IAttributeSet GenerateEmpty()
+        {
+            return new CustomAttributeSet();
+        }
+    }
+
+    public class CustomAttributeSet : IAttributeSet
+    {
+        public List<AttributeSetElement> Attributes = new();
+        public List<IAttributeSet> SubSets = new();
+        public EValueCollisionPolicy CollisionResolutionPolicy = EValueCollisionPolicy.UseMaximum;
+
+        public List<AttributeSetElement> GetAttributes()
+        {
+            return Attributes;
+        }
+        public List<IAttributeSet> GetSubSets()
+        {
+            return SubSets;
+        }
+        public EValueCollisionPolicy GetCollisionResolutionPolicy()
+        {
+            return CollisionResolutionPolicy;
+        }
+        public void Initialize(AttributeSystemComponent system)
+        {
+            AttributeSetMeta meta = new AttributeSetMeta(this);
+            meta.InitializeAttributeSystem(system, this);
+        }
+        public HashSet<AttributeScriptableObject> GetUnique()
+        {
+            var attributes = new HashSet<AttributeScriptableObject>();
+            foreach (var attr in Attributes)
+            {
+                attributes.Add(attr.Attribute);
+            }
+
+            foreach (var subSet in SubSets)
+            {
+                foreach (var unique in subSet.GetUnique())
+                {
+                    attributes.Add(unique);
+                }
+            }
+
+            return attributes;
         }
     }
 }

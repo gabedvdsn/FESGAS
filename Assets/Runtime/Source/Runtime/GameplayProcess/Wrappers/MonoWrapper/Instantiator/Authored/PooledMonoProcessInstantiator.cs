@@ -5,8 +5,13 @@ namespace FESGameplayAbilitySystem.Instantiator
     [CreateAssetMenu(fileName = "MPI_Pooled_", menuName = "FESGAS/Process/ObjectPool Instantiator", order = 0)]
     public class PooledMonoProcessInstantiator : AbstractMonoProcessInstantiatorScriptableObject
     {
-
-        public override AbstractMonoProcess InstantiateProcess(AbstractMonoProcess process, ProcessDataPacket data)
+        protected override AbstractMonoProcess PrepareNew(AbstractMonoProcess process, ProcessDataPacket data)
+        {
+            // Pooling logic
+            return null;
+        }
+        
+        protected override AbstractMonoProcess PrepareExisting(AbstractMonoProcess process, ProcessDataPacket data)
         {
             // Pooling logic
             return null;

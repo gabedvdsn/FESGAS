@@ -27,8 +27,10 @@ namespace FESGameplayAbilitySystem
         private Dictionary<EProcessUpdateTiming, SortedDictionary<int, List<int>>> stepping;
         private HashSet<int> waiting = new();
 
+        private ProcessAdjacencyTree MonoTree = new();
+
         private int cacheCounter = 0;
-        private int NextCacheIndex => cacheCounter++;
+        private int NextCacheIndex => cacheCounter++; 
 
         public int Created => cacheCounter;
         public int Active => active.Count;
@@ -69,7 +71,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (var priority in stepping[timing])
             {
-                foreach (var cacheIndex in priority.Value) active[cacheIndex].Step(timing);
+                foreach (int cacheIndex in priority.Value) active[cacheIndex].Step(timing);
             }
         }
         
@@ -104,7 +106,12 @@ namespace FESGameplayAbilitySystem
         // Register a new process and handler to a PCB
         public bool Register(AbstractProcessWrapper process, IGameplayProcessHandler handler, out ProcessRelay relay)
         {
+            Debug.Log($"\tAsk reg {process} {process.IsInitialized()}");
+            
             relay = default;
+
+            if (process.IsInitialized()) return false;
+            
             if (State is EProcessControlState.Closed 
                 or EProcessControlState.ClosedWaiting 
                 or EProcessControlState.Terminated 
@@ -117,26 +124,34 @@ namespace FESGameplayAbilitySystem
             
             SetProcess(pcb);
             
-            if (OutputLogs)
-            {
-                if (DetailedLogs) Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] REGISTER \"{process.ProcessName}\" ({handler})");
-                else Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] REGISTER");
-            }
-            
             relay = pcb.Relay;
             handler?.HandlerSubscribeProcess(relay);
             
             return true;
         }
-        
-        public bool Register(AbstractMonoProcess process, ProcessDataPacket data, out ProcessRelay relay)
+
+        public bool Register(AbstractMonoProcess process, out ProcessRelay relay)
         {
             return Register
             (
-                new MonoWrapperProcess(process, data),
-                data.Handler,
+                process,
+                ProcessDataPacket.RootDefault(),
                 out relay
             );
+        }
+        
+        public bool Register(AbstractMonoProcess process, ProcessDataPacket data, out ProcessRelay relay)
+        {
+            if (process is not null)
+                    return Register
+                (
+                    new MonoWrapperProcess(process, data),
+                    data.Handler,
+                    out relay
+                );
+            relay = default;
+            return false;
+
         }
         
         // Unregister a PCB
@@ -146,7 +161,7 @@ namespace FESGameplayAbilitySystem
             else RemoveFromStepping(pcb);
 
             pcb.Handler?.HandlerVoidProcess(pcb.CacheIndex);
-
+            
             if (OutputLogs)
             {
                 Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] UNREGISTER");
@@ -154,53 +169,23 @@ namespace FESGameplayAbilitySystem
             
             return active.Remove(pcb.CacheIndex);
         }
-
-        /// <summary>
-        /// D depends on L (e.g. D is a child of L), such that when L is terminated, D must also be terminated
-        /// </summary>
-        /// <param name="dependant">D</param>
-        /// <param name="leader">L</param>
-        public void AssignDependant(ProcessRelay dependant, ProcessRelay leader)
-        {
-            active[leader.CacheIndex].AssignAdjacency(true, dependant.CacheIndex);
-            active[dependant.CacheIndex].AssignAdjacency(false, leader.CacheIndex);
-        }
-
+        
         public Dictionary<int, ProcessControlBlock> FetchActiveProcesses()
         {
             return active;
         }
-
-        public bool IndexIsRegistered(int cacheIndex) => active.ContainsKey(cacheIndex);
         
         #endregion
         
         #region Control
-
-        public bool Set(int cacheIndex, EProcessState state)
-        {
-            return state switch
-            {
-
-                EProcessState.Created => false,
-                EProcessState.Running => Run(cacheIndex),
-                EProcessState.Waiting => Wait(cacheIndex),
-                EProcessState.Terminated => Terminate(cacheIndex),
-                _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
-            };
-        }
-
-        public async UniTask ForceSet(int cacheIndex, EProcessState state)
-        {
-            await active[cacheIndex].ForceIntoState(state);
-        }
 
         public bool Run(int cacheIndex)
         {
             if (!active.ContainsKey(cacheIndex)) return false;
             if (!ValidatePCBStateTransfer(active[cacheIndex], EProcessState.Running)) return false;
 
-            SetProcess(active[cacheIndex]);
+            active[cacheIndex].QueueNextState(EProcessState.Running);
+            //SetProcess(active[cacheIndex]);
             return true;
         }
         
@@ -266,6 +251,12 @@ namespace FESGameplayAbilitySystem
                 waiting.Add(pcb.CacheIndex);
                 active[pcb.CacheIndex] = pcb;
                 
+                if (OutputLogs)
+                {
+                    if (DetailedLogs) Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] REGISTER \"{pcb.Process.ProcessName}\" ({pcb.Handler})");
+                    else Debug.Log($"[ P-CTRL-{pcb.CacheIndex} ] REGISTER");
+                }
+                
                 pcb.Initialize();
             }
         }
@@ -292,11 +283,16 @@ namespace FESGameplayAbilitySystem
         private void MoveToStepping(ProcessControlBlock pcb)
         {
             var timing = pcb.Process.StepTiming;
-            int priority = pcb.Process.StepPriority;
+            int priority = pcb.Process.PriorityMethod switch
+            {
+                EProcessStepPriorityMethod.Manual => pcb.Process.StepPriority,
+                EProcessStepPriorityMethod.First => stepping[timing].Keys.FirstOrDefault(),
+                EProcessStepPriorityMethod.Last => stepping[timing].Keys.LastOrDefault(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
             switch (timing)
             {
-
                 case EProcessUpdateTiming.None:
                 case EProcessUpdateTiming.Update:
                 case EProcessUpdateTiming.LateUpdate:
@@ -333,8 +329,6 @@ namespace FESGameplayAbilitySystem
         
         private void RemoveFromStepping(ProcessControlBlock pcb)
         {
-            //if (pcb.StepIndex < 0) return;
-            
             var timing = pcb.Process.StepTiming;
             int priority = pcb.Process.StepPriority;
 
@@ -432,6 +426,9 @@ namespace FESGameplayAbilitySystem
             MoveToStepping(pcb);
 
             pcb.Run();
+
+            if (!pcb.Process.TryGetProcess(out AbstractMonoProcess process)) return;
+            RegulateMonoProcess(process, EProcessState.Running);
         }
 
         public void ProcessWillWait(ProcessControlBlock pcb)
@@ -440,11 +437,62 @@ namespace FESGameplayAbilitySystem
             MoveToWaiting(pcb);
 
             pcb.Wait();
+            
+            if (!pcb.Process.TryGetProcess(out AbstractMonoProcess process)) return;
+            RegulateMonoProcess(process, EProcessState.Waiting);
         }
 
         public void ProcessWillTerminate(ProcessControlBlock pcb)
         {
             pcb.Terminate();
+            
+            if (!pcb.Process.TryGetProcess(out AbstractMonoProcess process)) return;
+            RegulateMonoProcess(process, EProcessState.Terminated);
+        }
+        
+        #endregion
+        
+        #region Mono Regulating
+
+        public void AddMonoProcess(AbstractMonoProcess mono, ProcessDataPacket data)
+        {
+            MonoTree.Add(mono, data);
+        }
+
+        public void RemoveMonoProcess(AbstractMonoProcess process)
+        {
+            MonoTree.Remove(process, out _);
+        }
+
+        /// <summary>
+        /// Regulation handles logistics tracking hierarchical relationships between MonoBehaviours and setting states
+        /// </summary>
+        /// <param name="mono"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public void RegulateMonoProcess(AbstractMonoProcess mono, EProcessState state)
+        {
+            if (mono.Relay is null || !active.ContainsKey(mono.Relay.CacheIndex)) return;
+
+            var pids = MonoTree.Get(mono).GetPIDs();
+            //foreach (var _pid in pids) Debug.Log(_pid);
+            
+            switch (state)
+            {
+                case EProcessState.Created:
+                    break;
+                case EProcessState.Running:
+                    foreach (int pid in pids) active[pid].ForceIntoState(EProcessState.Running).Forget();
+                    break;
+                case EProcessState.Waiting:
+                    foreach (int pid in pids) active[pid].ForceIntoState(EProcessState.Waiting).Forget();
+                    break;
+                case EProcessState.Terminated:
+                    foreach (int pid in pids) active[pid].ForceIntoState(EProcessState.Terminated).Forget();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(state), state, null);
+            }
         }
         
         #endregion
@@ -953,10 +1001,7 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
-        private async void OnDestroy()
-        {
-            await TerminateAllImmediately();
-        }
+        #region Handler
         
         public bool HandlerValidateAgainst(IGameplayProcessHandler handler)
         {
@@ -976,6 +1021,13 @@ namespace FESGameplayAbilitySystem
         {
             // Doesn't need to do anything!
             return true;
+        }
+        
+        #endregion
+        
+        private async void OnDestroy()
+        {
+            await TerminateAllImmediately();
         }
     }
 

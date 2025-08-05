@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -50,6 +51,10 @@ namespace FESGameplayAbilitySystem
         protected override void PrepareSystem()
         {
             TagCache = new TagCache(this);
+
+            var systemData = ISystemData.GenerateEmpty();
+            AttributeSystem.ProvidePrerequisiteData(systemData);
+            AbilitySystem.ProvidePrerequisiteData(systemData);
         }
 
         #region Control
@@ -120,5 +125,24 @@ namespace FESGameplayAbilitySystem
         }
     }
 
-    
+    public class GameTagManager
+    {
+        
+    }
+
+    [Serializable]
+    public class PremadeTagReservation
+    {
+        public ETagReservationPolicy Policy;
+        public string Name;
+        public int Key;
+        public PremadeTagReservation[] Sequence;
+    }
+
+    public enum ETagReservationPolicy
+    {
+        String,
+        Integer,
+        Sequence
+    }
 }

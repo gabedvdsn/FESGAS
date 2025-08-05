@@ -9,15 +9,14 @@ namespace FESGameplayAbilitySystem
         protected bool processActive;
         
         public abstract void WhenInitialize(ProcessRelay relay);
-        
-        public abstract void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay);
 
         /// <summary>
         /// Called via Step in ProcessControl as determined by the process's StepUpdateTiming
         /// </summary>
+        /// <param name="timing">Step timing</param>
         /// <param name="relay">Process Relay</param>
-        public abstract void WhenUpdate(ProcessRelay relay);
-
+        public abstract void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay);
+        
         /// <summary>
         /// Called via ProcessControl when the process is set to Waiting
         /// </summary>
@@ -60,8 +59,8 @@ namespace FESGameplayAbilitySystem
             process = default;
             return false;
         }
-        
-        public bool IsInitialized => true;
+        public abstract bool IsInitialized();
+
         public string ProcessName => "AnonymousClassProcess";
         public virtual EProcessUpdateTiming StepTiming => EProcessUpdateTiming.Update;
         public virtual EProcessLifecycle Lifecycle => EProcessLifecycle.SelfTerminating;

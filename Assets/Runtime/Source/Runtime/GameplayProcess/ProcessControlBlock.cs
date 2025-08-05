@@ -9,6 +9,10 @@ namespace FESGameplayAbilitySystem
 {
     public class ProcessControlBlock
     {
+        public const int LocalAdjacency = 0;
+        public const int ChildAdjacency = 0;
+        public const int ParentAdjacency = 0;
+        
         public readonly AbstractProcessWrapper Process;
         public readonly IGameplayProcessHandler Handler;
 
@@ -17,8 +21,6 @@ namespace FESGameplayAbilitySystem
         public readonly int CacheIndex;
         private Dictionary<EProcessUpdateTiming, int> StepIndices;
         public int StepIndex(EProcessUpdateTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
-
-        public Dictionary<int, List<int>> DependantProcesses;  // Composed & child processes (hierarchical)
         
         public EProcessState State { get; private set; }
         public EProcessState queuedState { get; private set; }
@@ -48,11 +50,6 @@ namespace FESGameplayAbilitySystem
         {
             CacheIndex = cacheIndex;
             StepIndices = new Dictionary<EProcessUpdateTiming, int>();
-            DependantProcesses = new Dictionary<int, List<int>>()
-            {
-                { 0, new List<int>() },
-                { 1, new List<int>() }
-            };
             
             Process = process;
             Handler = handler;
@@ -68,23 +65,9 @@ namespace FESGameplayAbilitySystem
             return new ProcessControlBlock(cacheIndex, process, handler);
         }
 
-        /// <summary>
-        /// If asDependant is TRUE, then the adjacency is assigned as a dependant of this process.
-        /// Otherwise, the index is stored to reflect that this process is a dependant of the adjacent process.
-        /// </summary>
-        /// <param name="asDependant">Whether the adjacent process is a dependant of this process.</param>
-        /// <param name="adjIndex">The adjacent process index.</param>
-        public void AssignAdjacency(bool asDependant, int adjIndex)
-        {
-            int key = asDependant ? 0 : 1;
-            if (DependantProcesses[key].Contains(adjIndex)) return;
-            DependantProcesses[key].Add(adjIndex);
-        }
-
         public async UniTask ForceIntoState(EProcessState state)
         {
             if (State == EProcessState.Running && state != EProcessState.Running) Interrupt();
-            foreach (var adjIndex in DependantProcesses[0]) ProcessControl.Instance.ForceSet(adjIndex, state).Forget();
             
             await UniTask.CompletedTask;
             
@@ -95,8 +78,6 @@ namespace FESGameplayAbilitySystem
         public void QueueNextState(EProcessState state)
         {
             if (state == State) return;
-            
-            foreach (var adjIndex in DependantProcesses[0]) ProcessControl.Instance.Set(adjIndex, state);
             
             switch (state)
             {
@@ -153,7 +134,7 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        private void SetQueuedState()
+        public void SetQueuedState()
         {
             if (queuedState == State) return;
             State = queuedState;
@@ -242,9 +223,6 @@ namespace FESGameplayAbilitySystem
         public float UnscaledLifetime => pcb.UnscaledLifetime;
         public float Lifetime => pcb.Lifetime;
         public float UpdateTime => pcb.UpdateTime;
-        public List<int> Dependants => pcb.DependantProcesses[0];
-        public List<int> Leaders => pcb.DependantProcesses[1];
-        public string FormattedDependants => string.Join(',', pcb.DependantProcesses);
 
         public bool TryGetProcess<T>(out T process)
         {

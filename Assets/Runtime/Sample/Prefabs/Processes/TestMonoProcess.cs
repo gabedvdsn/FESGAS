@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         }
         public override void WhenTerminate(ProcessRelay relay)
         {
-            Destroy(gameObject);
+            //
         }
         public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {

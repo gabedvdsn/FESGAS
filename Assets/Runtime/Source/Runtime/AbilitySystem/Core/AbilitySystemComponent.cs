@@ -21,7 +21,7 @@ namespace FESGameplayAbilitySystem
         private ImpactWorkerCache ImpactWorkerCache;
 
         public bool Executing => abilityActive && activeContainer is not null;
-        public bool abilityActive;
+        private bool abilityActive;
         private AbilitySpecContainer activeContainer = null;
         private Queue<int> activationQueue = new();
         
@@ -37,13 +37,13 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void ProvidePrerequisiteData(GASSystemData systemData)
+        public void ProvidePrerequisiteData(ISystemData systemData)
         {
-            activationPolicy = systemData.ActivationPolicy;
-            maxAbilities = systemData.MaxAbilities;
-            impactWorkers = systemData.ImpactWorkers;
-            startingAbilities = systemData.StartingAbilities;
-            allowDuplicateAbilities = systemData.AllowDuplicateAbilities;
+            activationPolicy = systemData.GetActivationPolicy();
+            maxAbilities = systemData.GetMaxAbilities();
+            impactWorkers = systemData.GetImpactWorkers();
+            startingAbilities = systemData.GetStartingAbilities();
+            allowDuplicateAbilities = systemData.GetAllowDuplicateAbilities();
             
             ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
         }

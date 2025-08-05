@@ -6,55 +6,47 @@ namespace FESGameplayAbilitySystem
 {
     public class MonoWrapperProcess : AbstractProcessWrapper
     {
-        private AbstractMonoProcess MonoPrefab;
+        private AbstractMonoProcess StoredMono;
         private ProcessDataPacket DataPacket;
         
         private AbstractMonoProcess activeMono;
 
-        public MonoWrapperProcess(AbstractMonoProcess monoPrefab, ProcessDataPacket data)
+        public MonoWrapperProcess(AbstractMonoProcess storedMono, ProcessDataPacket data)
         {
-            MonoPrefab = monoPrefab;
+            StoredMono = storedMono;
             DataPacket = data;
         }
 
+        /// <summary>
+        /// Regulates the instantiation of the MonoBehaviour process
+        /// </summary>
         public override void InitializeWrapper()
         {
-            // Check if is an instance
-            if (MonoPrefab.gameObject.scene.name is not null)
-            {
-                activeMono = MonoPrefab;
-                return;
-            }
+            Debug.Log($"\tInit wrapper {ProcessName}");
             
-            if (MonoPrefab.Instantiator is not null)
+            if (StoredMono)
             {
-                activeMono = MonoPrefab.Instantiator.InstantiateProcess(MonoPrefab, DataPacket);
+                if (StoredMono.Instantiator is not null)
+                {
+                    activeMono = StoredMono.Instantiator.Create(StoredMono, DataPacket);
+                    if (activeMono.gameObject.scene.isLoaded) return;
+                }
+
+                activeMono = StoredMono.gameObject.scene.isLoaded ? StoredMono : Object.Instantiate(StoredMono);
             }
-            else
-            {
-                activeMono = Object.Instantiate(MonoPrefab);
-                activeMono.name = activeMono.name.Replace("(Clone)", "");
-                DataPacket.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
-            }
+
+            activeMono.name = activeMono.name.Replace("(Clone)", "");
+
+            Debug.Log($"\tDone init wrapper {ProcessName}");
         }
         
         public override void WhenInitialize(ProcessRelay relay)
         {
             activeMono.SendProcessData(DataPacket);
             activeMono.WhenInitialize(relay);
+            Debug.Log($"\t{ProcessName} {IsInitialized()}");
             
-            // Register as dependant to leader processes
-            foreach (AbstractMonoProcess adjProcess in activeMono.GetComponentsInParent<AbstractMonoProcess>())
-            {
-                if (adjProcess == activeMono) continue;
-
-                ProcessRelay adjRelay;
-                if (!adjProcess.IsInitialized) ProcessControl.Instance.Register(adjProcess, DataPacket, out adjRelay);
-                else adjRelay = adjProcess.Relay;
-                
-                
-                ProcessControl.Instance.AssignDependant(relay, adjRelay);
-            }
+            ProcessControl.Instance.AddMonoProcess(activeMono, DataPacket);
         }
 
         public override void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay)
@@ -67,20 +59,27 @@ namespace FESGameplayAbilitySystem
             activeMono.WhenWait(relay);
         }
 
+        /// <summary>
+        /// Terminates the behaviour of the process, then Destroys the process object if it still exists.
+        /// </summary>
+        /// <param name="relay"></param>
         public override void WhenTerminate(ProcessRelay relay)
         {
             WhenTerminateSafe(relay);
-            if (activeMono) Object.Destroy(activeMono.gameObject);
-        }
-        public override void WhenTerminateSafe(ProcessRelay relay)
-        {
-            if (!activeMono) return;
-            
-            activeMono.WhenTerminateSafe(relay);
             if (activeMono.Instantiator is not null)
             {
                 activeMono.Instantiator.CleanProcess(activeMono);
             }
+            else Object.Destroy(activeMono.gameObject);
+        }
+        /// <summary>
+        /// Terminates the behaviour of the process, without Destroying the process object
+        /// </summary>
+        /// <param name="relay"></param>
+        public override void WhenTerminateSafe(ProcessRelay relay)
+        {
+            activeMono.WhenTerminate(relay);
+            ProcessControl.Instance.RemoveMonoProcess(activeMono);
         }
 
         public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
@@ -99,10 +98,17 @@ namespace FESGameplayAbilitySystem
             process = default;
             return false;
         }
+        public override bool IsInitialized()
+        {
+            return activeMono && activeMono.IsInitialized;
+        }
 
         public override string ProcessName => activeMono ? activeMono.name : "[ ]";
-        public override int StepPriority => activeMono.StepPriority;
-        public override EProcessUpdateTiming StepTiming => activeMono.StepTiming;
-        public override EProcessLifecycle Lifecycle => activeMono.Lifecycle;
+        public override EProcessStepPriorityMethod PriorityMethod => activeMono.PriorityMethod;
+
+        public override int StepPriority => activeMono.ProcessStepPriority;
+        public override EProcessUpdateTiming StepTiming => activeMono.ProcessTiming;
+        public override EProcessLifecycle Lifecycle => activeMono.ProcessLifecycle;
+        public override string ToString() => ProcessName;
     }
 }

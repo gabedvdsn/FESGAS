@@ -18,17 +18,18 @@ namespace FESGameplayAbilitySystem.Demo
         {
             base.WhenInitialize(relay);
 
-            var playerData = new ProcessDataPacket();
+            var playerData = ProcessDataPacket.RootDefault();
             playerData.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, PlayerPosition);
             playerData.AddPayload(GameRoot.GenericTag, ESourceTargetData.Data, GameRoot.Instance.AllyTag);
 
             ProcessControl.Instance.Register(PlayerPrefab, playerData, out var playerRelay);
             if (playerRelay.TryGetProcess(out GASComponentBase player))
             {
-                FindObjectOfType<DemoInputHandler>().System = player;
+                var inputHandler = FindObjectOfType<DemoInputHandler>();
+                if (inputHandler) inputHandler.System = player;
             }
             
-            var enemyData = new ProcessDataPacket();
+            var enemyData = ProcessDataPacket.RootDefault();
             enemyData.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, EnemyPosition);
             enemyData.AddPayload(GameRoot.GenericTag, ESourceTargetData.Data, GameRoot.Instance.EnemyTag);
             

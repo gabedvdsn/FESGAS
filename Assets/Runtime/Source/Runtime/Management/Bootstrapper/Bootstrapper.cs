@@ -1,12 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Debug = System.Diagnostics.Debug;
-using Object = System.Object;
 
 namespace FESGameplayAbilitySystem
 {
@@ -27,15 +20,19 @@ namespace FESGameplayAbilitySystem
             Instance = this;
             
             DontDestroyOnLoad(gameObject);
+
+            if (ProcessControl.Instance is null)
+            {
+                if (ProcessControlPrefab) Instantiate(ProcessControlPrefab);
+                else
+                {
+                    var control = new GameObject("ProcessControl");
+                    control.AddComponent<ProcessControl>();
+                }
+            }
             
-            if (ProcessControl.Instance is null) Instantiate(ProcessControlPrefab);
-            // if (GameRoot.Instance is null) Instantiate(GameRootPrefab);
-
-            var data = ProxyDataPacket.GenerateNull();
-
-
-            Debug.Assert(ProcessControl.Instance != null, "ProcessControl.Instance != null");
-            ProcessControl.Instance.Register(GameRootPrefab, data, out _);
+            Debug.Assert(ProcessControl.Instance != null, "ProcessControl is ACTIVE");
+            ProcessControl.Instance.Register(GameRootPrefab, ProxyDataPacket.GenerateNull(), out _);
 
             Initialize();
             

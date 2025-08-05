@@ -107,8 +107,7 @@ namespace FESGameplayAbilitySystem
                     if (relay.Process is null) continue;
 
                     EditorGUILayout.BeginVertical("box");
-                    string adjacencies = relay.Dependants.Count > 0 ? $"({relay.FormattedDependants})" : "";
-                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}\t{adjacencies}", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.State} -> {relay.QueuedState} | {relay.UpdateTime:F2} / {relay.Lifetime:F2} ({relay.Process.StepTiming})");
                     
                     EditorGUILayout.EndVertical();
@@ -131,8 +130,7 @@ namespace FESGameplayAbilitySystem
 
                     EditorGUILayout.BeginVertical("box");
 
-                    string adjacencies = relay.Dependants.Count > 0 ? $"({relay.FormattedDependants})" : "";
-                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}\t{adjacencies}", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
                     EditorGUILayout.BeginHorizontal("box");
@@ -164,8 +162,7 @@ namespace FESGameplayAbilitySystem
 
                     EditorGUILayout.BeginVertical("box");
                     
-                    string adjacencies = relay.Dependants.Count > 0 ? $"({relay.FormattedDependants})" : "";
-                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}\t{adjacencies}", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"{relay.Process.ProcessName}\t", EditorStyles.boldLabel);
                     EditorGUILayout.LabelField($"ID: {relay.CacheIndex} | {relay.Process.Lifecycle} | {relay.Process.StepTiming}");
                     
                     EditorGUILayout.BeginHorizontal("box");

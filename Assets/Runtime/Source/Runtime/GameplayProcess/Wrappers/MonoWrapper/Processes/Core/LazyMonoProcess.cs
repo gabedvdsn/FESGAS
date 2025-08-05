@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -20,6 +21,11 @@ namespace FESGameplayAbilitySystem
         {
             processActive = true;
             await UniTask.WaitWhile(() => processActive, cancellationToken: token);
+        }
+
+        private void OnDestroy()
+        {
+            UnityEngine.Debug.Log($"Destoy {name}");
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -25,14 +26,72 @@ namespace FESGameplayAbilitySystem
 
         public IGameplayProcessHandler Handler;
 
-        public ProcessDataPacket()
+        protected ProcessDataPacket()
         {
             Handler = GameRoot.Instance;
         }
 
-        public ProcessDataPacket(IGameplayProcessHandler handler)
+        private ProcessDataPacket(IGameplayProcessHandler handler)
         {
             Handler = handler;
+        }
+
+        public static ProcessDataPacket RootDefault()
+        {
+            var data = new ProcessDataPacket();
+            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            return data;
+        }
+
+        public static ProcessDataPacket RootDefault(IGameplayProcessHandler handler)
+        {
+            var data = new ProcessDataPacket(handler);
+            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            return data;
+        }
+        
+        /// <summary>
+        /// Returns a new data packet where GameRoot is the assigned Transform IF GameRoot is not within the parental hierarchy
+        /// </summary>
+        /// <returns></returns>
+        public static ProcessDataPacket RootLocal(MonoBehaviour obj)
+        {
+            var data = new ProcessDataPacket();
+            
+            if (obj.GetComponentInParent<GameRoot>()) return data;
+            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            return data;
+        }
+
+        public static ProcessDataPacket RootLocal(MonoBehaviour obj, IGameplayProcessHandler handler)
+        {
+            var data = new ProcessDataPacket(handler);
+            
+            if (obj.GetComponentInParent<GameRoot>()) return data;
+            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            return data;
+        }
+
+        public static ProcessDataPacket LocalDefault(MonoBehaviour obj)
+        {
+            var data = new ProcessDataPacket();
+            
+            data.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, obj.transform.position);
+            data.AddPayload(GameRoot.RotationTag, ESourceTargetData.Data, obj.transform.rotation);
+            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, obj.transform.parent);
+
+            return data;
+        }
+        
+        public static ProcessDataPacket LocalDefault(MonoBehaviour obj, IGameplayProcessHandler handler)
+        {
+            var data = new ProcessDataPacket(handler);
+            
+            data.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, obj.transform.position);
+            data.AddPayload(GameRoot.RotationTag, ESourceTargetData.Data, obj.transform.rotation);
+            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, obj.transform.parent);
+
+            return data;
         }
 
         #region Core
