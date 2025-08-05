@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -20,11 +21,11 @@ namespace FESGameplayAbilitySystem
         public abstract void Tick(GASComponentBase component);
         public abstract void Resolve(GASComponentBase component);
 
-        public abstract AbstractTagWorker Generate(GASComponentBase system);
+        public abstract AbstractTagWorker Generate(ITagRelated system);
         
-        public bool ValidateWorkFor(GASComponentBase system)
+        public bool ValidateWorkFor(ITagRelated system)
         {
-            var appliedTags = system.TagCache.GetAppliedTags();
+            var appliedTags = system.GetAppliedTags();
             foreach (TagWorkerRequirementPacket packet in Requirements.TagPackets)
             {
                 switch (packet.Policy)
@@ -39,7 +40,7 @@ namespace FESGameplayAbilitySystem
                         throw new ArgumentOutOfRangeException();
                 }
                 
-                if (system.TagCache.GetWeight(packet.Tag) < packet.RequiredWeight) return false;
+                if (system.GetWeight(packet.Tag) < packet.RequiredWeight) return false;
             }
 
             return true;
@@ -102,5 +103,4 @@ namespace FESGameplayAbilitySystem
             Base.Resolve(System);
         }
     }
-    
 }

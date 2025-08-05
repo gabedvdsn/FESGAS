@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class GASComponentBase : LazyMonoProcess, ISource
+    public abstract class GASComponentBase : LazyMonoProcess, ISource, ITagRelated
     {
         [Header("Gameplay Ability System")]
         
@@ -465,6 +465,10 @@ namespace FESGameplayAbilitySystem
         public List<ITag> GetAppliedTags()
         {
             return TagCache.GetAppliedTags();
+        }
+        public int GetWeight(ITag _tag)
+        {
+            return TagCache.GetWeight(_tag);
         }
         #endregion
     }
