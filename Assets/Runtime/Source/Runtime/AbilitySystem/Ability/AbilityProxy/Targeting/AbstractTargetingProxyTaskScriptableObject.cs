@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
             // Hook into input handler here
             if (ConnectInputHandler(data)) return;
             // Can add logic if interrupt injection failed
-            if (data.Spec.GetOwner().FindAbilitySystem(out var abil)) abil.InjectInterrupt();
+            if (data.Spec.GetOwner().FindAbilitySystem(out var abil)) abil.Inject(EAbilityInjection.INTERRUPT);
         }
         
         public override void Clean(AbilityDataPacket data)
