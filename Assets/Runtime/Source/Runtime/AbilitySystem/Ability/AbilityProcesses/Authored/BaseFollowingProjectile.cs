@@ -7,8 +7,11 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
+    /// <summary>
+    /// The base class for following/tracking projectiles. 
+    /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    public class TrackingProjectileMonoProcess : AbstractEffectingMonoProcess
+    public class BaseFollowingProjectile : AbstractEffectingMonoProcess
     {
         private GASComponentBase targetGAS;
         private Transform target;
@@ -32,21 +35,27 @@ namespace FESGameplayAbilitySystem
         
         public override async UniTask RunProcess(ProcessRelay relay, CancellationToken token)
         {
+            await FollowTarget(relay, token);
+            
+            ApplyEffects(targetGAS);
+        }
+
+        protected virtual float GetProjectileSpeed()
+        {
+            if (!AttributeLibrary.TryGetByName("projectile_speed", out var projSpeed)) return 10f;
+            return Source.AttributeSystem.TryGetAttributeValue(projSpeed, out AttributeValue val) ? val.CurrentValue : 10f;
+        }
+
+        protected virtual async UniTask FollowTarget(ProcessRelay relay, CancellationToken token)
+        {
             while (Vector3.Distance(transform.position, target.position) > .1f)
             {
                 token.ThrowIfCancellationRequested();
-
-                //rb.velocity = (target.position - transform.position).normalized * (15f);
                 
-                transform.position = Vector3.MoveTowards(transform.position, target.position, 8 * Time.deltaTime);
+                transform.position = Vector3.MoveTowards(transform.position, target.position, GetProjectileSpeed() * Time.deltaTime);
                 
-                /*var to = Quaternion.LookRotation(target.position - transform.position);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, to, 180f * Time.deltaTime);*/
-
                 await UniTask.NextFrame(token);
             }
-            
-            ApplyEffects(targetGAS);
         }
     }
 }

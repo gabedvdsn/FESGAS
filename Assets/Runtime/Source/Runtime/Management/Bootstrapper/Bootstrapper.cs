@@ -31,8 +31,8 @@ namespace FESGameplayAbilitySystem
                 }
             }
             
-            Debug.Assert(ProcessControl.Instance != null, "ProcessControl is ACTIVE");
-            ProcessControl.Instance.Register(GameRootPrefab, ProxyDataPacket.GenerateNull(), out _);
+            Debug.Assert(ProcessControl.Instance != null, "ProcessControl is INACTIVE");
+            ProcessControl.Instance.Register(GameRootPrefab, AbilityDataPacket.GenerateNull(), out _);
 
             Initialize();
             

@@ -6,7 +6,7 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractTargetingProxyTaskScriptableObject : AbstractAbilityProxyTaskScriptableObject
     {
-        public override void Prepare(ProxyDataPacket data)
+        public override void Prepare(AbilityDataPacket data)
         {
             // Hook into input handler here
             if (ConnectInputHandler(data)) return;
@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
             if (data.Spec.GetOwner().FindAbilitySystem(out var abil)) abil.InjectInterrupt();
         }
         
-        public override void Clean(ProxyDataPacket data)
+        public override void Clean(AbilityDataPacket data)
         {
             // Unhook from input handler here
             DisconnectInputHandler(data);
@@ -25,13 +25,13 @@ namespace FESGameplayAbilitySystem
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        protected bool ConnectInputHandler(ProxyDataPacket data)
+        protected bool ConnectInputHandler(AbilityDataPacket data)
         {
             // Claim input handler
             return true;
         }
         
-        protected void DisconnectInputHandler(ProxyDataPacket data)
+        protected void DisconnectInputHandler(AbilityDataPacket data)
         {
             // Release claim on input handler
         }

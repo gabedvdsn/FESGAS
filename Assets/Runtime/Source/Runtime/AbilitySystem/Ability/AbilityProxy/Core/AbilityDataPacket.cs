@@ -6,30 +6,30 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public class ProxyDataPacket : ProcessDataPacket
+    public class AbilityDataPacket : ProcessDataPacket
     {
         public IEffectDerivation Spec;
 
-        private ProxyDataPacket(IEffectDerivation spec)
+        private AbilityDataPacket(IEffectDerivation spec)
         {
             Spec = spec;
             Handler = spec.GetOwner();
         }
 
-        public static ProxyDataPacket GenerateDefault(IEffectDerivation spec)
+        public static AbilityDataPacket GenerateDefault(IEffectDerivation spec)
         {
-            ProxyDataPacket data = new ProxyDataPacket(spec);
+            AbilityDataPacket data = new AbilityDataPacket(spec);
             return data;
         }
 
-        public static ProxyDataPacket GenerateNull()
+        public static AbilityDataPacket GenerateNull()
         {
-            return new ProxyDataPacket(IEffectDerivation.GenerateSourceDerivation(null));
+            return new AbilityDataPacket(IEffectDerivation.GenerateSourceDerivation(null));
         }
 
-        public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, GASComponentBase component, ESourceTargetExpanded sourceTarget)
+        public static AbilityDataPacket GenerateFrom(IEffectDerivation spec, GASComponentBase component, ESourceTargetExpanded sourceTarget)
         {
-            ProxyDataPacket data = new ProxyDataPacket(spec);
+            AbilityDataPacket data = new AbilityDataPacket(spec);
             switch (sourceTarget)
             {
                 case ESourceTargetExpanded.Target:
@@ -51,9 +51,9 @@ namespace FESGameplayAbilitySystem
             return data;
         }
 
-        public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, Transform transform, ESourceTargetExpanded sourceTarget)
+        public static AbilityDataPacket GenerateFrom(IEffectDerivation spec, Transform transform, ESourceTargetExpanded sourceTarget)
         {
-            var data = new ProxyDataPacket(spec);
+            var data = new AbilityDataPacket(spec);
             switch (sourceTarget)
             {
                 case ESourceTargetExpanded.Target:
@@ -75,9 +75,9 @@ namespace FESGameplayAbilitySystem
             return data;
         }
 
-        public static ProxyDataPacket GenerateFrom(IEffectDerivation spec, GameplayTagScriptableObject tag, GASComponentBase character, ESourceTargetData target)
+        public static AbilityDataPacket GenerateFrom(IEffectDerivation spec, GameplayTagScriptableObject tag, GASComponentBase character, ESourceTargetData target)
         {
-            var data = new ProxyDataPacket(spec);
+            var data = new AbilityDataPacket(spec);
             data.AddPayload(tag, target, character);
             return data;
         }

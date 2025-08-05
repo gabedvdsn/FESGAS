@@ -20,5 +20,23 @@ namespace FESGameplayAbilitySystem
         public bool ApplyGameplayEffect(IEffectDerivation derivation, IEffectBase GameplayEffect);
         public bool FindAttributeSystem(out AttributeSystemComponent attrSystem);
         public bool FindAbilitySystem(out AbilitySystemComponent abilSystem);
+        public TargetGASData AsData()
+        {
+            return new TargetGASData(this);
+        }
+    }
+
+    public struct TargetGASData
+    {
+        public GASComponentBase System;
+        public readonly AbilitySystemComponent AbilitySystem;
+        public readonly AttributeSystemComponent AttributeSystem;
+
+        public TargetGASData(ITarget source)
+        {
+            System = null;
+            if (source.FindAbilitySystem(out AbilitySystem)) System = AbilitySystem.GetComponent<GASComponentBase>();
+            if (source.FindAttributeSystem(out AttributeSystem)) System = AttributeSystem.GetComponent<GASComponentBase>();
+        }
     }
 }

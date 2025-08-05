@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         
         // Useful for backend systems like observers, audio, etc...
         public List<AbstractCreateProcessProxyTask> CreateProcessTasks;
-        private ProxyDataPacket NativeDataPacket;
+        private AbilityDataPacket NativeDataPacket;
         
         [Header("Defaults")]
         
@@ -61,7 +61,7 @@ namespace FESGameplayAbilitySystem
         
         public void Initialize()
         {
-            NativeDataPacket = ProxyDataPacket.GenerateFrom
+            NativeDataPacket = AbilityDataPacket.GenerateFrom
             (
                 IEffectDerivation.GenerateSourceDerivation(this),
                 this, ESourceTargetExpanded.Both
@@ -79,7 +79,7 @@ namespace FESGameplayAbilitySystem
             ActivateProcess(NativeDataPacket, task, cts.Token).Forget();
         }
         
-        public void RunProcessTask(AbstractCreateProcessProxyTask task, ProxyDataPacket _data)
+        public void RunProcessTask(AbstractCreateProcessProxyTask task, AbilityDataPacket _data)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
             
@@ -96,7 +96,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void RunProcessTasks(List<AbstractCreateProcessProxyTask> tasks, ProxyDataPacket _data)
+        public void RunProcessTasks(List<AbstractCreateProcessProxyTask> tasks, AbilityDataPacket _data)
         {
             CancellationTokenSource cts = new CancellationTokenSource();
             
@@ -106,7 +106,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        private async UniTask ActivateProcess(ProxyDataPacket _data, AbstractCreateProcessProxyTask task, CancellationToken token)
+        private async UniTask ActivateProcess(AbilityDataPacket _data, AbstractCreateProcessProxyTask task, CancellationToken token)
         {
             task.Prepare(_data);
             await task.Activate(_data, token);

@@ -46,7 +46,7 @@ namespace FESGameplayAbilitySystem
             StageIndex = -1;
         }
 
-        public async UniTask ActivateTargetingTask(CancellationToken token, ProxyDataPacket implicitData)
+        public async UniTask ActivateTargetingTask(CancellationToken token, AbilityDataPacket implicitData)
         {
             // If there is a targeting task assigned...
             if (Specification.TargetingProxy)
@@ -57,14 +57,14 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public async UniTask Activate(CancellationToken token, ProxyDataPacket implicitData)
+        public async UniTask Activate(CancellationToken token, AbilityDataPacket implicitData)
         {
             Reset();
             
             await ActivateNextStage(implicitData, token);
         }
         
-        private async UniTask ActivateNextStage(ProxyDataPacket data, CancellationToken token)
+        private async UniTask ActivateNextStage(AbilityDataPacket data, CancellationToken token)
         {
             StageIndex += 1;
             if (StageIndex < Specification.Stages.Count)
@@ -77,7 +77,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        private async UniTask ActivateStage(AbilityProxyStage stage, ProxyDataPacket data, CancellationToken token)
+        private async UniTask ActivateStage(AbilityProxyStage stage, AbilityDataPacket data, CancellationToken token)
         {
             var stageCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             var stageToken = stageCts.Token;

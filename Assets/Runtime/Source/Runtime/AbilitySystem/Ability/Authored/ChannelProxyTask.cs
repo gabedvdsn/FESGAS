@@ -10,12 +10,12 @@ namespace FESGameplayAbilitySystem
         public float ChannelDuration;
         public PlayerLoopTiming Timing = PlayerLoopTiming.Update;
         
-        public override void Prepare(ProxyDataPacket data)
+        public override void Prepare(AbilityDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(true);
         }
 
-        public override void Clean(ProxyDataPacket data)
+        public override void Clean(AbilityDataPacket data)
         {
             SliderManager.Instance.ToggleSlider(false);
         }
@@ -24,7 +24,7 @@ namespace FESGameplayAbilitySystem
         {
             ReadOnlyDescription = "Holds a channeling state for the assigned duration, and updates the Slider value while doing so";
         }
-        public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
+        public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             float elapsedDuration = 0f;
 

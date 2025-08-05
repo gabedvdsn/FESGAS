@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
         public List<GameplayEffectScriptableObject> Effects;
         public int BetweenApplicationDelayMilliseconds;
         
-        public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
+        public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase target))
             {

@@ -8,7 +8,7 @@ namespace FESGameplayAbilitySystem
     public class SelectGASTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
     {
 
-        public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
+        public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             // wait for response from some cursor manager that receives mouse input and finds the selected gameobject that has a GASComponent
             // await CursorManager.Instance.SetSelectTargetObjectMode();

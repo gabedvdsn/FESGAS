@@ -4,9 +4,25 @@ namespace FESGameplayAbilitySystem
 {
     public interface ITag
     {
-        public static IntegerTag Create(int key = 0)
+        private static int nextFree = 0;
+        private static int last = 0;
+
+        public static IntegerTag Create()
         {
+            last = nextFree;
+            return new IntegerTag(nextFree++);
+        }
+
+        public static IntegerTag Create(int key)
+        {
+            if (key >= nextFree) nextFree = key + 1;
+            last = key;
             return new IntegerTag(key);
+        }
+
+        public static IntegerTag Last()
+        {
+            return new IntegerTag(last);
         }
 
         public bool Compare(ITag other);

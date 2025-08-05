@@ -8,7 +8,7 @@ namespace FESGameplayAbilitySystem
     public class SelectPositionTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
     {
 
-        public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
+        public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             while (true)
             {

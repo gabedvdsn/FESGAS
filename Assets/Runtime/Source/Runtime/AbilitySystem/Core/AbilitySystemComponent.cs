@@ -10,6 +10,12 @@ namespace FESGameplayAbilitySystem
 {
     public class AbilitySystemComponent : MonoBehaviour
     {
+        #region Constants
+
+        public const ESourceTargetData AbilityDerivationPolicy = ESourceTargetData.Source;
+        
+        #endregion
+        
         protected EAbilityActivationPolicy activationPolicy;
         protected int maxAbilities;
         protected List<AbstractImpactWorkerScriptableObject> impactWorkers;
@@ -248,7 +254,7 @@ namespace FESGameplayAbilitySystem
         {
             container.Spec.ApplyUsageEffects();
             return container.Spec.Base.Proxy.UseImplicitInstructions 
-                ? container.ActivateAbility(ProxyDataPacket.GenerateFrom(container.Spec, System, container.Spec.Base.Proxy.OwnerAs)) 
+                ? container.ActivateAbility(AbilityDataPacket.GenerateFrom(container.Spec, System, container.Spec.Base.Proxy.OwnerAs)) 
                 : container.ActivateAbility(null);
         }
 
@@ -360,12 +366,12 @@ namespace FESGameplayAbilitySystem
                 ResetTokens();
             }
             
-            public bool ActivateAbility(ProxyDataPacket implicitData)
+            public bool ActivateAbility(AbilityDataPacket implicitData)
             {
                 if (IsActive || IsTargeting) return false;  // Prevent reactivation mid-use
                 
                 if (Spec.Owner.FindAbilitySystem(out var abil)) abil.ClaimActive(this);
-                implicitData.AddPayload(GameRoot.DerivationTag, ESourceTargetData.Data, Spec);
+                implicitData.AddPayload(GameRoot.DerivationTag, AbilityDerivationPolicy, Spec);
                 
                 ResetTokens();
                 AwaitAbility(implicitData).Forget();
@@ -373,7 +379,7 @@ namespace FESGameplayAbilitySystem
                 return true;
             }
 
-            private async UniTaskVoid AwaitAbility(ProxyDataPacket data)
+            private async UniTaskVoid AwaitAbility(AbilityDataPacket data)
             {
                 bool targetingCancelled = false;
                 try

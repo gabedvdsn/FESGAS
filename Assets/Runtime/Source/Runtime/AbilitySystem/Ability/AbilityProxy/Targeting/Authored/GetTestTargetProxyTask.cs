@@ -7,7 +7,7 @@ namespace FESGameplayAbilitySystem
     [CreateAssetMenu(fileName = "TestSelectTarget_", menuName = "FESGAS/Ability/Targeting/Select Target Test")]
     public class GetTestTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
     {
-        public override UniTask Activate(ProxyDataPacket data, CancellationToken token)
+        public override UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             var comps = GameObject.FindObjectsByType<GASComponentBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             if (!data.TryGetSource(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase source))

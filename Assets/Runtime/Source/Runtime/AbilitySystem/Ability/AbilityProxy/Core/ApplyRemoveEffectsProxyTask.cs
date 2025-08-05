@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
     {
         public List<GameplayEffectScriptableObject> Effects;
 
-        public override void Prepare(ProxyDataPacket data)
+        public override void Prepare(AbilityDataPacket data)
         {
             if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase target))
             {
@@ -19,12 +19,12 @@ namespace FESGameplayAbilitySystem
             foreach (GameplayEffectScriptableObject effect in Effects) target.ApplyGameplayEffect(target.GenerateEffectSpec(data.Spec, effect));
         }
 
-        public override async UniTask Activate(ProxyDataPacket data, CancellationToken token)
+        public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             await UniTask.CompletedTask;
         }
         
-        public override void Clean(ProxyDataPacket data)
+        public override void Clean(AbilityDataPacket data)
         {
             if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase target))
             {
