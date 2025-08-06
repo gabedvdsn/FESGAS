@@ -24,6 +24,7 @@ namespace FESGameplayAbilitySystem
         public EAbilityType Type;
         public bool ActivateImmediately;
         public bool AlwaysValidToActivate;
+        public int Layer = 0;
 
     }
 }

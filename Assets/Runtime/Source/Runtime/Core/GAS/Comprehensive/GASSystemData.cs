@@ -63,7 +63,6 @@ namespace FESGameplayAbilitySystem
     public interface ISystemData
     {
         public EAbilityActivationPolicy GetActivationPolicy();
-        public int GetMaxAbilities();
         public List<AbilityScriptableObject> GetStartingAbilities();
         public bool GetAllowDuplicateAbilities();
         

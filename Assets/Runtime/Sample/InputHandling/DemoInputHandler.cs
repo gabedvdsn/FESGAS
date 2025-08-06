@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem.Demo
         {
             for (int i = 0; i < AbilityKeyMaps.Count; i++)
             {
-                if (Input.GetKeyDown(AbilityKeyMaps[i])) System.AbilitySystem.TryActivateAbility(i);
+                if (Input.GetKeyDown(AbilityKeyMaps[i])) System.AbilitySystem.TryActivateAbility(new AbilitySystemComponent.AbilityActivationRequest(0, i));
             }
         }
     }

@@ -21,7 +21,6 @@ namespace FESGameplayAbilitySystem.Demo
 
         public void IncrementLevel(int amount)
         {
-            if (level + amount < 1 || level + amount > Source.AbilitySystem.GetMaxAbilityLevel()) return;
             level += amount;
             Source.AbilitySystem.SetAbilitiesLevel(level);
             LevelText.text = level.ToString();

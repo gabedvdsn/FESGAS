@@ -17,19 +17,36 @@ namespace FESGameplayAbilitySystem
         #endregion
         
         protected EAbilityActivationPolicy activationPolicy;
-        protected int maxAbilities;
         protected List<AbstractImpactWorkerScriptableObject> impactWorkers;
         protected List<AbilityScriptableObject> startingAbilities;
         protected bool allowDuplicateAbilities;
         
         private GASComponentBase System;
-        private Dictionary<int, AbilitySpecContainer> AbilityCache = new();
+        private Dictionary<int, AbilityCacheLayer> AbilityCache = new();
+
+        private struct AbilityCacheLayer
+        {
+            public Dictionary<int, AbilitySpecContainer> Cache;
+        }
+        
         private ImpactWorkerCache ImpactWorkerCache;
 
         public bool Executing => active && activeContainer is not null;
         private bool active;
         private AbilitySpecContainer activeContainer = null;
-        private Queue<int> activationQueue = new();
+        private Queue<AbilityActivationRequest> activationQueue = new();
+
+        public struct AbilityActivationRequest
+        {
+            public int Layer;
+            public int Index;
+
+            public AbilityActivationRequest(int layer, int index)
+            {
+                Layer = layer;
+                Index = index;
+            }
+        }
 
         private bool _enabled;
         public bool Enabled
@@ -43,8 +60,6 @@ namespace FESGameplayAbilitySystem
                 _enabled = value;
             }
         }
-        public List<AbilityScriptableObject> GrantedAbilities => AbilityCache.Values.Select(container => container.Spec.Base).ToList();
-        public int CountGrantedAbilities => AbilityCache.Count;
         
         #region Callbacks
 
@@ -125,7 +140,7 @@ namespace FESGameplayAbilitySystem
         public virtual void Initialize(GASComponentBase system)
         {
             System = system;
-            AbilityCache = new Dictionary<int, AbilitySpecContainer>();
+            AbilityCache = new Dictionary<int, AbilityCacheLayer>();
             if (ImpactWorkerCache is null) ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
             
             foreach (AbilityScriptableObject ability in startingAbilities)
@@ -139,7 +154,6 @@ namespace FESGameplayAbilitySystem
         public void ProvidePrerequisiteData(ISystemData systemData)
         {
             activationPolicy = systemData.GetActivationPolicy();
-            maxAbilities = systemData.GetMaxAbilities();
             impactWorkers = systemData.GetImpactWorkers();
             startingAbilities = systemData.GetStartingAbilities();
             allowDuplicateAbilities = systemData.GetAllowDuplicateAbilities();
@@ -149,128 +163,70 @@ namespace FESGameplayAbilitySystem
         
         public void SetAbilitiesLevel(int level)
         {
-            foreach (AbilitySpecContainer container in AbilityCache.Values)
+            foreach (AbilityCacheLayer layer in AbilityCache.Values)
             {
-                container.Spec.SetLevel(Mathf.Min(level, container.Spec.Base.MaxLevel));
+                foreach (var container in layer.Cache.Values)
+                {
+                    container.Spec.SetLevel(Mathf.Min(level, container.Spec.Base.MaxLevel));
+                }
             }
-        }
-
-        public int GetMaxAbilityLevel()
-        {
-            return AbilityCache.Values.Max(container => container.Spec.Base.MaxLevel);
         }
         
         #region Ability Managing
-
-        public bool CanGiveAbility(AbilityScriptableObject ability) => HasRoomInCache() && !HasAbility(ability);
-        
-        public bool HasRoomInCache() => AbilityCache.Count < maxAbilities;
         
         public bool HasAbility(AbilityScriptableObject ability)
         {
-            if (allowDuplicateAbilities) return false;
-            return AbilityCache.Values.Any(c => c.Spec.Base == ability);
+            return AbilityCache.Keys.Any(layer => HasAbility(ability, layer));
+        }
+
+        public bool HasAbility(AbilityScriptableObject ability, int layer)
+        {
+            return AbilityCache[layer].Cache.Values.Any(c => c.Spec.Base == ability);
         }
 
         private bool TryGetAbilityContainer(AbilityScriptableObject ability, out AbilitySpecContainer container)
         {
-            foreach (AbilitySpecContainer _container in AbilityCache.Values.Where(_container => _container.Spec.Base == ability))
+            foreach (int layer in AbilityCache.Keys)
             {
-                container = _container;
-                Debug.Log($"Successfully found container");
-                return true;
+                if (TryGetAbilityContainer(ability, layer, out container)) return true;
             }
 
-            Debug.Log($"Did not find container");
-            container = null;
+            container = default;
             return false;
         }
         
-        public bool GiveAbility(AbilityScriptableObject ability, int Level, out int abilityIndex)
+        private bool TryGetAbilityContainer(AbilityScriptableObject ability, int layer, out AbilitySpecContainer container)
         {
-            abilityIndex = -1;
-            if (!CanGiveAbility(ability)) return false;
-            
-            int index = GetFirstAvailableCacheIndex();
-            if (index < 0) return false;
-            abilityIndex = index;
-            
-            AbilitySpecContainer container = new AbilitySpecContainer(ability.Generate(System, Level));
-            AbilityCache[index] = container;
-
-            InitializeNewAbility(index, ability);
-            
-            return true;
-        }
-
-        public bool RevokeAbility(AbilityScriptableObject ability)
-        {
-            return TryGetCacheIndexOf(ability, out int index) && RevokeAbility(index);
-        }
-
-        public bool RevokeAbility(int index)
-        {
-            if (!AbilityCache.ContainsKey(index)) return false; 
-            
-            AbilityCache[index].CleanAndRelease();
-            System.TagCache.RemoveTags(AbilityCache[index].Spec.Base.Tags.PassivelyGrantedTags);
-
-            return AbilityCache.Remove(index);
-        }
-
-        public bool SwapAbilityIndices(AbilityScriptableObject ability1, AbilityScriptableObject ability2)
-        {
-            if (!(TryGetCacheIndexOf(ability1, out int firstIndex) && TryGetCacheIndexOf(ability2, out int secondIndex))) return false;
-
-            return SwapAbilities(firstIndex, secondIndex);
-            /*(AbilityCache[firstIndex], AbilityCache[secondIndex]) = (AbilityCache[secondIndex], AbilityCache[firstIndex]);
-            return true;*/
-        }
-
-        public bool SwapAbilities(int index1, int index2)
-        {
-            if (AbilityCache.ContainsKey(index1))
+            foreach (var _container in AbilityCache[layer].Cache.Values.Where(_container => _container.Spec.Base == ability))
             {
-                if (AbilityCache.ContainsKey(index1)) (AbilityCache[index1], AbilityCache[index2]) = (AbilityCache[index2], AbilityCache[index1]);
-                else if (index2 < maxAbilities)
-                {
-                    AbilityCache[index2] = AbilityCache[index1];
-                    AbilityCache.Remove(index1);
-                }
-
-                return true;
-            }
-            if (AbilityCache.ContainsKey(index2))
-            {
-                if (index1 < maxAbilities)
-                {
-                    AbilityCache[index1] = AbilityCache[index2];
-                    AbilityCache.Remove(index2);
-                }
-
+                container = _container;
                 return true;
             }
 
+            container = default;
             return false;
         }
-
-        public bool ReplaceAbilityAtIndex(int replaceIndex, AbilityScriptableObject ability, int level)
+        
+        public bool GiveAbility(AbilityScriptableObject ability, int level, out int abilityIndex)
         {
-            if (HasAbility(ability)) return false;
-            if (AbilityCache.ContainsKey(replaceIndex)) RevokeAbility(replaceIndex);
+            abilityIndex = -1;
+            if (!allowDuplicateAbilities && HasAbility(ability, ability.Definition.Layer)) return false;
+            
+            abilityIndex = GetFirstAvailableCacheIndex(ability.Definition.Layer);
+            if (abilityIndex < 0) return false;
             
             AbilitySpecContainer container = new AbilitySpecContainer(ability.Generate(System, level));
-            AbilityCache[replaceIndex] = container;
+            AbilityCache[ability.Definition.Layer].Cache[abilityIndex] = container;
 
-            InitializeNewAbility(replaceIndex, ability);
-
+            InitializeNewAbility(abilityIndex, ability);
+            
             return true;
         }
-
+        
         private bool TryGetCacheIndexOf(AbilityScriptableObject ability, out int cacheIndex)
         {
             cacheIndex = -1;
-            foreach (int index in AbilityCache.Keys.Where(index => AbilityCache[index].Spec.Base == ability))
+            foreach (int index in AbilityCache[ability.Definition.Layer].Cache.Keys.Where(index => AbilityCache[ability.Definition.Layer].Cache[index].Spec.Base == ability))
             {
                 cacheIndex = index;
                 return true;
@@ -279,12 +235,11 @@ namespace FESGameplayAbilitySystem
             return false;
         }
 
-        private int GetFirstAvailableCacheIndex()
+        private int GetFirstAvailableCacheIndex(int layer)
         {
-            if (!HasRoomInCache()) return -1;
-            for (int i = 0; i <= AbilityCache.Count; i++)
+            for (int i = AbilityCache[layer].Cache.Count; i >= 0; i--)
             {
-                if (!AbilityCache.ContainsKey(i)) return i;
+                if (!AbilityCache[layer].Cache.ContainsKey(i)) return i;
             }
 
             return -1;
@@ -294,16 +249,17 @@ namespace FESGameplayAbilitySystem
         {
             System.TagCache.AddTags(ability.Tags.PassivelyGrantedTags);
 
+            var req = new AbilityActivationRequest(ability.Definition.Layer, abilityIndex);
             switch (ability.Definition.Type)
             {
                 case EAbilityType.Activated:
-                    if (ability.Definition.ActivateImmediately) TryActivateAbility(abilityIndex);
+                    if (ability.Definition.ActivateImmediately) TryActivateAbility(req);
                     break;
                 case EAbilityType.AlwaysActive:
-                    TryActivateAbility(abilityIndex);
+                    TryActivateAbility(req);
                     break;
                 case EAbilityType.Toggled:
-                    if (ability.Definition.ActivateImmediately) TryActivateAbility(abilityIndex);
+                    if (ability.Definition.ActivateImmediately) TryActivateAbility(req);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -314,31 +270,31 @@ namespace FESGameplayAbilitySystem
 
         #region Ability Handling
 
-        public bool CanActivateAbility(int index)
+        public bool CanActivateAbility(int layer, int index)
         {
-            return AbilityCache.TryGetValue(index, out AbilitySpecContainer container)
+            return AbilityCache[layer].Cache.TryGetValue(index, out AbilitySpecContainer container)
                    && container.Spec.ValidateActivationRequirements()
                    && (!container.Spec.Base.IgnoreWhenLevelZero || container.Spec.Level > 0);
         }
 
-        public bool TryActivateAbility(int abilityIndex)
+        public bool TryActivateAbility(AbilityActivationRequest req)
         {
-            if (!CanActivateAbility(abilityIndex)) return false;
-            return ProcessActivationRequest(abilityIndex);
+            if (!CanActivateAbility(req.Layer, req.Index)) return false;
+            return ProcessActivationRequest(req.Layer, req.Index);
         }
 
-        private bool ProcessActivationRequest(int abilityIndex)
+        private bool ProcessActivationRequest(int layer, int abilityIndex)
         {
-            if (AbilityCache[abilityIndex].Spec.Base.Definition.AlwaysValidToActivate)
+            if (AbilityCache[layer].Cache[abilityIndex].Spec.Base.Definition.AlwaysValidToActivate)
             {
-                return ActivateAbility(AbilityCache[abilityIndex]);
+                return ActivateAbility(AbilityCache[layer].Cache[abilityIndex]);
             }
             
             return activationPolicy switch
             {
-                EAbilityActivationPolicy.NoRestrictions => NoRestrictionsTargetingValidation(abilityIndex) && ActivateAbility(AbilityCache[abilityIndex]),
-                EAbilityActivationPolicy.SingleActive => !Executing && ActivateAbility(AbilityCache[abilityIndex]),
-                EAbilityActivationPolicy.SingleActiveQueue => !Executing ? ActivateAbility(AbilityCache[abilityIndex]) : QueueAbilityActivation(abilityIndex),
+                EAbilityActivationPolicy.NoRestrictions => NoRestrictionsTargetingValidation(layer, abilityIndex) && ActivateAbility(AbilityCache[layer].Cache[abilityIndex]),
+                EAbilityActivationPolicy.SingleActive => !Executing && ActivateAbility(AbilityCache[layer].Cache[abilityIndex]),
+                EAbilityActivationPolicy.SingleActiveQueue => !Executing ? ActivateAbility(AbilityCache[layer].Cache[abilityIndex]) : QueueAbilityActivation(layer, abilityIndex),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -346,13 +302,14 @@ namespace FESGameplayAbilitySystem
         /// <summary>
         /// Ensures that the same targeting proxy task is not active at the same time when using NoRestrictions policy.
         /// </summary>
+        /// <param name="layer">Target ability layer</param>
         /// <param name="abilityIndex">Index of the activated ability</param>
         /// <returns></returns>
-        private bool NoRestrictionsTargetingValidation(int abilityIndex)
+        private bool NoRestrictionsTargetingValidation(int layer, int abilityIndex)
         {
             if (!Executing) return true;
             if (!activeContainer.IsTargeting) return true;
-            return activeContainer.Spec.Base.Proxy.TargetingProxy != AbilityCache[abilityIndex].Spec.Base.Proxy.TargetingProxy;
+            return activeContainer.Spec.Base.Proxy.TargetingProxy != AbilityCache[layer].Cache[abilityIndex].Spec.Base.Proxy.TargetingProxy;
         }
         
         private bool ActivateAbility(AbilitySpecContainer container)
@@ -363,9 +320,9 @@ namespace FESGameplayAbilitySystem
                 : container.ActivateAbility(null);
         }
 
-        private bool QueueAbilityActivation(int abilityIndex)
+        private bool QueueAbilityActivation(int layer, int abilityIndex)
         {
-            activationQueue.Enqueue(abilityIndex);
+            activationQueue.Enqueue(new AbilityActivationRequest(layer, abilityIndex));
 
             return true;
         }
@@ -374,12 +331,24 @@ namespace FESGameplayAbilitySystem
         {
             if (AbilityCache is null) return;
             
-            foreach (int index in AbilityCache.Keys)
+            foreach (int layer in AbilityCache.Keys)
             {
-                AbilityCache[index].CleanAndRelease();
+                ClearAbilityCache(layer);
             }
 
             AbilityCache.Clear();
+        }
+        
+        private void ClearAbilityCache(int layer)
+        {
+            if (AbilityCache is null) return;
+            
+            foreach (int index in AbilityCache.Keys)
+            {
+                AbilityCache[layer].Cache[index].CleanAndRelease();
+            }
+
+            AbilityCache[layer].Cache.Clear();
         }
 
         public void Inject(EAbilityInjection injection)

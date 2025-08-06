@@ -14,10 +14,6 @@ namespace FESGameplayAbilitySystem
         [Header("Ability System")] 
         
         public EAbilityActivationPolicy ActivationPolicy;
-        
-        [Space(5)]
-        
-        public int MaxAbilities = 99;
         public List<AbilityScriptableObject> StartingAbilities;
         
         [Header("Impact Workers")]
@@ -27,7 +23,6 @@ namespace FESGameplayAbilitySystem
         public override void Initialize(GASComponentBase system)
         {
             activationPolicy = ActivationPolicy;
-            maxAbilities = MaxAbilities;
             impactWorkers = ImpactWorkers;
             startingAbilities = StartingAbilities;
             
