@@ -44,9 +44,6 @@ namespace FESGameplayAbilitySystem
         {
             activeMono.SendProcessData(DataPacket);
             activeMono.WhenInitialize(relay);
-            Debug.Log($"\t{ProcessName} {IsInitialized()}");
-            
-            ProcessControl.Instance.AddMonoProcess(activeMono, DataPacket);
         }
 
         public override void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay)

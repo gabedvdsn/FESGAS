@@ -106,8 +106,6 @@ namespace FESGameplayAbilitySystem
         // Register a new process and handler to a PCB
         public bool Register(AbstractProcessWrapper process, IGameplayProcessHandler handler, out ProcessRelay relay)
         {
-            Debug.Log($"\tAsk reg {process} {process.IsInitialized()}");
-            
             relay = default;
 
             if (process.IsInitialized()) return false;
@@ -142,16 +140,43 @@ namespace FESGameplayAbilitySystem
         
         public bool Register(AbstractMonoProcess process, ProcessDataPacket data, out ProcessRelay relay)
         {
-            if (process is not null)
-                    return Register
+            relay = default;
+            
+            if (process.IsInitialized) return false;
+            if (State is EProcessControlState.Closed 
+                or EProcessControlState.ClosedWaiting 
+                or EProcessControlState.Terminated 
+                or EProcessControlState.TerminatedImmediately) return false;
+
+            var wrapper = new MonoWrapperProcess(process, data);
+            
+            var pcb = ProcessControlBlock.Generate(
+                NextCacheIndex,
+                wrapper, data.Handler
+            );
+
+            pcb.isMono = true;
+            
+            SetProcess(pcb);
+            
+            relay = pcb.Relay;
+            data.Handler?.HandlerSubscribeProcess(relay);
+            
+            return true;
+            
+            /*if (process is not null)
+            {
+                var status = Register
                 (
                     new MonoWrapperProcess(process, data),
                     data.Handler,
                     out relay
                 );
+                if (status) active[relay.CacheIndex].isMono = true;
+                return status;
+            }
             relay = default;
-            return false;
-
+            return false;*/
         }
         
         // Unregister a PCB
@@ -258,6 +283,65 @@ namespace FESGameplayAbilitySystem
                 }
                 
                 pcb.Initialize();
+                
+                if (pcb.isMono)
+                {
+                    PrepareMonoProcess();
+                }
+            }
+
+            void PrepareMonoProcess()
+            {
+                if (!pcb.Process.TryGetProcess(out AbstractMonoProcess process))
+                {
+                    pcb.isMono = false;
+                    return; 
+                }
+                
+                var parents = GetParentProcesses(process.transform.parent);
+                var children = GetChildProcesses(process.transform);
+                var local = GetLocalProcesses();
+                
+                foreach (var parent in parents) active[parent.Relay.CacheIndex].SetChild(pcb);
+                foreach (var child in children) active[child.Relay.CacheIndex].SetParent(pcb);
+                foreach (var loc in local) active[loc.Relay.CacheIndex].SetLocal(pcb);
+                
+                return;
+                
+                AbstractMonoProcess[] GetParentProcesses(Transform t)
+                {
+                    while (true)
+                    {
+                        if (t is null) break;
+                        var _parents = t.GetComponents<AbstractMonoProcess>();
+                        if (_parents.Length > 0) return _parents;
+                        t = t.parent;
+                    }
+
+                    return null;
+                }
+
+                AbstractMonoProcess[] GetLocalProcesses()
+                {
+                    return process.GetComponents<AbstractMonoProcess>().Where(p => p != process).ToArray();
+                }
+
+                AbstractMonoProcess[] GetChildProcesses(Transform t)
+                {
+                    var _children = new List<AbstractMonoProcess>();
+                    for (int c = 0; c < t.childCount; c++)
+                    {
+                        _children.AddRange(RecGetChildProcesses(t.GetChild(c)));
+                    }
+
+                    return _children.ToArray();
+                    
+                    IEnumerable<AbstractMonoProcess> RecGetChildProcesses(Transform _t)
+                    {
+                        var _recChildren = _t.GetComponents<AbstractMonoProcess>();
+                        return _recChildren.Length > 0 ? _recChildren : GetChildProcesses(_t);
+                    }
+                }
             }
         }
         
@@ -456,12 +540,12 @@ namespace FESGameplayAbilitySystem
 
         public void AddMonoProcess(AbstractMonoProcess mono, ProcessDataPacket data)
         {
-            MonoTree.Add(mono, data);
+            //MonoTree.Add(mono, data);
         }
 
         public void RemoveMonoProcess(AbstractMonoProcess process)
         {
-            MonoTree.Remove(process, out _);
+            //MonoTree.Remove(process, out _);
         }
 
         /// <summary>
@@ -472,6 +556,8 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         public void RegulateMonoProcess(AbstractMonoProcess mono, EProcessState state)
         {
+            
+            return;
             if (mono.Relay is null || !active.ContainsKey(mono.Relay.CacheIndex)) return;
 
             var pids = MonoTree.Get(mono).GetPIDs();

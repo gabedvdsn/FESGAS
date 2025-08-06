@@ -43,7 +43,35 @@ namespace FESGameplayAbilitySystem
         private bool hasRun;
         public bool MidRun => midRun;
         private bool midRun;
+        
+        #region Mono Hierarchy Aspects
 
+        public bool isMono;
+        private ProcessControlBlock Local;
+        private ProcessControlBlock Parent;
+        private ProcessControlBlock Child;
+        private bool controlled;
+
+        public void SetLocal(ProcessControlBlock other)
+        {
+            if (Local is null) Local = other;
+            else Local.SetLocal(other);
+        }
+        
+        public void SetParent(ProcessControlBlock other)
+        {
+            if (Parent is null) Parent = other;
+            else Parent.SetParent(other);
+        }
+        
+        public void SetChild(ProcessControlBlock other)
+        {
+            if (Child is null) Child = other;
+            else Child.SetChild(other);
+        }
+
+        #endregion
+        
         private CancellationTokenSource cts;
         
         protected ProcessControlBlock(int cacheIndex, AbstractProcessWrapper process, IGameplayProcessHandler handler)
