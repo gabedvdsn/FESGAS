@@ -259,9 +259,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f6b18a315674d38aa9bb8351b470b45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ProcessStepPriority: 0
   ProcessLifecycle: 0
   ProcessTiming: 0
+  PriorityMethod: 0
+  ProcessStepPriority: 0
   Instantiator: {fileID: 0}
   InitialPositionTarget: 0
   InitialPositionValue: 0
@@ -289,9 +290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e550daa92bf44990a7067042bece1c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  abilityActive: 0
   ActivationPolicy: 0
-  MaxAbilities: 5
   StartingAbilities:
   - {fileID: 11400000, guid: 2f4f962a331e64346ad51ca233b4c6d6, type: 2}
   - {fileID: 11400000, guid: 840dc75d468b1454ebf42676ea0a599b, type: 2}
@@ -1350,6 +1349,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AttributeSets:
   - {fileID: 11400000, guid: c52c168a807980d42b5222f7b24722ac, type: 2}
+  - {fileID: 11400000, guid: 28087fa599e6cc1429e7ec34c68f41d2, type: 2}
   Attributes: []
 --- !u!1 &963194225
 GameObject:
@@ -2169,9 +2169,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f6b18a315674d38aa9bb8351b470b45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ProcessStepPriority: 0
   ProcessLifecycle: 0
   ProcessTiming: 0
+  PriorityMethod: 0
+  ProcessStepPriority: 0
   Instantiator: {fileID: 0}
   InitialPositionTarget: 0
   InitialPositionValue: 0
@@ -2199,9 +2200,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e550daa92bf44990a7067042bece1c5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  abilityActive: 0
   ActivationPolicy: 0
-  MaxAbilities: 5
   StartingAbilities: []
   ImpactWorkers: []
 --- !u!114 &1585459093

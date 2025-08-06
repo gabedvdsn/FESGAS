@@ -24,15 +24,18 @@ namespace FESGameplayAbilitySystem
         /// REFACTOR THIS TO REFLECT YOUR ATTRIBUTE NAMING CONVENTION
         ///
         /// With respect to source code:
-        /// Attributes should be named using logical spaces (as opposed to pascal or camel)
+        /// An Attribute's 'Name' field should be written using logical spaces (as opposed to pascal or camel)
+        ///     E.g. "Magic Resistance", "Attack Speed" (whereas the name of the SO object can be anything)
+        ///     cont. these will refactor the names into "MAGIC_RESISTANCE" and "ATTACK_SPEED"
+        ///     cont. these attributes can be requested using 'AttributeLibrary.GetByName('ATTACK_SPEED'
         /// This method replaces capitalizes and replaces spaces with underscores.
         /// </summary>
         /// <param name="attr">The stored name of the attribute</param>
         /// <returns></returns>
-        private string RefactorByNamingConvention(string attr)
+        private static string RefactorByNamingConvention(string attr)
         {
-            string _name = attr.ToUpper();
-            _name = _name.Replace(' ', '_');
+            string _name = attr.ToUpper();  // Capitalize
+            _name = _name.Replace(' ', '_');  // Replace spaces with underscores
             return _name;
         }
         
@@ -62,20 +65,20 @@ namespace FESGameplayAbilitySystem
         }  
 
         public static bool Contains(AttributeScriptableObject attribute) => Contains(attribute.Name);
-        public static bool Contains(string attrName) => Instance.Library.ContainsKey(attrName.ToUpper());
+        public static bool Contains(string attrName) => Instance.Library.ContainsKey(RefactorByNamingConvention(attrName));
         
         public static bool Add(AttributeScriptableObject attribute)
         {
-            var _name = attribute.Name.ToUpper();
+            string _name = RefactorByNamingConvention(attribute.Name);
             if (Instance.Library.ContainsKey(_name)) return false;
-
+            
             Instance.Library[_name] = attribute;
             return true;
         }
 
         public static bool TryGetByName(string attrName, out AttributeScriptableObject attribute)
         {
-            string _name = attrName.ToUpper();
+            string _name = RefactorByNamingConvention(attrName);
             if (!Contains(_name))
             {
                 attribute = default;
@@ -84,6 +87,11 @@ namespace FESGameplayAbilitySystem
 
             attribute = Instance.Library[_name];
             return true;
+        }
+
+        public static AttributeScriptableObject GetByName(string attrName)
+        {
+            return TryGetByName(attrName, out var attr) ? attr : null;
         }
         
         #endregion
