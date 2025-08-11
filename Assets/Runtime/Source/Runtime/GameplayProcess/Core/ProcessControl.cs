@@ -297,6 +297,8 @@ namespace FESGameplayAbilitySystem
                     pcb.isMono = false;
                     return; 
                 }
+
+                return;
                 
                 var parents = GetParentProcesses(process.transform.parent);
                 var children = GetChildProcesses(process.transform);

@@ -15,6 +15,8 @@ namespace FESGameplayAbilitySystem
         private Dictionary<int, CancellationTokenSource> stageSources;
         private UniTaskCompletionSource nextStageSignal;
         private int maintainedStages;
+
+        private bool appliedUsage;
         
         public AbilityProxy(AbilityProxySpecification specification)
         {
@@ -27,6 +29,7 @@ namespace FESGameplayAbilitySystem
             StageIndex = -1;
             stageSources = new Dictionary<int, CancellationTokenSource>();
             maintainedStages = 0;
+            appliedUsage = false;
         }
 
         public void Clean()
@@ -70,6 +73,8 @@ namespace FESGameplayAbilitySystem
             await ActivateNextStage(implicitData, token);
 
             await UniTask.WaitUntil(() => maintainedStages <= 0, cancellationToken: token);
+            
+            if (!appliedUsage && implicitData.Spec is AbilitySpec spec) spec.ApplyUsageEffects();
         }
         
         private async UniTask ActivateNextStage(AbilityDataPacket data, CancellationToken token)
@@ -93,7 +98,12 @@ namespace FESGameplayAbilitySystem
                 finally
                 {
                     Specification.Stages[StageIndex].Tasks.ForEach(task => task.Clean(data));
-
+                    if (Specification.Stages[StageIndex].ApplyUsageEffects && !appliedUsage && data.Spec is AbilitySpec spec)
+                    {
+                        spec.ApplyUsageEffects();
+                        appliedUsage = true;
+                    }
+                    
                     await ActivateNextStage(data, token);
                 }
             }

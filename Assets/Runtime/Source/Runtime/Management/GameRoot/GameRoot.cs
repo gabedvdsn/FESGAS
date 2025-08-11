@@ -16,23 +16,6 @@ namespace FESGameplayAbilitySystem
         public List<AbstractCreateProcessProxyTask> CreateProcessTasks;
         private AbilityDataPacket NativeDataPacket;
         
-        [Header("Defaults")]
-        
-        public MonoProcessParametersScriptableObject DefaultDataParameters;
-
-        [Space(5)] 
-        
-        public GameplayTagScriptableObject MasterTag;
-        public GameplayTagScriptableObject AllyTag;
-        public GameplayTagScriptableObject EnemyTag;
-
-        public static GameplayTagScriptableObject GASTag => Instance.DefaultDataParameters.GAS;
-        public static GameplayTagScriptableObject PositionTag => Instance.DefaultDataParameters.Position;
-        public static GameplayTagScriptableObject RotationTag => Instance.DefaultDataParameters.Rotation;
-        public static GameplayTagScriptableObject TransformTag => Instance.DefaultDataParameters.Transform;
-        public static GameplayTagScriptableObject DerivationTag => Instance.DefaultDataParameters.Derivation;
-        public static GameplayTagScriptableObject GenericTag => Instance.DefaultDataParameters.Generic;
-        
         protected override void Awake()
         {
             if (Instance is not null && Instance != this)
@@ -64,10 +47,10 @@ namespace FESGameplayAbilitySystem
             NativeDataPacket = AbilityDataPacket.GenerateFrom
             (
                 IEffectDerivation.GenerateSourceDerivation(this),
-                this, ESourceTargetExpanded.Both
+                false
             );
             
-            NativeDataPacket.AddPayload(ITag.Create(), ESourceTargetData.Source, transform);
+            NativeDataPacket.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), transform);
             
             RunProcessTasks(CreateProcessTasks);
         }

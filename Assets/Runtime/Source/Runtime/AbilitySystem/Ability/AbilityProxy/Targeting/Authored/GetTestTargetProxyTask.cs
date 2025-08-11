@@ -10,16 +10,18 @@ namespace FESGameplayAbilitySystem
         public override UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             var comps = GameObject.FindObjectsByType<GASComponentBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            if (!data.TryGetSource(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase source))
+            if (!data.TryGet(ITag.Get(TagChannels.PAYLOAD_SOURCE), EProxyDataValueTarget.Primary, out ISource source))
             {
                 return UniTask.CompletedTask;
             }
+
+            var gas = source.AsGAS();
             
             foreach (var comp in comps)
             {
-                if (comp != source && comp != GameRoot.Instance)
+                if (comp != gas && comp != GameRoot.Instance)
                 {
-                    data.AddPayload(GameRoot.GASTag, ESourceTargetData.Target, comp);
+                    data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TARGET), comp);
                     break;
                 }
             }

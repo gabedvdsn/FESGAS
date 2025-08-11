@@ -13,7 +13,7 @@ namespace FESGameplayAbilitySystem
         
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
-            if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase target))
+            if (!data.TryGet(ITag.Get(TagChannels.PAYLOAD_TARGET), EProxyDataValueTarget.Primary, out GASComponentBase target))
             {
                 await UniTask.CompletedTask;
                 return;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
@@ -11,11 +12,7 @@ namespace FESGameplayAbilitySystem
         [Header("Targeting Instructions")]
         
         public AbstractTargetingProxyTaskScriptableObject TargetingProxy;
-        
-        [Space]
-        
-        public bool UseImplicitInstructions = true;
-        public ESourceTargetExpanded OwnerAs = ESourceTargetExpanded.Source;
+        public bool UseImplicitTargeting = true;
         
         [Header("Proxy Stages")]
         
@@ -32,6 +29,8 @@ namespace FESGameplayAbilitySystem
     {
         public EAnyAllPolicy TaskPolicy;
         public List<AbstractAbilityProxyTaskScriptableObject> Tasks;
+        [Tooltip("After this stage, should the ability usage effects be applied?")]
+        public bool ApplyUsageEffects;
     }
 
     public enum EAnyAllPolicy

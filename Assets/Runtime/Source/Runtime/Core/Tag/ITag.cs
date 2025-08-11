@@ -13,7 +13,7 @@ namespace FESGameplayAbilitySystem
             return new IntegerTag(nextFree++);
         }
 
-        public static IntegerTag Create(int key)
+        public static IntegerTag Get(int key)
         {
             if (key >= nextFree) nextFree = key + 1;
             last = key;

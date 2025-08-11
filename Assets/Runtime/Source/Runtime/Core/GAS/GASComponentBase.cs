@@ -60,7 +60,7 @@ namespace FESGameplayAbilitySystem
             base.WhenInitialize(relay);
 
             // Attempt to find affiliation
-            if (regData.TryGetPayload(GameRoot.GenericTag, ESourceTargetData.Data, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
+            if (regData.TryGet(ITag.Get(TagChannels.PAYLOAD_AFFILIATION), EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
             {
                 Identity.Affiliation = affiliation;
             }

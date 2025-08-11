@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
                     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                     if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity))
                     {
-                        data.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, hitInfo.point);
+                        data.AddPayload(ITag.Get(TagChannels.PAYLOAD_POSITION), hitInfo.point);
                         break;
                     }
                 }

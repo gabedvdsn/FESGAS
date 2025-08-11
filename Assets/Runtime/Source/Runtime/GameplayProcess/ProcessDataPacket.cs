@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Codice.Client.BaseCommands;
 using JetBrains.Annotations;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -22,7 +23,7 @@ namespace FESGameplayAbilitySystem
     /// </summary>
     public class ProcessDataPacket
     {
-        protected Dictionary<ITag, Dictionary<ESourceTargetData, List<object>>> Payload = new(new TagComparer());
+        protected Dictionary<ITag, List<object>> Payload = new(new TagComparer());
 
         public IGameplayProcessHandler Handler;
 
@@ -39,14 +40,14 @@ namespace FESGameplayAbilitySystem
         public static ProcessDataPacket RootDefault()
         {
             var data = new ProcessDataPacket();
-            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), GameRoot.Instance.transform);
             return data;
         }
 
         public static ProcessDataPacket RootDefault(IGameplayProcessHandler handler)
         {
             var data = new ProcessDataPacket(handler);
-            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), GameRoot.Instance.transform);
             return data;
         }
         
@@ -59,7 +60,7 @@ namespace FESGameplayAbilitySystem
             var data = new ProcessDataPacket();
             
             if (obj.GetComponentInParent<GameRoot>()) return data;
-            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), GameRoot.Instance.transform);
             return data;
         }
 
@@ -68,7 +69,7 @@ namespace FESGameplayAbilitySystem
             var data = new ProcessDataPacket(handler);
             
             if (obj.GetComponentInParent<GameRoot>()) return data;
-            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, GameRoot.Instance.transform);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), GameRoot.Instance.transform);
             return data;
         }
 
@@ -76,9 +77,9 @@ namespace FESGameplayAbilitySystem
         {
             var data = new ProcessDataPacket();
             
-            data.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, obj.transform.position);
-            data.AddPayload(GameRoot.RotationTag, ESourceTargetData.Data, obj.transform.rotation);
-            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, obj.transform.parent);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_POSITION), obj.transform.position);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_ROTATION), obj.transform.rotation);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), obj.transform.parent);
 
             return data;
         }
@@ -87,41 +88,41 @@ namespace FESGameplayAbilitySystem
         {
             var data = new ProcessDataPacket(handler);
             
-            data.AddPayload(GameRoot.PositionTag, ESourceTargetData.Data, obj.transform.position);
-            data.AddPayload(GameRoot.RotationTag, ESourceTargetData.Data, obj.transform.rotation);
-            data.AddPayload(GameRoot.TransformTag, ESourceTargetData.Data, obj.transform.parent);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_POSITION), obj.transform.position);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_ROTATION), obj.transform.rotation);
+            data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), obj.transform.parent);
 
             return data;
         }
 
         #region Core
-        
-        public void AddPayload(GASComponentBase component, ESourceTargetData sourceTarget, bool noDuplicates = true)
-        {
-            if (noDuplicates && PayloadContains(component, GameRoot.GASTag, sourceTarget)) return;
-            AddPayload(GameRoot.GASTag, sourceTarget, component);
-        }
 
-        public void AddPayload<T>(ITag key, ESourceTargetData sourceTarget, T value)
+        public void AddPayload<T>(ITag key, T value)
         {
-            if (!Payload.ContainsKey(key)) Payload[key] = new Dictionary<ESourceTargetData, List<object>>();
-            Payload[key].SafeAdd(sourceTarget, value);
+            if (!Payload.ContainsKey(key))
+            {
+                Payload[key] = new List<object>()
+                {
+                    value
+                };
+            }
+            else Payload[key].Add(value);
         }
         
-        public bool TryGetPayload<T>(ITag key, ESourceTargetData sourceTarget, EProxyDataValueTarget target, out T value)
+        public bool TryGet<T>(ITag key, EProxyDataValueTarget target, out T value)
         {
             value = default;
             
-            if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget))
+            if (!Payload.ContainsKey(key))
             {
                 return false;
             }
 
             object o = target switch
             {
-                EProxyDataValueTarget.Primary => Payload[key][sourceTarget][0],
-                EProxyDataValueTarget.Any => Payload[key][sourceTarget].RandomChoice(),
-                EProxyDataValueTarget.Last => Payload[key][sourceTarget][^1],
+                EProxyDataValueTarget.Primary => Payload[key][0],
+                EProxyDataValueTarget.Any => Payload[key].RandomChoice(),
+                EProxyDataValueTarget.Last => Payload[key][^1],
                 _ => throw new ArgumentOutOfRangeException(nameof(target), target, null)
             };
 
@@ -130,16 +131,32 @@ namespace FESGameplayAbilitySystem
             return value is not null;
         }
 
-        public bool TryGetPayload<T>(ITag key, ESourceTargetData sourceTarget, out DataValue<T> dataValue)
+        public bool TryGetFirst<T>(ITag key, out T value)
         {
-            if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget))
+            value = default;
+            if (!Payload.ContainsKey(key)) return false;
+            
+            foreach (object o in Payload[key])
+            {
+                if (o is not T cast) continue;
+                
+                value = cast;
+                return true;
+            }
+            
+            return false;
+        }
+        
+        public bool TryGet<T>(ITag key, out DataValue<T> dataValue)
+        {
+            if (!Payload.ContainsKey(key))
             {
                 dataValue = default;
                 return false;
             }
             
             List<T> tObjects = new List<T>();
-            foreach (object o in Payload[key][sourceTarget])
+            foreach (object o in Payload[key])
             {
                 if (o is T cast) tObjects.Add(cast);
             }
@@ -147,27 +164,12 @@ namespace FESGameplayAbilitySystem
             dataValue = new DataValue<T>(tObjects);
             return true;
         }
-
-        public bool TryGetTarget<T>(ITag key, EProxyDataValueTarget target, out T value)
-        {
-            return TryGetPayload(key, ESourceTargetData.Target, target, out value);
-        }
         
-        public bool TryGetSource<T>(ITag key, EProxyDataValueTarget target, out T value)
+        public bool Contains<T>(T value, ITag key)
         {
-            return TryGetPayload(key, ESourceTargetData.Source, target, out value);
-        }
-        
-        public bool TryGetData<T>(ITag key, EProxyDataValueTarget target, out T value)
-        {
-            return TryGetPayload(key, ESourceTargetData.Data, target, out value);
-        }
-        
-        public bool PayloadContains<T>(T value, ITag key, ESourceTargetData sourceTarget)
-        {
-            if (!Payload.ContainsKey(key) || !Payload[key].ContainsKey(sourceTarget)) return false;
+            if (!Payload.ContainsKey(key)) return false;
             
-            foreach (object o in Payload[key][sourceTarget])
+            foreach (object o in Payload[key])
             {
                 if (o is T cast && cast.Equals(value)) return true;
             }

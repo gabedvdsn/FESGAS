@@ -19,21 +19,6 @@ namespace FESGameplayAbilitySystem
         [Tooltip("Uses Object.Instantiate when null")]
         public AbstractMonoProcessInstantiatorScriptableObject Instantiator;
         
-        [Header("Parameter Usage")]
-        
-        public ESourceTargetData InitialPositionTarget = ESourceTargetData.Source;
-        public EProxyDataValueTarget InitialPositionValue = EProxyDataValueTarget.Primary;
-        
-        [Space(5)]
-        
-        public ESourceTargetData InitialRotationTarget = ESourceTargetData.Source;
-        public EProxyDataValueTarget InitialRotationValue = EProxyDataValueTarget.Primary;
-        
-        [Space(5)]
-        
-        public ESourceTargetData ParentTransformTarget = ESourceTargetData.Data;
-        public EProxyDataValueTarget ParentTransformValue = EProxyDataValueTarget.Primary;
-        
         protected ProcessDataPacket regData;
         protected bool processActive;
 
@@ -57,35 +42,35 @@ namespace FESGameplayAbilitySystem
             Relay = relay;
             
             // Transform
-            if (regData.TryGetPayload<Transform>(GameRoot.TransformTag, ParentTransformTarget, ParentTransformValue, out var pt))
+            if (regData.TryGet<Transform>(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), EProxyDataValueTarget.Primary, out var pt))
             {
                 transform.SetParent(pt);
             }
             
             // Position
-            if (regData.TryGetPayload<Vector3>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var pos))
+            if (regData.TryGet<Vector3>(ITag.Get(TagChannels.PAYLOAD_POSITION), EProxyDataValueTarget.Primary, out var pos))
             {
                 transform.position = pos;
             }
-            else if (regData.TryGetPayload<GASComponent>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var gasPos))
+            else if (regData.TryGet<GASComponent>(ITag.Get(TagChannels.PAYLOAD_POSITION), EProxyDataValueTarget.Primary, out var gasPos))
             {
                 transform.position = gasPos.transform.position;
             }
-            else if (regData.TryGetPayload<Transform>(GameRoot.PositionTag, InitialPositionTarget, InitialPositionValue, out var tPos))
+            else if (regData.TryGet<Transform>(ITag.Get(TagChannels.PAYLOAD_POSITION), EProxyDataValueTarget.Primary, out var tPos))
             {
                 transform.position = tPos.position;
             }
             
             // Rotation
-            if (regData.TryGetPayload<Quaternion>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var rot))
+            if (regData.TryGet<Quaternion>(ITag.Get(TagChannels.PAYLOAD_ROTATION), EProxyDataValueTarget.Primary, out var rot))
             {
                 transform.rotation = rot;
             }
-            else if (regData.TryGetPayload<GASComponent>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var gasRot))
+            else if (regData.TryGet<GASComponent>(ITag.Get(TagChannels.PAYLOAD_ROTATION), EProxyDataValueTarget.Primary, out var gasRot))
             {
                 transform.rotation = gasRot.transform.rotation;
             }
-            else if (regData.TryGetPayload<Transform>(GameRoot.RotationTag, InitialRotationTarget, InitialRotationValue, out var tRot))
+            else if (regData.TryGet<Transform>(ITag.Get(TagChannels.PAYLOAD_ROTATION), EProxyDataValueTarget.Primary, out var tRot))
             {
                 transform.rotation = tRot.rotation;
             }

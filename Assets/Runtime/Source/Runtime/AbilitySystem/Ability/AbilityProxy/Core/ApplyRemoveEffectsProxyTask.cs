@@ -12,11 +12,14 @@ namespace FESGameplayAbilitySystem
 
         public override void Prepare(AbilityDataPacket data)
         {
-            if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase target))
+            if (!data.TryGetFirst(ITag.Get(TagChannels.PAYLOAD_TARGET), out ITarget target))
             {
                 return;
             }
-            foreach (GameplayEffectScriptableObject effect in Effects) target.ApplyGameplayEffect(target.GenerateEffectSpec(data.Spec, effect));
+
+            var gas = target.AsGAS();
+            
+            foreach (GameplayEffectScriptableObject effect in Effects) target.ApplyGameplayEffect(gas.GenerateEffectSpec(data.Spec, effect));
         }
 
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
@@ -26,11 +29,12 @@ namespace FESGameplayAbilitySystem
         
         public override void Clean(AbilityDataPacket data)
         {
-            if (!data.TryGetTarget(GameRoot.GASTag, EProxyDataValueTarget.Primary, out GASComponentBase target))
+            if (!data.TryGet(ITag.Get(TagChannels.PAYLOAD_TARGET), EProxyDataValueTarget.Primary, out ITarget target))
             {
                 return;
             }
-            foreach (GameplayEffectScriptableObject effect in Effects) target.RemoveGameplayEffect(effect);
+            var gas = target.AsGAS();
+            foreach (GameplayEffectScriptableObject effect in Effects) gas.RemoveGameplayEffect(effect);
         }
     }
 }

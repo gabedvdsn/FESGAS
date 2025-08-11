@@ -67,12 +67,10 @@ namespace FESGameplayAbilitySystem
         }
     }
 
-    public enum ESourceTargetData
+    public enum EPayloadAccess
     {
-        Data,
-        Source,
-        Target
-        
+        User,
+        System
     }
 
     public enum EProxyDataValueTarget

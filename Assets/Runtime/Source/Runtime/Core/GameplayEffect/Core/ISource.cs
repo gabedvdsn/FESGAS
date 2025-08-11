@@ -24,6 +24,7 @@ namespace FESGameplayAbilitySystem
         {
             return new TargetGASData(this);
         }
+        public GASComponentBase AsGAS() => this is GASComponentBase gas ? gas : null;
     }
 
     public struct TargetGASData
