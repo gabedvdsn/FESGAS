@@ -26,14 +26,14 @@ namespace FESGameplayAbilitySystem
         [Tooltip("Target requirements to use this ability (n/a for non-targeted abilities, e.g. ground cast)")]
         public AvoidRequireTagGroup TargetRequirements;
 
-        public bool ValidateSourceRequirements(GASComponentBase source)
+        public bool ValidateSourceRequirements(ISource source)
         {
-            return SourceRequirements.Validate(source.TagCache.GetAppliedTags());
+            return SourceRequirements.Validate(source.GetAppliedTags());
         }
 
-        public bool ValidateTargetRequirements(GASComponentBase target)
+        public bool ValidateTargetRequirements(ISource target)
         {
-            return TargetRequirements.Validate(target.TagCache.GetAppliedTags());
+            return TargetRequirements.Validate(target.GetAppliedTags());
         }
     }
 }

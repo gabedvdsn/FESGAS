@@ -70,7 +70,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (var containedEffect in Spec.Base.GetContainedEffects(EApplyTickRemove.OnRemove))
             {
-                Spec.GetSource().ApplyGameplayEffect(Spec.Derivation, containedEffect);
+                Spec.Source.ApplyGameplayEffect(Spec.Source.GenerateEffectSpec(Spec.Derivation, containedEffect));
             }
         }
 

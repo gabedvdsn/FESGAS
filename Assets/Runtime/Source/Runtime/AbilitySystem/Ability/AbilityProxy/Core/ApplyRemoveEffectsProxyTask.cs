@@ -12,7 +12,7 @@ namespace FESGameplayAbilitySystem
 
         public override void Prepare(AbilityDataPacket data)
         {
-            if (!data.TryGetFirst(ITag.Get(TagChannels.PAYLOAD_TARGET), out ITarget target))
+            if (!data.TryGetFirst(Tags.PAYLOAD_TARGET, out ITarget target))
             {
                 return;
             }
@@ -29,12 +29,13 @@ namespace FESGameplayAbilitySystem
         
         public override void Clean(AbilityDataPacket data)
         {
-            if (!data.TryGet(ITag.Get(TagChannels.PAYLOAD_TARGET), EProxyDataValueTarget.Primary, out ITarget target))
+            if (!data.TryGet(Tags.PAYLOAD_TARGET, EProxyDataValueTarget.Primary, out ITarget target))
             {
                 return;
             }
             var gas = target.AsGAS();
             foreach (GameplayEffectScriptableObject effect in Effects) gas.RemoveGameplayEffect(effect);
         }
+        public override bool IsCriticalSection => false;
     }
 }

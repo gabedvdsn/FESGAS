@@ -85,11 +85,4 @@ namespace FESGameplayAbilitySystem
             return AbilitySpec.Generate(this, owner, level);
         }
     }
-    
-    public enum EAbilityType
-    {
-        Activated,  // Cast abilities
-        AlwaysActive  // Aura/Passive abilities
-    }
-
 }

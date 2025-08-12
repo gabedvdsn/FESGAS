@@ -9,11 +9,20 @@ namespace FESGameplayAbilitySystem
 
         public static IntegerTag Create()
         {
-            last = nextFree;
-            return new IntegerTag(nextFree++);
+            return Get(nextFree);
         }
 
         public static IntegerTag Get(int key)
+        {
+            int _key = key;
+            while (!Tags.TagIsAvailable(_key)) _key += 1;
+            
+            if (_key >= nextFree) nextFree = _key + 1;
+            last = _key;
+            return new IntegerTag(_key);
+        }
+        
+        public static IntegerTag GetUnsafe(int key)
         {
             if (key >= nextFree) nextFree = key + 1;
             last = key;
@@ -40,54 +49,6 @@ namespace FESGameplayAbilitySystem
         {
             var tag = (IntegerTag)other;
             return tag is not null && tag.key == key;
-        }
-    }
-
-    public class StringTag : ITag
-    {
-        private string key;
-        public StringTag(string key)
-        {
-            this.key = key;
-        }
-        public bool Compare(ITag other)
-        {
-            var tag = (StringTag)other;
-            return tag is not null && tag.key == key;
-
-        }
-    }
-
-    public class SequenceTag : ITag
-    {
-        private ITag key;
-        private SequenceTag Next;
-        public SequenceTag(ITag key, SequenceTag next)
-        {
-            this.key = key;
-            Next = next;
-        }
-        public void Append(SequenceTag other)
-        {
-            if (Next is null) Next = other;
-            else Next.Append(other);
-        }
-        public bool Compare(ITag other)
-        {
-            var tag = (SequenceTag)other;
-            if (tag is null && Next is null)
-            {
-                return key.Compare(other);
-            }
-            return tag is not null && InternalCompare(tag);
-        }
-
-        private bool InternalCompare(SequenceTag other)
-        {
-            bool comp = other.key == key;
-            if (!comp) return false;
-            if (Next is not null && other.Next is not null) return Next.Compare(other.Next);
-            return Next is null && other.Next is null;
         }
     }
 

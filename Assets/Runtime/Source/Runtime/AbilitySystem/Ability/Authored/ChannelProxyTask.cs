@@ -19,6 +19,7 @@ namespace FESGameplayAbilitySystem
         {
             SliderManager.Instance.ToggleSlider(false);
         }
+        public override bool IsCriticalSection => false;
 
         private void OnValidate()
         {

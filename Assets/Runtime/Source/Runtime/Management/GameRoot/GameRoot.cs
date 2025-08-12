@@ -50,7 +50,7 @@ namespace FESGameplayAbilitySystem
                 false
             );
             
-            NativeDataPacket.AddPayload(ITag.Get(TagChannels.PAYLOAD_TRANSFORM), transform);
+            NativeDataPacket.AddPayload(Tags.PAYLOAD_TRANSFORM, transform);
             
             RunProcessTasks(CreateProcessTasks);
         }

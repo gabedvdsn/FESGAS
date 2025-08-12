@@ -43,7 +43,7 @@ namespace FESGameplayAbilitySystem
 
         private bool ValidateImpactType(EImpactType impactType, EImpactType validateAgainst)
         {
-            if (impactType is EImpactType.NotApplicable or EImpactType.Pure) return false;
+            if (impactType == EImpactType.NotApplicable) return false;
             return impactType == validateAgainst;
         }
         

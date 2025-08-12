@@ -6,19 +6,19 @@ namespace FESGameplayAbilitySystem
 {
     public class AbilitySpec : IEffectDerivation
     {
-        public GASComponentBase Owner;
+        public ISource Owner;
         public IAbilityData Base;
         public int Level;
         public float RelativeLevel => (Level - 1) / (float)(Base.GetMaxLevel() - 1);
         
-        private AbilitySpec(GASComponentBase owner, IAbilityData ability, int level)
+        private AbilitySpec(ISource owner, IAbilityData ability, int level)
         {
             Owner = owner;
             Base = ability;
             Level = level;
         }
 
-        public static AbilitySpec Generate(IAbilityData ability, GASComponentBase owner, int level = 1)
+        public static AbilitySpec Generate(IAbilityData ability, ISource owner, int level = 1)
         {
             return new AbilitySpec(owner, ability, level);
         }
@@ -28,7 +28,7 @@ namespace FESGameplayAbilitySystem
             // Apply cost and cooldown effects
             if (Base.GetCooldown() && Base.GetCooldown().GrantedTags.Length > 0) 
                 Owner.ApplyGameplayEffect(Owner.GenerateEffectSpec(this, Base.GetCooldown()));
-            
+
             if (Base.GetCost() && Base.GetCost().ImpactSpecification.AttributeTarget) 
                 Owner.ApplyGameplayEffect(Owner.GenerateEffectSpec(this, Base.GetCost()));
         }
@@ -74,7 +74,7 @@ namespace FESGameplayAbilitySystem
         public string GetName() => Base.GetDefinition().Name;
         public GameplayTagScriptableObject GetAffiliation()
         {
-            return Owner.Identity.Affiliation;
+            return Owner.GetAffiliation();
         }
 
         public override string ToString()

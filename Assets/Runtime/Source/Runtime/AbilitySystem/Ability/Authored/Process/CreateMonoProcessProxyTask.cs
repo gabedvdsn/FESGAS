@@ -23,5 +23,6 @@ namespace FESGameplayAbilitySystem
             
             await UniTask.CompletedTask;
         }
+        public override bool IsCriticalSection => false;
     }
 }

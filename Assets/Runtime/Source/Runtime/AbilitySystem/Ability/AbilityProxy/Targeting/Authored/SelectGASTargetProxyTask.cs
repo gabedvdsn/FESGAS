@@ -31,5 +31,7 @@ namespace FESGameplayAbilitySystem
             }
             UnityEngine.Debug.Log($"Out of targeting");
         }
+        
+        public override bool IsCriticalSection => true;
     }
 }

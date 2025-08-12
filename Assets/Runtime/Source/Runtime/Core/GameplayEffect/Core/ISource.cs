@@ -5,6 +5,7 @@ namespace FESGameplayAbilitySystem
     public interface ISource : ITarget, IGameplayProcessHandler
     {
         public List<GameplayTagScriptableObject> GetContextTags();
+        public TagCache GetTagCache();
         public GameplayTagScriptableObject GetAssetTag();
         public int GetLevel();
         public int GetMaxLevel();
@@ -12,12 +13,13 @@ namespace FESGameplayAbilitySystem
         public string GetName();
         public GameplayTagScriptableObject GetAffiliation();
         public List<ITag> GetAppliedTags();
+        public GameplayEffectDuration GetLongestDurationFor(GameplayTagScriptableObject[] lookForTags);
     }
     
     public interface ITarget
     {
         public bool ApplyGameplayEffect(GameplayEffectSpec spec);
-        public bool ApplyGameplayEffect(IEffectDerivation derivation, IEffectBase GameplayEffect);
+        public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, IEffectBase GameplayEffect);
         public bool FindAttributeSystem(out AttributeSystemComponent attrSystem);
         public bool FindAbilitySystem(out AbilitySystemComponent abilSystem);
         public TargetGASData AsData()

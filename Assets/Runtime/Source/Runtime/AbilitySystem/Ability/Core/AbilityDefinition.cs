@@ -14,10 +14,9 @@ namespace FESGameplayAbilitySystem
         
         [Header("Activation")]
         
-        public EAbilityType Type;
+        public EAbilityActivationPolicyExtended ActivationPolicy = EAbilityActivationPolicyExtended.SingleActive; 
         public bool ActivateImmediately;
-        public bool AlwaysValidToActivate;
-        public int Layer = 0;
+        
         
         [Header("Icons")]
         

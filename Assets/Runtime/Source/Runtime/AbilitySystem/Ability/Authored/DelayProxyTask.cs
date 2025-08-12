@@ -13,5 +13,6 @@ namespace FESGameplayAbilitySystem
         {
             await UniTask.Delay(DelayMilliseconds, cancellationToken: token);
         }
+        public override bool IsCriticalSection => false;
     }
 }

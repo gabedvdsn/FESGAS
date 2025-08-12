@@ -12,7 +12,7 @@ namespace FESGameplayAbilitySystem
 {
     public static class GASHelper
     {
-        #region GAS Utils
+        #region Sign Related Utils
         
         public static ESignPolicy SignPolicy(params float[] magnitudes)
         {
@@ -224,7 +224,7 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
-        #region Math Utils
+        #region Attribute Utils
 
         /// <summary>
         /// Performs logical operations on Attribute Values
@@ -237,7 +237,7 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public static AttributeValue AttributeMathEvent(AttributeValue value, AttributeValue operand, ECalculationOperation operation, EEffectImpactTarget target,
-            EMathApplicationPolicy policy)
+            EMathApplicationPolicy policy) 
         {
             AttributeValue _operand;
             switch (policy)
@@ -276,11 +276,6 @@ namespace FESGameplayAbilitySystem
                 };
             }
         }
-        
-        #endregion
-        
-        #region Attribute Utils
-
         public static AttributeValue LogicalAdd(AttributeValue value, AttributeValue operand, AttributeOverflowData overflow)
         {
             return overflow.Policy switch
@@ -340,7 +335,7 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
-        #region Extension Utils
+        #region Collection Utils
         
         public static T RandomChoice<T>(this List<T> list) => list is null ? default : list[Mathf.FloorToInt(Random.value * list.Count)];
 
@@ -417,6 +412,27 @@ namespace FESGameplayAbilitySystem
         public static bool ContainsAll<T>(this List<T> list, List<T> match)
         {
             return match.All(list.Contains);
+        }
+        
+        #endregion
+        
+        #region Enum Helpers
+
+        public static EAbilityActivationPolicy TranslateActivationPolicy(EAbilityActivationPolicyExtended policy, AbilitySystemComponent sys = null)
+        {
+            if (policy == EAbilityActivationPolicyExtended.UseLocal)
+            {
+                if (sys) return sys.DefaultActivationPolicy;
+                return EAbilityActivationPolicy.SingleActiveQueue;
+            }
+
+            return policy switch
+            {
+                EAbilityActivationPolicyExtended.NoRestrictions => EAbilityActivationPolicy.NoRestrictions,
+                EAbilityActivationPolicyExtended.SingleActive => EAbilityActivationPolicy.SingleActive,
+                EAbilityActivationPolicyExtended.SingleActiveQueue => EAbilityActivationPolicy.SingleActiveQueue,
+                _ => throw new ArgumentOutOfRangeException(nameof(policy), policy, null)
+            };
         }
         
         #endregion

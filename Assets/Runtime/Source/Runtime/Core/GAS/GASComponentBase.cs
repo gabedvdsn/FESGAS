@@ -60,7 +60,7 @@ namespace FESGameplayAbilitySystem
             base.WhenInitialize(relay);
 
             // Attempt to find affiliation
-            if (regData.TryGet(ITag.Get(TagChannels.PAYLOAD_AFFILIATION), EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
+            if (regData.TryGet(Tags.PAYLOAD_AFFILIATION, EProxyDataValueTarget.Primary, out GameplayTagScriptableObject affiliation))
             {
                 Identity.Affiliation = affiliation;
             }
@@ -437,6 +437,10 @@ namespace FESGameplayAbilitySystem
         public List<GameplayTagScriptableObject> GetContextTags()
         {
             return new List<GameplayTagScriptableObject>();
+        }
+        public TagCache GetTagCache()
+        {
+            return TagCache;
         }
         public GameplayTagScriptableObject GetAssetTag()
         {

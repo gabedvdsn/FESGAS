@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
         public override UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             var comps = GameObject.FindObjectsByType<GASComponentBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            if (!data.TryGet(ITag.Get(TagChannels.PAYLOAD_SOURCE), EProxyDataValueTarget.Primary, out ISource source))
+            if (!data.TryGet(Tags.PAYLOAD_TARGET, EProxyDataValueTarget.Primary, out ISource source))
             {
                 return UniTask.CompletedTask;
             }
@@ -21,12 +21,14 @@ namespace FESGameplayAbilitySystem
             {
                 if (comp != gas && comp != GameRoot.Instance)
                 {
-                    data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TARGET), comp);
+                    data.AddPayload(Tags.PAYLOAD_TARGET, comp);
                     break;
                 }
             }
             
             return UniTask.CompletedTask;
         }
+        
+        public override bool IsCriticalSection => false;
     }
 }

@@ -13,10 +13,9 @@ namespace FESGameplayAbilitySystem
         
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
-            if (!data.TryGet(ITag.Get(TagChannels.PAYLOAD_TARGET), EProxyDataValueTarget.Primary, out GASComponentBase target))
+            if (!TryGetTarget(data, out var target, EProxyDataValueTarget.Primary))
             {
-                await UniTask.CompletedTask;
-                return;
+                
             }
             
             foreach (GameplayEffectScriptableObject effect in Effects)
@@ -25,5 +24,6 @@ namespace FESGameplayAbilitySystem
                 await UniTask.Delay(BetweenApplicationDelayMilliseconds, cancellationToken: token);
             }
         }
+        public override bool IsCriticalSection => false;
     }
 }

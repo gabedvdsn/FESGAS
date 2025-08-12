@@ -26,7 +26,7 @@ namespace FESGameplayAbilitySystem
         {
             base.WhenInitialize(relay);
             
-            if (!regData.TryGet(ITag.Get(TagChannels.PAYLOAD_TARGET), EProxyDataValueTarget.Primary, out ITarget _target)) Debug.Log($"Whelp!");
+            if (!regData.TryGet(Tags.PAYLOAD_TARGET, EProxyDataValueTarget.Primary, out ITarget _target)) Debug.Log($"Whelp!");
             targetGAS = _target.AsGAS();
             target = targetGAS.transform;
 

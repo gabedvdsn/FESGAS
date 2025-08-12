@@ -16,7 +16,7 @@ namespace FESGameplayAbilitySystem
             Handler = spec.GetOwner();
             
             AddPayload(
-                ITag.Get(TagChannels.PAYLOAD_SOURCE),
+                Tags.PAYLOAD_SOURCE,
                 spec.GetOwner()
             );
         }
@@ -32,7 +32,7 @@ namespace FESGameplayAbilitySystem
             
             if (useImplicitTargeting)
             {
-                data.AddPayload(ITag.Get(TagChannels.PAYLOAD_TARGET), spec.GetOwner());
+                data.AddPayload(Tags.PAYLOAD_TARGET, spec.GetOwner());
             }
             
             return data;

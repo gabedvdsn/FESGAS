@@ -19,8 +19,8 @@ namespace FESGameplayAbilitySystem.Demo
             base.WhenInitialize(relay);
 
             var playerData = ProcessDataPacket.RootDefault();
-            playerData.AddPayload(ITag.Get(TagChannels.PAYLOAD_POSITION), PlayerPosition);
-            playerData.AddPayload(ITag.Get(TagChannels.PAYLOAD_AFFILIATION), ITag.Get(TagChannels.AFFILIATION_GREEN));
+            playerData.AddPayload(Tags.PAYLOAD_POSITION, PlayerPosition);
+            playerData.AddPayload(Tags.PAYLOAD_AFFILIATION, Tags.AFFILIATION_GREEN);
 
             ProcessControl.Instance.Register(PlayerPrefab, playerData, out var playerRelay);
             if (playerRelay.TryGetProcess(out GASComponentBase player))
@@ -30,8 +30,8 @@ namespace FESGameplayAbilitySystem.Demo
             }
             
             var enemyData = ProcessDataPacket.RootDefault();
-            enemyData.AddPayload(ITag.Get(TagChannels.PAYLOAD_POSITION), EnemyPosition);
-            enemyData.AddPayload(ITag.Get(TagChannels.PAYLOAD_AFFILIATION), ITag.Get(TagChannels.AFFILIATION_RED));
+            enemyData.AddPayload(Tags.PAYLOAD_POSITION, EnemyPosition);
+            enemyData.AddPayload(Tags.PAYLOAD_AFFILIATION, Tags.AFFILIATION_RED);
             
             ProcessControl.Instance.Register(EnemyPrefab, enemyData, out _);
         }

@@ -9,7 +9,7 @@
         {
             base.WhenInitialize(relay);
             
-            if (!regData.TryGet(ITag.Get(TagChannels.PAYLOAD_DERIVATION), EProxyDataValueTarget.Primary, out Derivation))
+            if (!regData.TryGet(Tags.PAYLOAD_DERIVATION, EProxyDataValueTarget.Primary, out Derivation))
             {
                 Derivation = GameRoot.Instance;
             }
