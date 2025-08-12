@@ -17,13 +17,13 @@ namespace FESGameplayAbilitySystem
         private SourcedModifiedAttributeCache ModifiedAttributeCache;
         private bool modifiedCacheDirty;
         
-        private GASComponentBase System;
+        private GASComponentBase Root;
         
         #region Initialization
         
         public virtual void Initialize(GASComponentBase system)
         {
-            System = system;
+            Root = system;
 
             InitializeCaches();
             InitializePriorityChangeEvents();
@@ -50,7 +50,7 @@ namespace FESGameplayAbilitySystem
             
             foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.GetDefined())
             {
-                ModifyAttribute(attribute, new SourcedModifiedAttributeValue(IAttributeImpactDerivation.GenerateSourceDerivation(System, attribute), 0f, 0f, false));
+                ModifyAttribute(attribute, new SourcedModifiedAttributeValue(IAttributeImpactDerivation.GenerateSourceDerivation(Root, attribute), 0f, 0f, false));
             }
         }
 
@@ -80,7 +80,7 @@ namespace FESGameplayAbilitySystem
             if (AttributeCache.ContainsKey(attribute)) return;
             AttributeCache[attribute] = new CachedAttributeValue(defaultValue.Overflow);
             
-            AttributeCache[attribute].Add(IAttributeImpactDerivation.GenerateSourceDerivation(System, attribute), defaultValue.ToAttributeValue());
+            AttributeCache[attribute].Add(IAttributeImpactDerivation.GenerateSourceDerivation(Root, attribute), defaultValue.ToAttributeValue());
             ModifiedAttributeCache.SubscribeModifiableAttribute(attribute);
         }
         
@@ -117,19 +117,19 @@ namespace FESGameplayAbilitySystem
 
             // Create a temp value to track during change events
             ChangeValue change = new ChangeValue(sourcedModifiedValue);
-            if (runEvents) PreChangeHandler.RunEvents(attribute, System, AttributeCache, change);
+            if (runEvents) PreChangeHandler.RunEvents(attribute, Root, AttributeCache, change);
             
             // Hold version of previous attribute value & apply changes
             AttributeValue holdValue = AttributeCache[attribute].Value;
             AttributeCache[attribute].Add(sourcedModifiedValue.BaseDerivation, change.Value.ToModified());
             
-            if (runEvents) PostChangeHandler.RunEvents(attribute, System, AttributeCache, change);
+            if (runEvents) PostChangeHandler.RunEvents(attribute, Root, AttributeCache, change);
             
             // Override the temp value to reflect real impact (note that all post-change events will receive this version of impact)
             change.Override(AttributeCache[attribute].Value - holdValue);
 
             // Relay impact to source
-            var impactData = AbilityImpactData.Generate(System, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
+            var impactData = AbilityImpactData.Generate(Root, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
             if (sourcedModifiedValue.BaseDerivation.GetSource().FindAbilitySystem(out var attr)) attr.ProvideFrameImpact(impactData);
         }
 

@@ -14,6 +14,15 @@ namespace FESGameplayAbilitySystem
             "Prepare is always called before the APT is activated, and Clean is always called after the " +
             "APT is finished activating, regardless of the manner the activation is resolved.";
 
+        /// <summary>
+        /// Determines whether another ability proxy can be active at the same time as the proxy containing this task.
+        /// For example, a proxy with some animation events has a critical section, and another proxy with a critical section must not interrupt the conclusion of the animation (and the injections relevant to the animation).
+        /// If a proxy with a critical section is active, no other proxy with a critical section can be active.
+        /// </summary>
+        public abstract bool IsCriticalSection { get; }
+        
+        #region Task Methods
+        
         public virtual void Prepare(AbilityDataPacket data)
         {
             
@@ -26,6 +35,10 @@ namespace FESGameplayAbilitySystem
         {
             
         }
+        
+        #endregion
+        
+        #region Payload Helpers
 
         protected bool TryGetTarget(AbilityDataPacket data, out ITarget comp, EProxyDataValueTarget target)
         {
@@ -39,7 +52,7 @@ namespace FESGameplayAbilitySystem
             return data.TryGetFirst(Tags.PAYLOAD_TARGET, out comp);
         }
 
-        protected bool TryGetTargetData(AbilityDataPacket data, out TargetGASData targetData, EProxyDataValueTarget target)
+        protected bool TryGetTargetData(AbilityDataPacket data, out SystemComponentData targetData, EProxyDataValueTarget target)
         {
             targetData = default;
             if (!TryGetTarget(data, out var comp, target)) return false;
@@ -47,7 +60,7 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        protected bool TryGetTargetData(AbilityDataPacket data, out TargetGASData targetData)
+        protected bool TryGetTargetData(AbilityDataPacket data, out SystemComponentData targetData)
         {
             targetData = default;
             if (!data.TryGetFirst(Tags.PAYLOAD_TARGET, out ITarget target)) return false;
@@ -71,12 +84,7 @@ namespace FESGameplayAbilitySystem
             return gas is not null;
         }
         
-        /// <summary>
-        /// Determines whether another ability proxy can be active at the same time as the proxy containing this task.
-        /// For example, a proxy with some animation events has a critical section, and another proxy with a critical section must not interrupt the conclusion of the animation (and the injections relevant to the animation).
-        /// If a proxy with a critical section is active, no other proxy with a critical section can be active.
-        /// </summary>
-        public abstract bool IsCriticalSection { get; }
+        #endregion
     }
 
     public struct DataValue<T>

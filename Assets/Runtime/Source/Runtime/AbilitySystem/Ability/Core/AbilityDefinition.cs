@@ -17,7 +17,6 @@ namespace FESGameplayAbilitySystem
         public EAbilityActivationPolicyExtended ActivationPolicy = EAbilityActivationPolicyExtended.SingleActive; 
         public bool ActivateImmediately;
         
-        
         [Header("Icons")]
         
         public Sprite UnlearnedIcon;

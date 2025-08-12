@@ -3,7 +3,7 @@
     public class AbstractDerivedMonoProcess : LazyMonoProcess
     {
         protected IEffectDerivation Derivation;
-        protected TargetGASData Source;
+        protected SystemComponentData Source;
 
         public override void WhenInitialize(ProcessRelay relay)
         {

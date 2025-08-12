@@ -418,11 +418,11 @@ namespace FESGameplayAbilitySystem
         
         #region Enum Helpers
 
-        public static EAbilityActivationPolicy TranslateActivationPolicy(EAbilityActivationPolicyExtended policy, AbilitySystemComponent sys = null)
+        public static EAbilityActivationPolicy Translate(this EAbilityActivationPolicyExtended policy, AbilitySystemComponent asc = null)
         {
             if (policy == EAbilityActivationPolicyExtended.UseLocal)
             {
-                if (sys) return sys.DefaultActivationPolicy;
+                if (asc) return asc.DefaultActivationPolicy;
                 return EAbilityActivationPolicy.SingleActiveQueue;
             }
 
