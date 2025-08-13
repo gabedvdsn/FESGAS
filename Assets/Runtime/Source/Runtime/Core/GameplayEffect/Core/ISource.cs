@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
@@ -11,13 +12,16 @@ namespace FESGameplayAbilitySystem
         public int GetMaxLevel();
         public void SetLevel(int level);
         public string GetName();
-        public GameplayTagScriptableObject GetAffiliation();
-        public List<ITag> GetAppliedTags();
         public GameplayEffectDuration GetLongestDurationFor(GameplayTagScriptableObject[] lookForTags);
     }
     
-    public interface ITarget
+    public interface  ITarget
     {
+        public void CommunicateTargetedIntent(IDisjointableEntity entity);
+        public void OnDisjoint(DisjointTarget disjoint);
+        
+        public GameplayTagScriptableObject GetAffiliation();
+        public List<ITag> GetAppliedTags();
         public bool ApplyGameplayEffect(GameplayEffectSpec spec);
         public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, IEffectBase GameplayEffect);
         public bool FindAttributeSystem(out AttributeSystemComponent attrSystem);
@@ -27,6 +31,7 @@ namespace FESGameplayAbilitySystem
             return new SystemComponentData(this);
         }
         public GASComponentBase AsGAS() => this is GASComponentBase gas ? gas : null;
+        public AbstractTransformPacket AsTransform();
     }
 
     public struct SystemComponentData

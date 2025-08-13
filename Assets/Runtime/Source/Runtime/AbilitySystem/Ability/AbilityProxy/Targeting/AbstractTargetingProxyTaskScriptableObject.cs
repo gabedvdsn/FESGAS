@@ -10,7 +10,6 @@ namespace FESGameplayAbilitySystem
         {
             // Hook into input handler here
             if (ConnectInputHandler(data)) return;
-            
             // Can add logic if interrupt injection failed
             if (data.Spec.GetOwner().AsData().AbilitySystem && data.Spec is AbilitySpec spec)
             {
@@ -22,6 +21,13 @@ namespace FESGameplayAbilitySystem
         {
             // Unhook from input handler here
             DisconnectInputHandler(data);
+        }
+
+        public abstract void WhenTargetingInvalid();
+
+        protected void CommunicateToTarget(AbilityDataPacket data)
+        {
+            if (!data.TryGetFirstTarget(out var target)) return;
         }
 
         /// <summary>

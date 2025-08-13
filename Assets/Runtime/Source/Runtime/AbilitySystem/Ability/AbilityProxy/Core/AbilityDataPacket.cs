@@ -38,5 +38,11 @@ namespace FESGameplayAbilitySystem
             return data;
         }
         
+        #region Common
+
+        public bool TryGetTarget(EProxyDataValueTarget policy, out ITarget target) => TryGet(Tags.PAYLOAD_TARGET, policy, out target);
+        public bool TryGetFirstTarget(out ITarget target) => TryGetFirst(Tags.PAYLOAD_TARGET, out target);
+
+        #endregion
     }
 }

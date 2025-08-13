@@ -13,9 +13,9 @@ namespace FESGameplayAbilitySystem
         
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
-            if (!TryGetTarget(data, out var target, EProxyDataValueTarget.Primary))
+            if (!data.TryGetFirstTarget(out var target))
             {
-                
+                return;
             }
             
             foreach (GameplayEffectScriptableObject effect in Effects)

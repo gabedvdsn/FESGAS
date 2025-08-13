@@ -80,6 +80,12 @@ namespace FESGameplayAbilitySystem
         
         #region Payload Tags
         
+        /*
+         * Payload tags are used in data packets to associate data with their cast-types and use case.
+         */
+        
+        #region Ability Packets
+        
         private const int _PAYLOAD_GAS = -505_254_019;
         public static IntegerTag PAYLOAD_GAS => ITag.GetUnsafe(_PAYLOAD_GAS);
         
@@ -106,6 +112,15 @@ namespace FESGameplayAbilitySystem
         
         private const int _PAYLOAD_DATA = -605_254_026;
         public static IntegerTag PAYLOAD_DATA => ITag.GetUnsafe(_PAYLOAD_DATA);
+        
+        #endregion
+        
+        #region GAS Store (Coffer)
+        
+        private const int _STORE_DISJOINTABLE = -705_254_026;
+        public static IntegerTag STORE_DISJOINTABLE => ITag.GetUnsafe(_STORE_DISJOINTABLE);
+        
+        #endregion
         
         #endregion
     }

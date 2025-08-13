@@ -502,19 +502,20 @@ namespace FESGameplayAbilitySystem
                 finally
                 {
                     IsTargeting = false;
-
-                    if (data.TryGet(Tags.PAYLOAD_GAS, EProxyDataValueTarget.Primary, out GASComponentBase target) && !Spec.ValidateActivationRequirements(target))
+                    
+                    if (data.TryGetFirstTarget(out var target) && !Spec.ValidateActivationRequirements(target))
                     {
                         // Do invalid target feedback here
                         targetingCancelled = true;
                     }
+                    
+                    if (targetingCancelled)
+                    {
+                        CleanAndRelease();
+                    }
                 }
 
-                if (targetingCancelled)
-                {
-                    CleanAndRelease();
-                    return;
-                }
+                if (targetingCancelled) return;
 
                 try
                 {

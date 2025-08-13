@@ -40,7 +40,7 @@ namespace FESGameplayAbilitySystem
                    && Base.GetTags().ValidateSourceRequirements(Owner);
         }
 
-        public bool ValidateActivationRequirements(GASComponentBase target)
+        public bool ValidateActivationRequirements(ITarget target)
         {
             return ValidateActivationRequirements()
                    && Base.GetTags().ValidateTargetRequirements(target);

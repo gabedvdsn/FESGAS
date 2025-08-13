@@ -30,8 +30,8 @@ namespace FESGameplayAbilitySystem
         // Process
         protected Dictionary<int, ProcessRelay> Relays;
         
-        // Component Coffer
-        public BuriedComponentCoffer Coffer;
+        // Store (Coffer)
+        // BuriedComponentCoffer, can be replaced with data packet?
         
         protected virtual void Awake()
         {
@@ -42,7 +42,6 @@ namespace FESGameplayAbilitySystem
             FinishedEffects = new List<AbstractGameplayEffectShelfContainer>();
 
             Relays = new Dictionary<int, ProcessRelay>();
-            Coffer = new BuriedComponentCoffer();
             
             Identity.Initialize(this);
             
@@ -160,6 +159,10 @@ namespace FESGameplayAbilitySystem
         {
             abilSystem = AbilitySystem;
             return AbilitySystem is not null;
+        }
+        public AbstractTransformPacket AsTransform()
+        {
+            return new DefaultTransformPacket(transform);
         }
 
         public void RemoveGameplayEffect(IEffectBase effect)
@@ -461,6 +464,21 @@ namespace FESGameplayAbilitySystem
         public string GetName()
         {
             return Identity.DistinctName;
+        }
+        public void CommunicateTargetedIntent(IDisjointableEntity entity)
+        {
+            regData.AddPayload(Tags.STORE_DISJOINTABLE, entity);
+        }
+        public void OnDisjoint(DisjointTarget disjoint)
+        {
+            if (!regData.TryGet(Tags.STORE_DISJOINTABLE, out DataValue<IDisjointableEntity> data)) return;
+
+            foreach (var entity in data)
+            {
+                entity.WhenDisjointed(disjoint);
+                if (entity.GetTarget().AsGAS() != this) regData.Remove(Tags.STORE_DISJOINTABLE, entity);
+            }
+            
         }
         public GameplayTagScriptableObject GetAffiliation()
         {

@@ -33,5 +33,9 @@ namespace FESGameplayAbilitySystem
         }
         
         public override bool IsCriticalSection => true;
+        public override void WhenTargetingInvalid()
+        {
+            
+        }
     }
 }

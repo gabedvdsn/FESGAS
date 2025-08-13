@@ -22,6 +22,11 @@ namespace FESGameplayAbilitySystem
             return new IntegerTag(_key);
         }
         
+        /// <summary>
+        /// Bypasses the safety check with respect to reserved tag channels.
+        /// </summary>
+        /// <param name="key">The tag's key</param>
+        /// <returns>The created tag</returns>
         public static IntegerTag GetUnsafe(int key)
         {
             if (key >= nextFree) nextFree = key + 1;
@@ -40,6 +45,7 @@ namespace FESGameplayAbilitySystem
     public class IntegerTag : ITag
     {
         private int key;
+        
         public IntegerTag(int key)
         {
             this.key = key;

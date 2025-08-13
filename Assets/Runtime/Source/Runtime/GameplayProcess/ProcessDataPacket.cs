@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Codice.Client.BaseCommands;
@@ -37,6 +38,8 @@ namespace FESGameplayAbilitySystem
             Handler = handler;
         }
 
+        #region Construction
+        
         public static ProcessDataPacket RootDefault()
         {
             var data = new ProcessDataPacket();
@@ -95,6 +98,8 @@ namespace FESGameplayAbilitySystem
             return data;
         }
 
+        #endregion
+        
         #region Core
 
         public void AddPayload<T>(ITag key, T value)
@@ -164,6 +169,29 @@ namespace FESGameplayAbilitySystem
             dataValue = new DataValue<T>(tObjects);
             return true;
         }
+
+        public bool Remove(ITag key)
+        {
+            return Payload.Remove(key);
+        }
+
+        public bool Remove<T>(ITag key, T obj)
+        {
+            if (!Payload.ContainsKey(key)) return false;
+            int index = -1;
+            for (int i = 0; i < Payload[key].Count; i++)
+            {
+                if (Payload[key][i] is not T cast || !obj.Equals(cast)) continue;
+                
+                index = i;
+                break;
+            }
+
+            if (index < 0) return false;
+            
+            Payload[key].RemoveAt(index);
+            return true;
+        }
         
         public bool Contains<T>(T value, ITag key)
         {
@@ -176,7 +204,69 @@ namespace FESGameplayAbilitySystem
 
             return false;
         }
-        
+
         #endregion
+    }
+
+    public class StoreDataPacket : ProcessDataPacket
+    {
+        
+    }
+    
+    public struct DataValue<T> : IEnumerable<T>
+    {
+        private List<T> Data;
+        public bool Valid => Data is not null && Data.Count > 0;
+        
+        public DataValue(List<T> data)
+        {
+            Data = data;
+        }
+
+        public T Get(EProxyDataValueTarget target)
+        {
+            return target switch
+            {
+
+                EProxyDataValueTarget.Primary => Primary,
+                EProxyDataValueTarget.Any => Any,
+                EProxyDataValueTarget.Last => Last,
+                _ => throw new ArgumentOutOfRangeException(nameof(target), target, null)
+            };
+        }
+
+        public T Primary => Valid ? Data[0] : default;
+        public T Any => Valid ? Data.RandomChoice() : default;
+        public List<T> All => Valid ? Data : new List<T>();
+        public List<T> AllDistinct => Valid ? All.Distinct().ToList() : new List<T>();
+        public T Last => Valid ? Data[^1] : default;
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return ((IEnumerable<T>)Data).GetEnumerator();
+        }
+        public override string ToString()
+        {
+            if (!Valid) return "NullProxyData";
+            string s = "";
+            for (int i = 0; i < Data.Count; i++)
+            {
+                s += $"{Data[i]}";
+                if (i < Data.Count - 1) s += ", ";
+            }
+            
+            return s;
+        }
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+    public enum EProxyDataValueTarget
+    {
+        Primary,
+        Any,
+        Last
     }
 }

@@ -10,9 +10,9 @@ namespace FESGameplayAbilitySystem
         
         public List<GameplayEffectScriptableObject> Effects;
 
-        protected void ApplyEffects(GASComponentBase target)
+        protected void ApplyEffects(ITarget target)
         {
-            foreach (var effect in Effects) target.ApplyGameplayEffect(Derivation, effect);
+            foreach (var effect in Effects) target.ApplyGameplayEffect(target.GenerateEffectSpec(Derivation, effect));
         }
     }
 }
