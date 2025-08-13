@@ -22,9 +22,9 @@ namespace FESGameplayAbilitySystem
             foreach (GameplayEffectScriptableObject effect in Effects) target.ApplyGameplayEffect(gas.GenerateEffectSpec(data.Spec, effect));
         }
 
-        public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
+        public override UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
-            await UniTask.CompletedTask;
+            return UniTask.CompletedTask;
         }
         
         public override void Clean(AbilityDataPacket data)

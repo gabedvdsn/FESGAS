@@ -130,7 +130,7 @@ namespace FESGameplayAbilitySystem
 
             // Relay impact to source
             var impactData = AbilityImpactData.Generate(Root, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
-            if (sourcedModifiedValue.BaseDerivation.GetSource().FindAbilitySystem(out var attr)) attr.ProvideFrameImpact(impactData);
+            if (sourcedModifiedValue.BaseDerivation.GetSource().FindAbilitySystem(out var attr)) attr.ProvideFrameImpactDealt(impactData);
         }
 
         public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)

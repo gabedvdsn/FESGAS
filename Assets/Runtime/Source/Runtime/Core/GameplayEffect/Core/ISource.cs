@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
     public interface  ITarget
     {
         public void CommunicateTargetedIntent(IDisjointableEntity entity);
-        public void OnDisjoint(DisjointTarget disjoint);
+        public void OnDisjoint(DisjointTarget disjointTarget);
         
         public GameplayTagScriptableObject GetAffiliation();
         public List<ITag> GetAppliedTags();

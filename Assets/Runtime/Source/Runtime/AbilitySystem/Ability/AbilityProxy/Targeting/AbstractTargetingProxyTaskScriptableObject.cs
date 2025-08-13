@@ -28,6 +28,8 @@ namespace FESGameplayAbilitySystem
         protected void CommunicateToTarget(AbilityDataPacket data)
         {
             if (!data.TryGetFirstTarget(out var target)) return;
+            
+            
         }
 
         /// <summary>
