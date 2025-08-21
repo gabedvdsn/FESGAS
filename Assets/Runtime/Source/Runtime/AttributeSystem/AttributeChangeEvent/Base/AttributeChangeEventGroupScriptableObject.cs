@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
     {
         public List<AbstractAttributeChangeEventScriptableObject> ChangeEvents;
         
-        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
             foreach (AbstractAttributeChangeEventScriptableObject fEvent in ChangeEvents)
@@ -21,7 +21,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
             foreach (var changeEvent in ChangeEvents)

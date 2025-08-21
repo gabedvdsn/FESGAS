@@ -8,32 +8,32 @@ namespace FESGameplayAbilitySystem
 {
     public class SourcedModifiedAttributeCache
     {
-        private Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>> cache = new();
-        private List<AttributeScriptableObject> active = new();
+        private Dictionary<IAttribute, List<SourcedModifiedAttributeValue>> cache = new();
+        private List<IAttribute> active = new();
 
-        public Dictionary<AttributeScriptableObject, List<SourcedModifiedAttributeValue>>.KeyCollection Attributes => cache.Keys;
+        public Dictionary<IAttribute, List<SourcedModifiedAttributeValue>>.KeyCollection Attributes => cache.Keys;
         
         #region Core
         
-        public void SubscribeModifiableAttribute(AttributeScriptableObject attribute)
+        public void SubscribeModifiableAttribute(IAttribute attribute)
         {
             cache[attribute] = new List<SourcedModifiedAttributeValue>();
         }
 
-        public bool AttributeIsActive(AttributeScriptableObject attribute) => cache.ContainsKey(attribute) && cache[attribute].Count > 0;
-        public bool DefinesAttribute(AttributeScriptableObject attribute) => cache.ContainsKey(attribute);
+        public bool AttributeIsActive(IAttribute attribute) => cache.ContainsKey(attribute) && cache[attribute].Count > 0;
+        public bool DefinesAttribute(IAttribute attribute) => cache.ContainsKey(attribute);
 
-        public List<AttributeScriptableObject> GetDefined() => cache.Keys.ToList();
-        public List<AttributeScriptableObject> GetModified() => active;
+        public List<IAttribute> GetDefined() => cache.Keys.ToList();
+        public List<IAttribute> GetModified() => active;
 
         public void Clear()
         {
             if (active.Count == 0) return;
-            foreach (AttributeScriptableObject attribute in active) cache[attribute].Clear();
+            foreach (IAttribute attribute in active) cache[attribute].Clear();
             active.Clear();
         }
 
-        private bool ValidateAttribute(AttributeScriptableObject attribute)
+        private bool ValidateAttribute(IAttribute attribute)
         {
             if (!cache.ContainsKey(attribute)) return false;
             if (!active.Contains(attribute)) active.Add(attribute);
@@ -47,14 +47,14 @@ namespace FESGameplayAbilitySystem
             return impactType == validateAgainst;
         }
         
-        public void Register(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
+        public void Register(IAttribute attribute, SourcedModifiedAttributeValue sourcedModifiedValue)
         {
             if (!ValidateAttribute(attribute)) return;
             
             cache[attribute].Add(sourcedModifiedValue);
         }
         
-        public bool TryToModified(AttributeScriptableObject attribute, out ModifiedAttributeValue modifiedAttributeValue)
+        public bool TryToModified(IAttribute attribute, out ModifiedAttributeValue modifiedAttributeValue)
         {
             if (!active.Contains(attribute) || !TryGetSourcedModifiers(attribute, out var sourcedModifiers))
             {
@@ -66,14 +66,14 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public bool TryGetSourcedModifiers(AttributeScriptableObject attribute, out List<SourcedModifiedAttributeValue> sourcedModifiers)
+        public bool TryGetSourcedModifiers(IAttribute attribute, out List<SourcedModifiedAttributeValue> sourcedModifiers)
         {
             return cache.TryGetValue(attribute, out sourcedModifiers);
         }
         
         #endregion
         
-        public void Multiply(AttributeScriptableObject attribute, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        public void Multiply(IAttribute attribute, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag)
         {
             if (!ValidateAttribute(attribute)) return;
             
@@ -85,7 +85,7 @@ namespace FESGameplayAbilitySystem
             }
         }
         
-        public void Multiply(AttributeScriptableObject attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        public void Multiply(IAttribute attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag)
         {
             if (!ValidateAttribute(attribute)) return;
             
@@ -98,7 +98,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void MultiplyAmplify(AttributeScriptableObject attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        public void MultiplyAmplify(IAttribute attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag)
         {
             if (!ValidateAttribute(attribute)) return;
             
@@ -112,7 +112,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void MultiplyAttenuate(AttributeScriptableObject attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        public void MultiplyAttenuate(IAttribute attribute, EImpactType impactType, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag)
         {
             if (!ValidateAttribute(attribute)) return;
             
@@ -126,7 +126,7 @@ namespace FESGameplayAbilitySystem
             }
         }
         
-        public void Add(AttributeScriptableObject attribute, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag, bool spread = false)
+        public void Add(IAttribute attribute, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag, bool spread = false)
         {
             if (!ValidateAttribute(attribute)) return;
 
@@ -139,7 +139,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public void Add(AttributeScriptableObject attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag, bool spread = false)
+        public void Add(IAttribute attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag, bool spread = false)
         {
             if (!ValidateAttribute(attribute)) return;
             
@@ -153,7 +153,7 @@ namespace FESGameplayAbilitySystem
             }
         }
         
-        public void Override(AttributeScriptableObject attribute, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        public void Override(IAttribute attribute, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag)
         {
             if (!ValidateAttribute(attribute)) return;
             
@@ -165,7 +165,7 @@ namespace FESGameplayAbilitySystem
             }
         }
         
-        public void Override(AttributeScriptableObject attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<GameplayTagScriptableObject> contextTags, bool anyContextTag)
+        public void Override(IAttribute attribute, ESignPolicy signPolicy, AttributeValue operand, bool allowSelfModify, List<ITag> contextTags, bool anyContextTag)
         {
             if (!ValidateAttribute(attribute)) return;
             

@@ -123,7 +123,7 @@ namespace FESGameplayAbilitySystem
             );
         }
 
-        public AttributeScriptableObject GetAttribute()
+        public IAttribute GetAttribute()
         {
             return Base.GetAttributeTarget();
         }
@@ -161,7 +161,7 @@ namespace FESGameplayAbilitySystem
             impactValue = default;
             return false;
         }
-        public List<GameplayTagScriptableObject> GetContextTags()
+        public List<ITag> GetContextTags()
         {
             return Derivation.GetContextTags();
         }

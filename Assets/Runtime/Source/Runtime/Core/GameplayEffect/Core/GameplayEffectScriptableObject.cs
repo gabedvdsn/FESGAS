@@ -172,13 +172,13 @@ namespace FESGameplayAbilitySystem
     public interface IEffectDerivation
     {
         public ISource GetOwner();
-        public List<GameplayTagScriptableObject> GetContextTags();
-        public GameplayTagScriptableObject GetAssetTag();
+        public List<ITag> GetContextTags();
+        public ITag GetAssetTag();
         public int GetLevel();
         public void SetLevel(int level);
         public float GetRelativeLevel();
         public string GetName();
-        public GameplayTagScriptableObject GetAffiliation();
+        public ITag GetAffiliation();
 
         public static SourceEffectDerivation GenerateSourceDerivation(ISource source)
         {
@@ -199,11 +199,11 @@ namespace FESGameplayAbilitySystem
         {
             return Owner;
         }
-        public List<GameplayTagScriptableObject> GetContextTags()
+        public List<ITag> GetContextTags()
         {
             return Owner.GetContextTags();
         }
-        public GameplayTagScriptableObject GetAssetTag()
+        public ITag GetAssetTag()
         {
             return Owner.GetAssetTag();
         }
@@ -223,7 +223,7 @@ namespace FESGameplayAbilitySystem
         {
             return Owner.GetName();
         }
-        public GameplayTagScriptableObject GetAffiliation()
+        public ITag GetAffiliation()
         {
             return Owner.GetAffiliation();
         }

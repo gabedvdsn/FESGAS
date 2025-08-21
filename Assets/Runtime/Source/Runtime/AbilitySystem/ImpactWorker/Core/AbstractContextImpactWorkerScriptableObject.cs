@@ -58,7 +58,7 @@ namespace FESGameplayAbilitySystem
 
         protected abstract void PerformImpactResponse(AbilityImpactData impactData);
 
-        public override AttributeScriptableObject GetTargetedAttribute()
+        public override IAttribute GetTargetedAttribute()
         {
             return ImpactedAttribute;
         }

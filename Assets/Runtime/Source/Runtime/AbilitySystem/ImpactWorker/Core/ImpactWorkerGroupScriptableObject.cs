@@ -22,7 +22,7 @@ namespace FESGameplayAbilitySystem
         {
             return Workers.Any(worker => worker.ValidateWorkFor(impactData));
         }
-        public override AttributeScriptableObject GetTargetedAttribute()
+        public override IAttribute GetTargetedAttribute()
         {
             return null;
         }

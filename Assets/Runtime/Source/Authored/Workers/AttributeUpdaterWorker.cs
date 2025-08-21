@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace FESGameplayAbilitySystem
 {
-    public class AttributeUpdaterWorker : MonoBehaviour
+    public class AttributeUpdaterWorker : MonoBehaviour, IAttributeAssignable
     {
         public AttributeSystemComponent Source;
         public AttributeScriptableObject AttributeTarget;
@@ -16,10 +16,17 @@ namespace FESGameplayAbilitySystem
         public TMP_Text CurrentText;
         public TMP_Text BaseText;
         public Slider ValueSlider;
-        
+
+        private IAttribute attribute;
+
+        private void Awake()
+        {
+            attribute = AttributeTarget;
+        }
+
         private void LateUpdate()
         {
-            if (!Source.TryGetAttributeValue(AttributeTarget, out AttributeValue attributeValue)) return;
+            if (!Source.TryGetAttributeValue(attribute, out AttributeValue attributeValue)) return;
 
             CurrentText.text = attributeValue.CurrentValue.ToString(CultureInfo.InvariantCulture);
             BaseText.text = attributeValue.BaseValue.ToString("F2");
@@ -27,5 +34,14 @@ namespace FESGameplayAbilitySystem
             float targetValue = attributeValue.CurrentValue / attributeValue.BaseValue;
             ValueSlider.value = Mathf.Lerp(ValueSlider.value, targetValue, Time.deltaTime * 10f);
         }
+        public void AssignAttribute(IAttribute attr)
+        {
+            attribute = attr;
+        }
+    }
+
+    public interface IAttributeAssignable
+    {
+        public void AssignAttribute(IAttribute attr);
     }
 }

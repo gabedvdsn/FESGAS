@@ -60,11 +60,11 @@ namespace FESGameplayAbilitySystem
         }
 
         public ISource GetOwner() => Owner;
-        public List<GameplayTagScriptableObject> GetContextTags()
+        public List<ITag> GetContextTags()
         {
             return Base.GetTags().ContextTags;
         }
-        public GameplayTagScriptableObject GetAssetTag()
+        public ITag GetAssetTag()
         {
             return Base.GetTags().AssetTag;
         }
@@ -72,7 +72,7 @@ namespace FESGameplayAbilitySystem
         public void SetLevel(int level) => Level = level;
         public float GetRelativeLevel() => RelativeLevel;
         public string GetName() => Base.GetDefinition().Name;
-        public GameplayTagScriptableObject GetAffiliation()
+        public ITag GetAffiliation()
         {
             return Owner.GetAffiliation();
         }

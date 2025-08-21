@@ -5,16 +5,16 @@ namespace FESGameplayAbilitySystem
 {
     public class ImpactWorkerCache
     {
-        private Dictionary<AttributeScriptableObject, List<AbstractImpactWorkerScriptableObject>> Cache;
+        private Dictionary<IAttribute, List<AbstractImpactWorkerScriptableObject>> Cache;
 
         public ImpactWorkerCache()
         {
-            Cache = new Dictionary<AttributeScriptableObject, List<AbstractImpactWorkerScriptableObject>>();
+            Cache = new Dictionary<IAttribute, List<AbstractImpactWorkerScriptableObject>>();
         }
 
         public ImpactWorkerCache(List<AbstractImpactWorkerScriptableObject> workers)
         {
-            Cache = new Dictionary<AttributeScriptableObject, List<AbstractImpactWorkerScriptableObject>>();
+            Cache = new Dictionary<IAttribute, List<AbstractImpactWorkerScriptableObject>>();
             foreach (var worker in workers) worker.SubscribeToCache(this);
         }
 
@@ -28,12 +28,12 @@ namespace FESGameplayAbilitySystem
             worker.UnsubscribeFromCache(this);
         }
 
-        public void AddWorker(AttributeScriptableObject attribute, AbstractImpactWorkerScriptableObject worker)
+        public void AddWorker(IAttribute attribute, AbstractImpactWorkerScriptableObject worker)
         {
             Cache.SafeAdd(attribute, worker);
         }
 
-        public void RemoveWorker(AttributeScriptableObject attribute, AbstractImpactWorkerScriptableObject worker)
+        public void RemoveWorker(IAttribute attribute, AbstractImpactWorkerScriptableObject worker)
         {
             if (!Cache.ContainsKey(attribute)) return;
             Cache[attribute].Remove(worker);

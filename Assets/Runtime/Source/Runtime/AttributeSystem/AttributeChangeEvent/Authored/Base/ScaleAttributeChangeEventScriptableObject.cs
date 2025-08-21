@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
     [CreateAssetMenu(menuName = "FESGAS/Attribute/Change Event/Scale", fileName = "ACE_Scale_")]
     public class ScaleAttributeChangeEventScriptableObject : AbstractFocusedAttributeChangeEventScriptableObject
     {
-        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
             float proportion = change.Value.BaseValue / attributeCache[TargetAttribute].Value.BaseValue;
@@ -21,7 +21,7 @@ namespace FESGameplayAbilitySystem
             if (system.FindAttributeSystem(out var attr)) attr.ModifyAttribute(TargetAttribute, scaleAmount, runEvents: false);
         }
 
-        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, ChangeValue change)
+        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache, ChangeValue change)
         {
             return change.Value.BaseValue != 0 && base.ValidateWorkFor(system, attributeCache, change);
         }

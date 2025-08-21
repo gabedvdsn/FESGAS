@@ -8,7 +8,7 @@ namespace FESGameplayAbilitySystem
     /// </summary>
     public interface IAttributeImpactDerivation
     {
-        public AttributeScriptableObject GetAttribute();
+        public IAttribute GetAttribute();
         public IEffectDerivation GetEffectDerivation();
         public ISource GetSource();
         public ITarget GetTarget();
@@ -17,13 +17,13 @@ namespace FESGameplayAbilitySystem
         public void TrackImpact(AbilityImpactData impactData);
         public bool TryGetTrackedImpact(out AttributeValue impactValue);
         public bool TryGetLastTrackedImpact(out AttributeValue impactValue);
-        public List<GameplayTagScriptableObject> GetContextTags();
+        public List<ITag> GetContextTags();
         public void RunEffectApplicationWorkers();
         public void RunEffectTickWorkers();
         public void RunEffectRemovalWorkers();
         public void RunEffectImpactWorkers(AbilityImpactData impactData);
         
-        public static SourceAttributeDerivation GenerateSourceDerivation(ISource source, AttributeScriptableObject attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
+        public static SourceAttributeDerivation GenerateSourceDerivation(ISource source, IAttribute attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
         {
             return new SourceAttributeDerivation(source, attribute, impactType, retainImpact);
         }
@@ -37,11 +37,11 @@ namespace FESGameplayAbilitySystem
     public class SourceAttributeDerivation : IAttributeImpactDerivation
     {
         private ISource Source;
-        public AttributeScriptableObject Attribute;
+        public IAttribute Attribute;
         private EImpactType ImpactType;
         private bool RetainImpact;
 
-        public SourceAttributeDerivation(ISource source, AttributeScriptableObject attribute, EImpactType impactType, bool retainImpact = true)
+        public SourceAttributeDerivation(ISource source, IAttribute attribute, EImpactType impactType, bool retainImpact = true)
         {
             Source = source;
             Attribute = attribute;
@@ -49,7 +49,7 @@ namespace FESGameplayAbilitySystem
             RetainImpact = retainImpact;
         }
 
-        public AttributeScriptableObject GetAttribute()
+        public IAttribute GetAttribute()
         {
             return Attribute;
         }
@@ -90,7 +90,7 @@ namespace FESGameplayAbilitySystem
             impactValue = default;
             return false;
         }
-        public List<GameplayTagScriptableObject> GetContextTags()
+        public List<ITag> GetContextTags()
         {
             return Source.GetContextTags();
         }

@@ -13,7 +13,7 @@ namespace FESGameplayAbilitySystem
         {
             return Name;
         }
-        public bool Compare(ITag other)
+        public bool Equals(ITag other)
         {
             return (GameplayTagScriptableObject)other == this;
         }

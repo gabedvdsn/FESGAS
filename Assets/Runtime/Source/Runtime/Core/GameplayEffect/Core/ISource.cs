@@ -5,9 +5,9 @@ namespace FESGameplayAbilitySystem
 {
     public interface ISource : ITarget, IGameplayProcessHandler
     {
-        public List<GameplayTagScriptableObject> GetContextTags();
+        public List<ITag> GetContextTags();
         public TagCache GetTagCache();
-        public GameplayTagScriptableObject GetAssetTag();
+        public ITag GetAssetTag();
         public int GetLevel();
         public int GetMaxLevel();
         public void SetLevel(int level);

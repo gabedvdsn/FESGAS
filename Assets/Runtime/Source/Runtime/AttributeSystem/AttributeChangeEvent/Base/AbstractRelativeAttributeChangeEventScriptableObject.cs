@@ -12,7 +12,7 @@ namespace FESGameplayAbilitySystem
         public AttributeScriptableObject RelativeTo;
         public float RelativeMultiplier = 1f;
 
-        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
             return From switch
@@ -24,7 +24,7 @@ namespace FESGameplayAbilitySystem
             } && base.ValidateWorkFor(system, attributeCache, change);
         }
 
-        protected AttributeValue GetRelative(Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache, ChangeValue change)
+        protected AttributeValue GetRelative(Dictionary<IAttribute, CachedAttributeValue> attributeCache, ChangeValue change)
         {
             return From switch
             {

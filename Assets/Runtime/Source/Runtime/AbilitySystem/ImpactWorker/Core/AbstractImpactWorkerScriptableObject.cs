@@ -14,7 +14,7 @@ namespace FESGameplayAbilitySystem
         public abstract void InterpretImpact(AbilityImpactData impactData);
 
         public abstract bool ValidateWorkFor(AbilityImpactData impactData);
-        public abstract AttributeScriptableObject GetTargetedAttribute();
+        public abstract IAttribute GetTargetedAttribute();
         public virtual void SubscribeToCache(ImpactWorkerCache cache)
         {
             cache.AddWorker(GetTargetedAttribute(), this);

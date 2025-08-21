@@ -6,10 +6,10 @@ namespace FESGameplayAbilitySystem
 {
     public abstract class AbstractAttributeChangeEventScriptableObject : ScriptableObject
     {
-        public abstract void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public abstract void AttributeChangeEvent(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change);
 
-        public abstract bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public abstract bool ValidateWorkFor(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change);
 
         public abstract bool RegisterWithHandler(AttributeChangeMomentHandler preChange, AttributeChangeMomentHandler postChange);

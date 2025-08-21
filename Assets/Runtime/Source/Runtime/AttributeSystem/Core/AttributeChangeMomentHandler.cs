@@ -6,9 +6,9 @@ namespace FESGameplayAbilitySystem
 {
     public class AttributeChangeMomentHandler
     {
-        public Dictionary<AttributeScriptableObject, List<AbstractAttributeChangeEventScriptableObject>> ChangeEvents = new();
+        public Dictionary<IAttribute, List<AbstractAttributeChangeEventScriptableObject>> ChangeEvents = new();
 
-        public bool AddEvent(AttributeScriptableObject attribute, AbstractAttributeChangeEventScriptableObject changeEvent)
+        public bool AddEvent(IAttribute attribute, AbstractAttributeChangeEventScriptableObject changeEvent)
         {
             if (ChangeEvents.ContainsKey(attribute))
             {
@@ -20,7 +20,7 @@ namespace FESGameplayAbilitySystem
             return true;
         }
             
-        public bool RemoveEvent(AttributeScriptableObject attribute, AbstractAttributeChangeEventScriptableObject changeEvent)
+        public bool RemoveEvent(IAttribute attribute, AbstractAttributeChangeEventScriptableObject changeEvent)
         {
             if (!ChangeEvents.ContainsKey(attribute)) return false;
                 
@@ -33,7 +33,7 @@ namespace FESGameplayAbilitySystem
             return true;
         }
             
-        public void RunEvents(AttributeScriptableObject attribute, GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public void RunEvents(IAttribute attribute, GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
             if (!ChangeEvents.ContainsKey(attribute)) return;

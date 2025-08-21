@@ -13,9 +13,7 @@ namespace FESGameplayAbilitySystem
         private AttributeChangeMomentHandler PreChangeHandler;
         private AttributeChangeMomentHandler PostChangeHandler;
         
-        private Dictionary<AttributeScriptableObject, CachedAttributeValue> AttributeCache;
-        private SourcedModifiedAttributeCache ModifiedAttributeCache;
-        private bool modifiedCacheDirty;
+        private Dictionary<IAttribute, CachedAttributeValue> AttributeCache;
         
         private GASComponentBase Root;
         
@@ -38,8 +36,7 @@ namespace FESGameplayAbilitySystem
         
         private void InitializeCaches()
         {
-            AttributeCache = new Dictionary<AttributeScriptableObject, CachedAttributeValue>();
-            ModifiedAttributeCache = new SourcedModifiedAttributeCache();
+            AttributeCache = new Dictionary<IAttribute, CachedAttributeValue>();
         }
 
         private void InitializeAttributeSets()
@@ -47,10 +44,15 @@ namespace FESGameplayAbilitySystem
             if (attributeSet is null) return;
             
             attributeSet.Initialize(this);
-            
-            foreach (AttributeScriptableObject attribute in ModifiedAttributeCache.GetDefined())
+
+            foreach (var attr in AttributeCache.Keys)
             {
-                ModifyAttribute(attribute, new SourcedModifiedAttributeValue(IAttributeImpactDerivation.GenerateSourceDerivation(Root, attribute), 0f, 0f, false));
+                ModifyAttribute(attr,
+                    new SourcedModifiedAttributeValue(
+                        IAttributeImpactDerivation.GenerateSourceDerivation(Root, attr),
+                        0f, 0f,
+                        false)
+                );
             }
         }
 
@@ -75,27 +77,26 @@ namespace FESGameplayAbilitySystem
             return changeEvent.DeRegisterFromHandler(PreChangeHandler, PostChangeHandler);
         }
 
-        public void ProvideAttribute(AttributeScriptableObject attribute, DefaultAttributeValue defaultValue)
+        public void ProvideAttribute(IAttribute attribute, DefaultAttributeValue defaultValue)
         {
             if (AttributeCache.ContainsKey(attribute)) return;
-            AttributeCache[attribute] = new CachedAttributeValue(defaultValue.Overflow);
             
+            AttributeCache[attribute] = new CachedAttributeValue(defaultValue.Overflow);
             AttributeCache[attribute].Add(IAttributeImpactDerivation.GenerateSourceDerivation(Root, attribute), defaultValue.ToAttributeValue());
-            ModifiedAttributeCache.SubscribeModifiableAttribute(attribute);
         }
         
         #endregion
         
         #region Helpers
         
-        public bool DefinesAttribute(AttributeScriptableObject attribute) => AttributeCache.ContainsKey(attribute);
+        public bool DefinesAttribute(IAttribute attribute) => AttributeCache.ContainsKey(attribute);
         
-        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out CachedAttributeValue attributeValue)
+        public bool TryGetAttributeValue(IAttribute attribute, out CachedAttributeValue attributeValue)
         {
             return AttributeCache.TryGetValue(attribute, out attributeValue);
         }
 
-        public bool TryGetAttributeValue(AttributeScriptableObject attribute, out AttributeValue attributeValue)
+        public bool TryGetAttributeValue(IAttribute attribute, out AttributeValue attributeValue)
         {
             if (AttributeCache.TryGetValue(attribute, out var cachedValue))
             {
@@ -111,7 +112,7 @@ namespace FESGameplayAbilitySystem
         
         #region Attribute Modification
         
-        public void ModifyAttribute(AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool runEvents = true)
+        public void ModifyAttribute(IAttribute attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool runEvents = true)
         {
             if (!AttributeCache.ContainsKey(attribute)) return;
 

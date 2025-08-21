@@ -39,7 +39,7 @@ namespace FESGameplayAbilitySystem
             return new IntegerTag(last);
         }
 
-        public bool Compare(ITag other);
+        public bool Equals(ITag other);
     }
     
     public class IntegerTag : ITag
@@ -51,7 +51,7 @@ namespace FESGameplayAbilitySystem
             this.key = key;
         }
 
-        public bool Compare(ITag other)
+        public bool Equals(ITag other)
         {
             var tag = (IntegerTag)other;
             return tag is not null && tag.key == key;
@@ -62,7 +62,7 @@ namespace FESGameplayAbilitySystem
     {
         public bool Equals(ITag x, ITag y)
         {
-            return x != null && x.Compare(y);
+            return x != null && x.Equals(y);
         }
         public int GetHashCode(ITag obj)
         {

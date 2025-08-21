@@ -2,7 +2,7 @@
 {
     public struct AbilityImpactData
     {
-        private AbilityImpactData(GASComponentBase target, AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
+        private AbilityImpactData(GASComponentBase target, IAttribute attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
         {
             Target = target;
             Attribute = attribute;
@@ -11,11 +11,11 @@
         }
 
         public GASComponentBase Target;
-        public AttributeScriptableObject Attribute;
+        public IAttribute Attribute;
         public SourcedModifiedAttributeValue SourcedModifier;
         public AttributeValue RealImpact;
 
-        public static AbilityImpactData Generate(GASComponentBase target, AttributeScriptableObject attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
+        public static AbilityImpactData Generate(GASComponentBase target, IAttribute attribute, SourcedModifiedAttributeValue sourcedModifier, AttributeValue realImpact)
         {
             return new AbilityImpactData(target, attribute, sourcedModifier, realImpact);
         }

@@ -74,7 +74,7 @@ namespace FESGameplayAbilitySystem
             }
         }
 
-        public AttributeScriptableObject GetAttribute()
+        public IAttribute GetAttribute()
         {
             return Spec.Base.GetAttributeTarget();
         }
@@ -113,7 +113,7 @@ namespace FESGameplayAbilitySystem
             impactValue = LastTrackedImpact;
             return true;
         }
-        public List<GameplayTagScriptableObject> GetContextTags()
+        public List<ITag> GetContextTags()
         {
             return Spec.GetContextTags();
         }

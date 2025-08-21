@@ -19,7 +19,7 @@ namespace FESGameplayAbilitySystem
         public EEffectImpactTarget OperationTarget;
         public EMathApplicationPolicy OperationPolicy;
         
-        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
             var result = GASHelper.AttributeMathEvent(change.Value.ToAttributeValue(), GetRelative(attributeCache, change), Operation, OperationTarget, OperationPolicy);
@@ -30,7 +30,6 @@ namespace FESGameplayAbilitySystem
         {
             return Operation switch
             {
-
                 ECalculationOperation.Add => 0,
                 ECalculationOperation.Multiply => 1,
                 ECalculationOperation.Override => 2,

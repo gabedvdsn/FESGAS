@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
         [Tooltip("Compiles all Attributes, if they are not already present in an Attribute Set")]
         public List<AttributeScriptableObject> Attributes;
 
-        private Dictionary<string, AttributeScriptableObject> Library;
+        private Dictionary<string, IAttribute> Library;
 
         /// <summary>
         /// REFACTOR THIS TO REFLECT YOUR ATTRIBUTE NAMING CONVENTION
@@ -32,7 +32,7 @@ namespace FESGameplayAbilitySystem
         /// </summary>
         /// <param name="attr">The stored name of the attribute</param>
         /// <returns></returns>
-        private static string RefactorByNamingConvention(string attr)
+        public static string RefactorByNamingConvention(string attr)
         {
             string _name = attr.ToUpper();  // Capitalize
             _name = _name.Replace(' ', '_');  // Replace spaces with underscores
@@ -51,9 +51,9 @@ namespace FESGameplayAbilitySystem
 
         private void Compile()
         {
-            Library = new Dictionary<string, AttributeScriptableObject>();
+            Library = new Dictionary<string, IAttribute>();
             
-            var uniqueSet = new HashSet<AttributeScriptableObject>();
+            var uniqueSet = new HashSet<IAttribute>();
             
             foreach (var unique in AttributeSets.SelectMany(set => set.GetUnique()))
             {
@@ -61,22 +61,22 @@ namespace FESGameplayAbilitySystem
             }
             foreach (var attr in Attributes) uniqueSet.Add(attr);
             
-            foreach (var attr in uniqueSet) Library[RefactorByNamingConvention(attr.Name)] = attr;
+            foreach (var attr in uniqueSet) Library[RefactorByNamingConvention(attr.GetName())] = attr;
         }  
 
-        public static bool Contains(AttributeScriptableObject attribute) => Contains(attribute.Name);
+        public static bool Contains(IAttribute attribute) => Contains(attribute.GetName());
         public static bool Contains(string attrName) => Instance.Library.ContainsKey(RefactorByNamingConvention(attrName));
         
-        public static bool Add(AttributeScriptableObject attribute)
+        public static bool Add(IAttribute attribute)
         {
-            string _name = RefactorByNamingConvention(attribute.Name);
+            string _name = RefactorByNamingConvention(attribute.GetName());
             if (Instance.Library.ContainsKey(_name)) return false;
             
             Instance.Library[_name] = attribute;
             return true;
         }
 
-        public static bool TryGetByName(string attrName, out AttributeScriptableObject attribute)
+        public static bool TryGetByName(string attrName, out IAttribute attribute)
         {
             string _name = RefactorByNamingConvention(attrName);
             if (!Contains(_name))
@@ -89,7 +89,7 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public static AttributeScriptableObject GetByName(string attrName)
+        public static IAttribute GetByName(string attrName)
         {
             return TryGetByName(attrName, out var attr) ? attr : null;
         }

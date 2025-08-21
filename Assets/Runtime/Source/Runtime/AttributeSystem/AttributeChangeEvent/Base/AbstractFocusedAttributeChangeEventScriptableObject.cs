@@ -37,10 +37,10 @@ namespace FESGameplayAbilitySystem
         [Tooltip("The modification source context tag(s) (all of them) must exist in this list")]
         public List<GameplayTagScriptableObject> ValidContextTags;
 
-        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public override bool ValidateWorkFor(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
-            if (change.Value.BaseDerivation.GetAttribute() != TargetAttribute)
+            if (!change.Value.BaseDerivation.GetAttribute().Equals(TargetAttribute))
             {
                 return false;
             }

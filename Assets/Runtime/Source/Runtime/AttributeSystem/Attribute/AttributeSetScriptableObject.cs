@@ -38,9 +38,9 @@ namespace FESGameplayAbilitySystem
             meta.InitializeAttributeSystem(system, this);
         }
 
-        public HashSet<AttributeScriptableObject> GetUnique()
+        public HashSet<IAttribute> GetUnique()
         {
-            var attributes = new HashSet<AttributeScriptableObject>();
+            var attributes = new HashSet<IAttribute>();
             foreach (var attr in Attributes)
             {
                 attributes.Add(attr.Attribute);
@@ -74,11 +74,18 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public struct AttributeSetElement
     {
+        [Header("Attribute Declaration")]
+        
         public AttributeScriptableObject Attribute;
-        public ELimitedEffectImpactTarget Target;
-        public EAttributeElementCollisionPolicy CollisionPolicy;
         public float Magnitude;
+        public AbstractMagnitudeModifierScriptableObject MagnitudeModifier;
+        
+        public ELimitedEffectImpactTarget Target;
         public AttributeOverflowData Overflow;
+        
+        [Header("Multiple Set Collision")]
+        
+        public EAttributeElementCollisionPolicy CollisionPolicy;
 
         public DefaultAttributeValue ToDefaultAttribute()
         {
@@ -208,7 +215,7 @@ namespace FESGameplayAbilitySystem
         public List<IAttributeSet> GetSubSets();
         public EValueCollisionPolicy GetCollisionResolutionPolicy();
         public void Initialize(AttributeSystemComponent system);
-        public HashSet<AttributeScriptableObject> GetUnique();
+        public HashSet<IAttribute> GetUnique();
 
         public static IAttributeSet GenerateEmpty()
         {
@@ -239,9 +246,9 @@ namespace FESGameplayAbilitySystem
             AttributeSetMeta meta = new AttributeSetMeta(this);
             meta.InitializeAttributeSystem(system, this);
         }
-        public HashSet<AttributeScriptableObject> GetUnique()
+        public HashSet<IAttribute> GetUnique()
         {
-            var attributes = new HashSet<AttributeScriptableObject>();
+            var attributes = new HashSet<IAttribute>();
             foreach (var attr in Attributes)
             {
                 attributes.Add(attr.Attribute);

@@ -437,7 +437,7 @@ namespace FESGameplayAbilitySystem
         }
         
         #region Derivation Source
-        public List<GameplayTagScriptableObject> GetContextTags()
+        public List<ITag> GetContextTags()
         {
             return new List<GameplayTagScriptableObject>();
         }
@@ -445,7 +445,7 @@ namespace FESGameplayAbilitySystem
         {
             return TagCache;
         }
-        public GameplayTagScriptableObject GetAssetTag()
+        public ITag GetAssetTag()
         {
             return Identity.NameTag;
         }
@@ -480,7 +480,7 @@ namespace FESGameplayAbilitySystem
             }
             
         }
-        public GameplayTagScriptableObject GetAffiliation()
+        public ITag GetAffiliation()
         {
             return Identity.Affiliation;
         }

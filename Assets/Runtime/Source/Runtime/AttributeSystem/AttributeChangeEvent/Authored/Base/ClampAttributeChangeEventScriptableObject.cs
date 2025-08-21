@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
     [CreateAssetMenu(menuName = "FESGAS/Attribute/Change Event/Clamp", fileName = "ACE_Clamp")]
     public class ClampAttributeChangeEventScriptableObject : AbstractFocusedAttributeChangeEventScriptableObject
     {
-        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<AttributeScriptableObject, CachedAttributeValue> attributeCache,
+        public override void AttributeChangeEvent(GASComponentBase system, Dictionary<IAttribute, CachedAttributeValue> attributeCache,
             ChangeValue change)
         {
             AttributeValue clampValue = attributeCache[TargetAttribute].Value;

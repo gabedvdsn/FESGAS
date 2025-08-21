@@ -98,6 +98,12 @@ namespace FESGameplayAbilitySystem
             Overflow = overflow;
         }
 
+        public CachedAttributeValue(IAttribute attribute, ISource source, DefaultAttributeValue defaultValue)
+        {
+            Overflow = defaultValue.Overflow;
+            Add(IAttributeImpactDerivation.GenerateSourceDerivation(source, attribute), defaultValue.ToAttributeValue());
+        }
+
         public void Add(IAttributeImpactDerivation derivation, AttributeValue attributeValue)
         {
             if (derivation.RetainAttributeImpact())
