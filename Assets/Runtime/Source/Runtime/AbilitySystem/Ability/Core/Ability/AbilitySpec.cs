@@ -62,7 +62,7 @@ namespace FESGameplayAbilitySystem
         public ISource GetOwner() => Owner;
         public List<ITag> GetContextTags()
         {
-            return Base.GetTags().ContextTags;
+            return Base.GetTags().ContextTags.Select(t => t as ITag).ToList();
         }
         public ITag GetAssetTag()
         {

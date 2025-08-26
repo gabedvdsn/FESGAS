@@ -8,8 +8,9 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public abstract class AbstractMagnitudeModifierScriptableObject : ScriptableObject, IMagnitudeModifier
     {
-        public abstract void Initialize(GameplayEffectSpec spec);
-        public abstract float Evaluate(GameplayEffectSpec spec);
+        public abstract void Initialize(IAttributeImpactDerivation spec);
+        
+        public abstract float Evaluate(IAttributeImpactDerivation spec);
     }
     
     public enum ECalculationOperation

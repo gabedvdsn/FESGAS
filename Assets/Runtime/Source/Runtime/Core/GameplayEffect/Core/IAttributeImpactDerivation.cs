@@ -22,6 +22,7 @@ namespace FESGameplayAbilitySystem
         public void RunEffectTickWorkers();
         public void RunEffectRemovalWorkers();
         public void RunEffectImpactWorkers(AbilityImpactData impactData);
+        public Dictionary<IMagnitudeModifier, AttributeValue?> GetSourcedCapturedAttributes();
         
         public static SourceAttributeDerivation GenerateSourceDerivation(ISource source, IAttribute attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
         {
@@ -109,6 +110,10 @@ namespace FESGameplayAbilitySystem
         public void RunEffectImpactWorkers(AbilityImpactData impactData)
         {
             // Nothing to do here!
+        }
+        public Dictionary<IMagnitudeModifier, AttributeValue?> GetSourcedCapturedAttributes()
+        {
+            return new();
         }
     }
 }

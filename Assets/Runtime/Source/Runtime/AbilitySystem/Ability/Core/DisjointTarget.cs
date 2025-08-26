@@ -22,7 +22,7 @@ namespace FESGameplayAbilitySystem
         {
             
         }
-        public GameplayTagScriptableObject GetAffiliation()
+        public ITag GetAffiliation()
         {
             return original.GetAffiliation();
         }

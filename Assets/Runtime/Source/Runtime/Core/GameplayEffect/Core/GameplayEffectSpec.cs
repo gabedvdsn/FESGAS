@@ -15,7 +15,7 @@ namespace FESGameplayAbilitySystem
 
         private List<AbstractEffectWorkerScriptableObject> Workers;
 
-        public Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?> SourceCapturedAttributes;
+        public Dictionary<IMagnitudeModifier, AttributeValue?> SourceCapturedAttributes;
 
         public GameplayEffectSpec(IEffectBase GameplayEffect, IEffectDerivation derivation, GASComponentBase target)
         {
@@ -30,7 +30,7 @@ namespace FESGameplayAbilitySystem
 
             Workers = Base.GetEffectWorkers();
 
-            SourceCapturedAttributes = new Dictionary<AbstractMagnitudeModifierScriptableObject, AttributeValue?>();
+            SourceCapturedAttributes = new Dictionary<IMagnitudeModifier, AttributeValue?>();
         }
         
         public SourcedModifiedAttributeValue SourcedImpact(AttributeValue attributeValue)
@@ -181,6 +181,10 @@ namespace FESGameplayAbilitySystem
         public void RunEffectImpactWorkers(AbilityImpactData impactData)
         {
             foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectImpact(impactData);
+        }
+        public Dictionary<IMagnitudeModifier, AttributeValue?> GetSourcedCapturedAttributes()
+        {
+            return SourceCapturedAttributes;
         }
 
         public override string ToString()

@@ -33,7 +33,7 @@ namespace FESGameplayAbilitySystem
         [Header("Change Tag Validation")]
         
         [Tooltip("Allow changes deriving from any context")]
-        public bool AnyContextTag;
+        public bool AnyContextTag = true;
         [Tooltip("The modification source context tag(s) (all of them) must exist in this list")]
         public List<GameplayTagScriptableObject> ValidContextTags;
 
@@ -44,11 +44,11 @@ namespace FESGameplayAbilitySystem
             {
                 return false;
             }
-            if (!AnyContextTag && ValidContextTags.Count > 0 && !ValidContextTags.ContainsAll(change.Value.BaseDerivation.GetContextTags())) 
+            if (!AnyContextTag && ValidContextTags.Count > 0 && !ValidContextTags.Select(t => t as ITag).ToList().ContainsAll(change.Value.BaseDerivation.GetContextTags())) 
             {
                 return false;
             }
-            if (!AllowSelfModification && change.Value.BaseDerivation.GetSource() == system) 
+            if (!AllowSelfModification && change.Value.BaseDerivation.GetSource().AsGAS() == system) 
             {
                 return false;
             }

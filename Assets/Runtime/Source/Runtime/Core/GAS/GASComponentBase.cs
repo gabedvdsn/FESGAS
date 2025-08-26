@@ -439,7 +439,7 @@ namespace FESGameplayAbilitySystem
         #region Derivation Source
         public List<ITag> GetContextTags()
         {
-            return new List<GameplayTagScriptableObject>();
+            return new List<ITag>();
         }
         public TagCache GetTagCache()
         {

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace FESGameplayAbilitySystem
 {
-    public class AttributeUpdaterWorker : MonoBehaviour, IAttributeAssignable
+    public class AttributeReader : MonoBehaviour, IAttributeAssignable
     {
         public AttributeSystemComponent Source;
         public AttributeScriptableObject AttributeTarget;
@@ -21,7 +21,8 @@ namespace FESGameplayAbilitySystem
 
         private void Awake()
         {
-            attribute = AttributeTarget;
+            AssignAttribute(AttributeTarget);
+            // attribute = AttributeTarget;
         }
 
         private void LateUpdate()

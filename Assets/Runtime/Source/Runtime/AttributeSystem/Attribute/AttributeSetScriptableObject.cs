@@ -78,7 +78,7 @@ namespace FESGameplayAbilitySystem
         
         public AttributeScriptableObject Attribute;
         public float Magnitude;
-        public AbstractMagnitudeModifierScriptableObject MagnitudeModifier;
+        public AbstractCachedAttributeMagnitudeModifier Modifier;
         
         public ELimitedEffectImpactTarget Target;
         public AttributeOverflowData Overflow;
@@ -91,8 +91,8 @@ namespace FESGameplayAbilitySystem
         {
             return Target switch
             {
-                ELimitedEffectImpactTarget.CurrentAndBase => new DefaultAttributeValue(new ModifiedAttributeValue(Magnitude, Magnitude), Overflow),
-                ELimitedEffectImpactTarget.Base => new DefaultAttributeValue(new ModifiedAttributeValue(0, Magnitude), Overflow),
+                ELimitedEffectImpactTarget.CurrentAndBase => new DefaultAttributeValue(new ModifiedAttributeValue(Magnitude, Magnitude), Overflow, Modifier),
+                ELimitedEffectImpactTarget.Base => new DefaultAttributeValue(new ModifiedAttributeValue(0, Magnitude), Overflow, Modifier),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -102,16 +102,18 @@ namespace FESGameplayAbilitySystem
     {
         public ModifiedAttributeValue DefaultValue;
         public AttributeOverflowData Overflow;
+        public AbstractCachedAttributeMagnitudeModifier Modifier;
 
-        public DefaultAttributeValue(ModifiedAttributeValue defaultValue, AttributeOverflowData overflow)
+        public DefaultAttributeValue(ModifiedAttributeValue defaultValue, AttributeOverflowData overflow, AbstractCachedAttributeMagnitudeModifier modifier)
         {
             DefaultValue = defaultValue;
             Overflow = overflow;
+            Modifier = modifier;
         }
 
         public DefaultAttributeValue Combine(DefaultAttributeValue other)
         {
-            return new DefaultAttributeValue(DefaultValue.Combine(other.DefaultValue), Overflow);
+            return new DefaultAttributeValue(DefaultValue.Combine(other.DefaultValue), Overflow, Modifier);
         }
 
         public AttributeValue ToAttributeValue() => DefaultValue.ToAttributeValue();
@@ -184,7 +186,7 @@ namespace FESGameplayAbilitySystem
                     float _current = defaults.Average(mav => mav.DefaultValue.DeltaCurrentValue);
                     float _base = defaults.Average(mav => mav.DefaultValue.DeltaBaseValue);
 
-                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow));
+                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow, defaults[0].Modifier));
                     break;
                 }
                 case EValueCollisionPolicy.UseMaximum:
@@ -192,7 +194,7 @@ namespace FESGameplayAbilitySystem
                     float _current = defaults.Max(mav => mav.DefaultValue.DeltaCurrentValue);
                     float _base = defaults.Max(mav => mav.DefaultValue.DeltaBaseValue);
 
-                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow));
+                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow, defaults[0].Modifier));
                     break;
                 }
                 case EValueCollisionPolicy.UseMinimum:
@@ -200,7 +202,7 @@ namespace FESGameplayAbilitySystem
                     float _current = defaults.Min(mav => mav.DefaultValue.DeltaCurrentValue);
                     float _base = defaults.Min(mav => mav.DefaultValue.DeltaBaseValue);
 
-                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow));
+                    system.ProvideAttribute(attribute, new DefaultAttributeValue(new ModifiedAttributeValue(_current, _base), defaults[0].Overflow, defaults[0].Modifier));
                     break;
                 }
                 default:

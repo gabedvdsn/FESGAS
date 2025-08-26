@@ -20,7 +20,7 @@ namespace FESGameplayAbilitySystem
         public void CommunicateTargetedIntent(IDisjointableEntity entity);
         public void OnDisjoint(DisjointTarget disjointTarget);
         
-        public GameplayTagScriptableObject GetAffiliation();
+        public ITag GetAffiliation();
         public List<ITag> GetAppliedTags();
         public bool ApplyGameplayEffect(GameplayEffectSpec spec);
         public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, IEffectBase GameplayEffect);

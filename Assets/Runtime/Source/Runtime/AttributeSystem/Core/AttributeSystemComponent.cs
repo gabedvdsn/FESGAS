@@ -14,6 +14,7 @@ namespace FESGameplayAbilitySystem
         private AttributeChangeMomentHandler PostChangeHandler;
         
         private Dictionary<IAttribute, CachedAttributeValue> AttributeCache;
+        private AttributeModificationRule Rule;
         
         private GASComponentBase Root;
         
@@ -81,8 +82,15 @@ namespace FESGameplayAbilitySystem
         {
             if (AttributeCache.ContainsKey(attribute)) return;
             
-            AttributeCache[attribute] = new CachedAttributeValue(defaultValue.Overflow);
-            AttributeCache[attribute].Add(IAttributeImpactDerivation.GenerateSourceDerivation(Root, attribute), defaultValue.ToAttributeValue());
+            AttributeCache[attribute] = new CachedAttributeValue(attribute, Root, defaultValue);
+            
+            //AttributeCache[attribute] = new CachedAttributeValue(defaultValue.Overflow, defaultValue.Modifier);
+            //AttributeCache[attribute].Add(IAttributeImpactDerivation.GenerateSourceDerivation(Root, attribute), defaultValue.ToAttributeValue());
+
+            defaultValue.Modifier.Regulate(attribute, Rule);
+            
+            // Good practice to introduce attribute to library wherever/whenever registration occurs
+            AttributeLibrary.Add(attribute);
         }
         
         #endregion
@@ -124,14 +132,20 @@ namespace FESGameplayAbilitySystem
             AttributeValue holdValue = AttributeCache[attribute].Value;
             AttributeCache[attribute].Add(sourcedModifiedValue.BaseDerivation, change.Value.ToModified());
             
+            // Note that post-change events receive change values that may fall outside logical bounds, such as an attribute being 150/100 when it should be bound to base as ceil
             if (runEvents) PostChangeHandler.RunEvents(attribute, Root, AttributeCache, change);
             
-            // Override the temp value to reflect real impact (note that all post-change events will receive this version of impact)
+            // Override the temp value to reflect real impact
             change.Override(AttributeCache[attribute].Value - holdValue);
 
             // Relay impact to source
             var impactData = AbilityImpactData.Generate(Root, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
             if (sourcedModifiedValue.BaseDerivation.GetSource().FindAbilitySystem(out var attr)) attr.ProvideFrameImpactDealt(impactData);
+        }
+
+        public void RefreshAttributes(IAttribute contact)
+        {
+            AttributeCache[contact].Modifier.Initialize();
         }
 
         public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)

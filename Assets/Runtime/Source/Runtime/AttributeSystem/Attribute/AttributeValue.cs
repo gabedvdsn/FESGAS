@@ -92,16 +92,25 @@ namespace FESGameplayAbilitySystem
         public Dictionary<IAttributeImpactDerivation, AttributeValue> DerivedValues = new();
         public AttributeValue Value;
         public AttributeOverflowData Overflow;
+        public AbstractCachedAttributeMagnitudeModifier Modifier;
 
-        public CachedAttributeValue(AttributeOverflowData overflow)
+        public CachedAttributeValue(AttributeOverflowData overflow, AbstractCachedAttributeMagnitudeModifier modifier)
         {
             Overflow = overflow;
+            Modifier = modifier;
         }
 
         public CachedAttributeValue(IAttribute attribute, ISource source, DefaultAttributeValue defaultValue)
         {
             Overflow = defaultValue.Overflow;
+            Modifier = defaultValue.Modifier;
+            
             Add(IAttributeImpactDerivation.GenerateSourceDerivation(source, attribute), defaultValue.ToAttributeValue());
+        }
+
+        public void Refresh()
+        {
+            
         }
 
         public void Add(IAttributeImpactDerivation derivation, AttributeValue attributeValue)

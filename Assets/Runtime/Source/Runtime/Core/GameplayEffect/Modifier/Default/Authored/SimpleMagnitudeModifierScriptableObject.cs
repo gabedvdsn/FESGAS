@@ -7,14 +7,14 @@ namespace FESGameplayAbilitySystem
     {
         public AnimationCurve Scaling;
 
-        public override void Initialize(GameplayEffectSpec spec)
+        public override void Initialize(IAttributeImpactDerivation spec)
         {
-            
+            Gasify.Modifier.Init_Simple(Scaling);
         }
         
-        public override float Evaluate(GameplayEffectSpec spec)
+        public override float Evaluate(IAttributeImpactDerivation spec)
         {
-            return Scaling.Evaluate(spec.RelativeLevel);
+            return Gasify.Modifier.Eval_Simple(Scaling, spec);
         }
     }
 }

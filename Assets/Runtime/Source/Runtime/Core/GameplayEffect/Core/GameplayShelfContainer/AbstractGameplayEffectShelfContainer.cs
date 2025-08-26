@@ -133,6 +133,10 @@ namespace FESGameplayAbilitySystem
         {
             foreach (var worker in Workers) worker.OnEffectImpact(impactData);
         }
+        public Dictionary<IMagnitudeModifier, AttributeValue?> GetSourcedCapturedAttributes()
+        {
+            return new();
+        }
 
         public override string ToString()
         {

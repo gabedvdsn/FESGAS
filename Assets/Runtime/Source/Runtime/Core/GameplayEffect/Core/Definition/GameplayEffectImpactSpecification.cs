@@ -33,7 +33,6 @@ namespace FESGameplayAbilitySystem
         [Header("Contained Effects")] 
         
         public List<ContainedEffectPacket> Packets;
-        
 
         public void ApplyImpactSpecifications(GameplayEffectSpec spec)
         {
@@ -73,6 +72,12 @@ namespace FESGameplayAbilitySystem
         Add,
         UseMagnitude,
         UseCalculation
+    }
+
+    public enum EEffectImpactTargetLimited
+    {
+        Current,
+        Base
     }
 
     public enum EEffectImpactTarget
