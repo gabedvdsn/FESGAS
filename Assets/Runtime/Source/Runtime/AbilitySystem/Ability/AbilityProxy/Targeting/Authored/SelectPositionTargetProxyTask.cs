@@ -4,10 +4,8 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "TPTarget_Position", menuName = "FESGAS/Ability/Targeting/Select Position")]
-    public class SelectPositionTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
+    public class SelectPositionTargetProxyTask : AbstractTargetingProxyTask
     {
-
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             while (true)
@@ -28,8 +26,11 @@ namespace FESGameplayAbilitySystem
             await UniTask.CompletedTask;
         }
         
-        public override bool IsCriticalSection => true;
-        public override void WhenTargetingInvalid()
+        protected override bool ConnectInputHandler(AbilityDataPacket data)
+        {
+            return true;
+        }
+        protected override void DisconnectInputHandler(AbilityDataPacket data)
         {
             
         }

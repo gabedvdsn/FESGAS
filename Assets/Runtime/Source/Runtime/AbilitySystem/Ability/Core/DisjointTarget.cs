@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -22,21 +23,21 @@ namespace FESGameplayAbilitySystem
         {
             
         }
-        public ITag GetAffiliation()
+        public Tag GetAffiliation()
         {
             return original.GetAffiliation();
         }
-        public List<ITag> GetAppliedTags()
+        public Tag[] GetAppliedTags()
         {
-            return new();
+            return Array.Empty<Tag>();
         }
         public bool ApplyGameplayEffect(GameplayEffectSpec spec)
         {
             return false;
         }
-        public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, IEffectBase GameplayEffect)
+        public GameplayEffectSpec GenerateEffectSpec(IEffectOrigin origin, IEffectBase GameplayEffect)
         {
-            return original.GenerateEffectSpec(derivation, GameplayEffect);
+            return original.GenerateEffectSpec(origin, GameplayEffect);
         }
         public bool FindAttributeSystem(out AttributeSystemComponent attrSystem)
         {

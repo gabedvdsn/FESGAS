@@ -5,7 +5,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "PT_Channel_", menuName = "FESGAS/Ability/Task/Channel")]
-    public class ChannelProxyTask : AbstractAbilityProxyTaskScriptableObject
+    public class ChannelProxyTask : AbstractAbilityProxyTask
     {
         public float ChannelDuration;
         public PlayerLoopTiming Timing = PlayerLoopTiming.Update;

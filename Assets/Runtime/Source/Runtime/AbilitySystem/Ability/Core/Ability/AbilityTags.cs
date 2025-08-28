@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace FESGameplayAbilitySystem
 {
@@ -9,15 +10,15 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Base")] 
         
-        public GameplayTagScriptableObject AssetTag;
-        public List<GameplayTagScriptableObject> ContextTags;
+        public Tag AssetTag;
+        public Tag[] ContextTags;
         
         [Header("Tags")]
         
         [Tooltip("Tags that are granted as long as this ability is learned")]
-        public GameplayTagScriptableObject[] PassivelyGrantedTags;
+        public Tag[] PassivelyGrantedTags;
         [Tooltip("Tags that are granted while this ability is active")]
-        public GameplayTagScriptableObject[] ActiveGrantedTags;
+        public Tag[] ActiveGrantedTags;
 
         [Header("Requirements")]
         

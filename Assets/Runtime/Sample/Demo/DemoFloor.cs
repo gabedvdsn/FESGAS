@@ -9,10 +9,10 @@ namespace FESGameplayAbilitySystem.Demo
         [Header("Demo Floor")]
         
         public Vector3 PlayerPosition;
-        public GASComponentBase PlayerPrefab;
+        public GASComponent PlayerPrefab;
         
         public Vector3 EnemyPosition;
-        public GASComponentBase EnemyPrefab;
+        public GASComponent EnemyPrefab;
         
         public override void WhenInitialize(ProcessRelay relay)
         {
@@ -23,7 +23,7 @@ namespace FESGameplayAbilitySystem.Demo
             playerData.AddPayload(Tags.PAYLOAD_AFFILIATION, Tags.AFFILIATION_GREEN);
 
             ProcessControl.Instance.Register(PlayerPrefab, playerData, out var playerRelay);
-            if (playerRelay.TryGetProcess(out GASComponentBase player))
+            if (playerRelay.TryGetProcess(out GASComponent player))
             {
                 var inputHandler = FindObjectOfType<DemoInputHandler>();
                 if (inputHandler) inputHandler.System = player;

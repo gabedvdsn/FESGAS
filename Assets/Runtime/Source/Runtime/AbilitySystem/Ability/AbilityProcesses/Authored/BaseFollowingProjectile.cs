@@ -12,6 +12,10 @@ namespace FESGameplayAbilitySystem
     /// </summary>
     public class BaseFollowingProjectile : AbstractEffectingMonoProcess, IDisjointableEntity
     {
+        [Header("Basic Projectile")]
+        
+        public bool Disjointable = true;
+        
         private ITarget target;
         private AbstractTransformPacket targetTransform;
 
@@ -61,11 +65,16 @@ namespace FESGameplayAbilitySystem
         {
             return target;
         }
+        public bool IsDisjointable()
+        {
+            return Disjointable;
+        }
     }
 
     public interface IDisjointableEntity
     {
         public void WhenDisjointed(DisjointTarget placeholder);
         public ITarget GetTarget();
+        public bool IsDisjointable();
     }
 }

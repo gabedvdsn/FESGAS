@@ -124,7 +124,7 @@ namespace FESGameplayAbilitySystem
         
         #region Validation Utils
 
-        public static bool ValidateAffiliationPolicy(EAffiliationPolicy policy, ITag a, ITag b)
+        public static bool ValidateAffiliationPolicy(EAffiliationPolicy policy, Tag a, Tag b)
         {
             return policy switch
             {
@@ -409,7 +409,7 @@ namespace FESGameplayAbilitySystem
             return selected;
         }
 
-        public static bool ContainsAll<T>(this List<T> list, List<T> match)
+        public static bool ContainsAll<T>(this IEnumerable<T> list, IEnumerable<T> match)
         {
             return match.All(list.Contains);
         }

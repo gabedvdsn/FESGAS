@@ -14,13 +14,13 @@ namespace FESGameplayAbilitySystem
         [Header("Ability System")] 
         
         public EAbilityActivationPolicy ActivationPolicy;
-        public List<AbilityScriptableObject> StartingAbilities;
+        public List<Ability> StartingAbilities;
         
         [Header("Impact Workers")]
         
-        public List<AbstractImpactWorkerScriptableObject> ImpactWorkers;
+        public List<AbstractImpactWorker> ImpactWorkers;
 
-        public override void Initialize(GASComponentBase system)
+        public override void Initialize(GASComponent system)
         {
             activationPolicy = ActivationPolicy;
             impactWorkers = ImpactWorkers;

@@ -8,9 +8,9 @@ namespace FESGameplayAbilitySystem
 {
     public class AbilityDataPacket : ProcessDataPacket
     {
-        public IEffectDerivation Spec;
+        public IEffectOrigin Spec;
 
-        private AbilityDataPacket(IEffectDerivation spec)
+        private AbilityDataPacket(IEffectOrigin spec)
         {
             Spec = spec;
             Handler = spec.GetOwner();
@@ -23,10 +23,10 @@ namespace FESGameplayAbilitySystem
 
         public static AbilityDataPacket GenerateNull()
         {
-            return new AbilityDataPacket(IEffectDerivation.GenerateSourceDerivation(null));
+            return new AbilityDataPacket(IEffectOrigin.GenerateSourceDerivation(null));
         }
 
-        public static AbilityDataPacket GenerateFrom(IEffectDerivation spec, bool useImplicitTargeting)
+        public static AbilityDataPacket GenerateFrom(IEffectOrigin spec, bool useImplicitTargeting)
         {
             AbilityDataPacket data = new AbilityDataPacket(spec);
             

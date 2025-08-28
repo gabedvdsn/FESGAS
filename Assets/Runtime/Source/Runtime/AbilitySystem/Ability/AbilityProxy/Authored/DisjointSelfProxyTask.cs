@@ -6,7 +6,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "PT_DisjointSelf", menuName = "FESGAS/Ability/Task/Disjoint Self")]
-    public class DisjointSelfProxyTask : AbstractAbilityProxyTaskScriptableObject
+    public class DisjointSelfProxyTask : AbstractAbilityProxyTask
     {
         public override bool IsCriticalSection => false;
         public override UniTask Activate(AbilityDataPacket data, CancellationToken token)

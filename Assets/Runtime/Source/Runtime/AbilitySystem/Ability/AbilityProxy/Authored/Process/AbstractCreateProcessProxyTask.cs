@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class AbstractCreateProcessProxyTask : AbstractAbilityProxyTaskScriptableObject
+    public abstract class AbstractCreateProcessProxyTask : AbstractAbilityProxyTask
     {
-
+        
     }
 }

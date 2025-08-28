@@ -14,11 +14,11 @@ namespace FESGameplayAbilitySystem
         [Header("Attribute Library")]
         
         [Tooltip("Compiles all Attributes within the Attribute Sets")]
-        public List<AttributeSetScriptableObject> AttributeSets;
+        public List<AttributeSet> AttributeSets;
         [Tooltip("Compiles all Attributes, if they are not already present in an Attribute Set")]
-        public List<AttributeScriptableObject> Attributes;
+        public List<Attribute> Attributes;
 
-        private Dictionary<string, IAttribute> Library;
+        private Dictionary<string, Attribute> Library;
 
         /// <summary>
         /// REFACTOR THIS TO REFLECT YOUR ATTRIBUTE NAMING CONVENTION
@@ -51,9 +51,9 @@ namespace FESGameplayAbilitySystem
 
         private void Compile()
         {
-            Library = new Dictionary<string, IAttribute>();
+            Library = new Dictionary<string, Attribute>();
             
-            var uniqueSet = new HashSet<IAttribute>();
+            var uniqueSet = new HashSet<Attribute>();
             
             foreach (var unique in AttributeSets.SelectMany(set => set.GetUnique()))
             {
@@ -64,10 +64,10 @@ namespace FESGameplayAbilitySystem
             foreach (var attr in uniqueSet) Library[RefactorByNamingConvention(attr.GetName())] = attr;
         }  
 
-        public static bool Contains(IAttribute attribute) => Contains(attribute.GetName());
+        public static bool Contains(Attribute attribute) => Contains(attribute.GetName());
         public static bool Contains(string attrName) => Instance.Library.ContainsKey(RefactorByNamingConvention(attrName));
         
-        public static bool Add(IAttribute attribute)
+        public static bool Add(Attribute attribute)
         {
             string _name = RefactorByNamingConvention(attribute.GetName());
             if (Instance.Library.ContainsKey(_name)) return false;
@@ -76,7 +76,7 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public static bool TryGetByName(string attrName, out IAttribute attribute)
+        public static bool TryGetByName(string attrName, out Attribute attribute)
         {
             string _name = RefactorByNamingConvention(attrName);
             if (!Contains(_name))
@@ -89,9 +89,9 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public static IAttribute GetByName(string attrName)
+        public static Attribute GetByName(string attrName)
         {
-            return TryGetByName(attrName, out var attr) ? attr : null;
+            return TryGetByName(attrName, out var attr) ? attr : default;
         }
         
         #endregion

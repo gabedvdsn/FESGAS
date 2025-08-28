@@ -17,7 +17,7 @@ namespace FESGameplayAbilitySystem
         [Space(5)]
         
         [Tooltip("Uses Object.Instantiate when null")]
-        public AbstractMonoProcessInstantiatorScriptableObject Instantiator;
+        public AbstractMonoProcessInstantiator Instantiator;
         
         protected ProcessDataPacket regData;
         protected bool processActive;

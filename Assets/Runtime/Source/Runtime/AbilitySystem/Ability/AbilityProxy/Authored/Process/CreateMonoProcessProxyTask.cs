@@ -7,12 +7,14 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "PT_CreateMonoProcess_", menuName = "FESGAS/Ability/Task/Create Mono Process")]
     public class CreateMonoProcessProxyTask : AbstractCreateProcessProxyTask
     {
-        [Header("Create Mono Processes")]
-        
-        public List<AbstractMonoProcess> MonoProcesses;
+        public CreateMonoProcessProxyTask(List<AbstractMonoProcess> monoProcesses)
+        {
+            MonoProcesses = monoProcesses;
+        }
+
+        protected List<AbstractMonoProcess> MonoProcesses;
         
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {

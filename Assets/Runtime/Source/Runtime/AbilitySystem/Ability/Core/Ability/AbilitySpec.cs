@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FESGameplayAbilitySystem
 {
-    public class AbilitySpec : IEffectDerivation
+    public class AbilitySpec : IEffectOrigin
     {
         public ISource Owner;
         public IAbilityData Base;
@@ -26,10 +26,10 @@ namespace FESGameplayAbilitySystem
         public void ApplyUsageEffects()
         {
             // Apply cost and cooldown effects
-            if (Base.GetCooldown() && Base.GetCooldown().GrantedTags.Length > 0) 
+            if (Base.GetCooldown() is not null && Base.GetCooldown().Tags.GrantedTags.Length > 0) 
                 Owner.ApplyGameplayEffect(Owner.GenerateEffectSpec(this, Base.GetCooldown()));
 
-            if (Base.GetCost() && Base.GetCost().ImpactSpecification.AttributeTarget) 
+            if (Base.GetCost() is not null && Base.GetCost().ImpactSpecification.AttributeTarget.valid) 
                 Owner.ApplyGameplayEffect(Owner.GenerateEffectSpec(this, Base.GetCost()));
         }
             
@@ -48,23 +48,23 @@ namespace FESGameplayAbilitySystem
 
         public GameplayEffectDuration GetCooldown()
         {
-            if (!Base.GetCooldown() || !(Base.GetCooldown().GrantedTags.Length > 0)) return default;
-            return Owner.GetLongestDurationFor(Base.GetCooldown().GrantedTags);
+            if (Base.GetCooldown() is null || !(Base.GetCooldown().Tags.GrantedTags.Length > 0)) return default;
+            return Owner.GetLongestDurationFor(Base.GetCooldown().Tags.GrantedTags);
         }
 
         public bool CanCoverCost()
         {
-            if (!Base.GetCost() || !Base.GetCost().ImpactSpecification.AttributeTarget) return true;
+            if (Base.GetCost() is null || !Base.GetCost().ImpactSpecification.AttributeTarget.valid) return true;
             if (!Owner.FindAttributeSystem(out var attr) || !attr.TryGetAttributeValue(Base.GetCost().ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return false;
             return attributeValue.CurrentValue >= Base.GetCost().ImpactSpecification.GetMagnitude(Owner.GenerateEffectSpec(this, Base.GetCost()));
         }
 
         public ISource GetOwner() => Owner;
-        public List<ITag> GetContextTags()
+        public Tag[] GetContextTags()
         {
-            return Base.GetTags().ContextTags.Select(t => t as ITag).ToList();
+            return Base.GetTags().ContextTags;
         }
-        public ITag GetAssetTag()
+        public Tag GetAssetTag()
         {
             return Base.GetTags().AssetTag;
         }
@@ -72,7 +72,7 @@ namespace FESGameplayAbilitySystem
         public void SetLevel(int level) => Level = level;
         public float GetRelativeLevel() => RelativeLevel;
         public string GetName() => Base.GetDefinition().Name;
-        public ITag GetAffiliation()
+        public Tag GetAffiliation()
         {
             return Owner.GetAffiliation();
         }

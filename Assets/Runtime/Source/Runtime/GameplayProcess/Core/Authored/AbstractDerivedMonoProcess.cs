@@ -2,19 +2,19 @@
 {
     public class AbstractDerivedMonoProcess : LazyMonoProcess
     {
-        protected IEffectDerivation Derivation;
+        protected IEffectOrigin Origin;
         protected SystemComponentData Source;
 
         public override void WhenInitialize(ProcessRelay relay)
         {
             base.WhenInitialize(relay);
             
-            if (!regData.TryGet(Tags.PAYLOAD_DERIVATION, EProxyDataValueTarget.Primary, out Derivation))
+            if (!regData.TryGet(Tags.PAYLOAD_DERIVATION, EProxyDataValueTarget.Primary, out Origin))
             {
-                Derivation = GameRoot.Instance;
+                Origin = GameRoot.Instance;
             }
 
-            Source = Derivation.GetOwner().AsData();
+            Source = Origin.GetOwner().AsData();
         }
     }
 }

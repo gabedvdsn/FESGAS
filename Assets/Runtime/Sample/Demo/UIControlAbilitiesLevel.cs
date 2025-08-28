@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem.Demo
     public class UIControlAbilitiesLevel : MonoBehaviour
     {
         public TMP_Text LevelText;
-        public GASComponentBase Source;
+        public GASComponent Source;
 
         private int level = 1;
 

@@ -5,14 +5,14 @@ namespace FESGameplayAbilitySystem
 {
     public interface ISource : ITarget, IGameplayProcessHandler
     {
-        public List<ITag> GetContextTags();
+        public Tag[] GetContextTags();
         public TagCache GetTagCache();
-        public ITag GetAssetTag();
+        public Tag GetAssetTag();
         public int GetLevel();
         public int GetMaxLevel();
         public void SetLevel(int level);
         public string GetName();
-        public GameplayEffectDuration GetLongestDurationFor(GameplayTagScriptableObject[] lookForTags);
+        public GameplayEffectDuration GetLongestDurationFor(Tag[] lookForTags);
     }
     
     public interface  ITarget
@@ -20,17 +20,17 @@ namespace FESGameplayAbilitySystem
         public void CommunicateTargetedIntent(IDisjointableEntity entity);
         public void OnDisjoint(DisjointTarget disjointTarget);
         
-        public ITag GetAffiliation();
-        public List<ITag> GetAppliedTags();
+        public Tag GetAffiliation();
+        public Tag[] GetAppliedTags();
         public bool ApplyGameplayEffect(GameplayEffectSpec spec);
-        public GameplayEffectSpec GenerateEffectSpec(IEffectDerivation derivation, IEffectBase GameplayEffect);
+        public GameplayEffectSpec GenerateEffectSpec(IEffectOrigin origin, GameplayEffect GameplayEffect);
         public bool FindAttributeSystem(out AttributeSystemComponent attrSystem);
         public bool FindAbilitySystem(out AbilitySystemComponent abilSystem);
         public SystemComponentData AsData()
         {
             return new SystemComponentData(this);
         }
-        public GASComponentBase AsGAS() => this is GASComponentBase gas ? gas : null;
+        public GASComponent AsGAS() => this is GASComponent gas ? gas : null;
         public AbstractTransformPacket AsTransform();
     }
 

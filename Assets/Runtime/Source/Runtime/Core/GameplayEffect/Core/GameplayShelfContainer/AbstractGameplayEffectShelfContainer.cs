@@ -21,7 +21,7 @@ namespace FESGameplayAbilitySystem
         private AttributeValue TrackedImpact;
         private AttributeValue LastTrackedImpact;
 
-        private List<AbstractEffectWorkerScriptableObject> Workers;
+        private List<AbstractEffectWorker> Workers;
 
         protected AbstractGameplayEffectShelfContainer(GameplayEffectSpec spec, bool ongoing)
         {
@@ -60,7 +60,7 @@ namespace FESGameplayAbilitySystem
         public virtual void OnRemove()
         {
             Valid = false;
-            if (Spec.Base.GetReverseImpactOnRemoval())
+            if (Spec.Base.ImpactSpecification.ReverseImpactOnRemoval)
             {
                 AttributeValue negatedImpact = TrackedImpact.Negate();
                 Spec.Target.AttributeSystem.ModifyAttribute(
@@ -68,17 +68,17 @@ namespace FESGameplayAbilitySystem
                     new SourcedModifiedAttributeValue(Spec, this, negatedImpact.CurrentValue, negatedImpact.BaseValue, false));
             }
             
-            foreach (var containedEffect in Spec.Base.GetContainedEffects(EApplyTickRemove.OnRemove))
+            foreach (var containedEffect in Spec.Base.ImpactSpecification.GetContainedEffects(EApplyTickRemove.OnRemove))
             {
-                Spec.Source.ApplyGameplayEffect(Spec.Source.GenerateEffectSpec(Spec.Derivation, containedEffect));
+                Spec.Source.ApplyGameplayEffect(Spec.Source.GenerateEffectSpec(Spec.Origin, containedEffect));
             }
         }
 
-        public IAttribute GetAttribute()
+        public Attribute GetAttribute()
         {
             return Spec.Base.GetAttributeTarget();
         }
-        public IEffectDerivation GetEffectDerivation()
+        public IEffectOrigin GetEffectDerivation()
         {
             return Spec.GetEffectDerivation();
         }
@@ -94,7 +94,7 @@ namespace FESGameplayAbilitySystem
         {
             return Spec.GetImpactType();
         }
-        public bool RetainAttributeImpact()
+        public Tag AttributeRetention()
         {
             return false;
         }
@@ -113,9 +113,9 @@ namespace FESGameplayAbilitySystem
             impactValue = LastTrackedImpact;
             return true;
         }
-        public List<ITag> GetContextTags()
+        public Tag[] GetContextTags()
         {
-            return Spec.GetContextTags();
+            return Spec.Origin.GetContextTags();
         }
         public void RunEffectApplicationWorkers()
         {

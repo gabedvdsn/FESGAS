@@ -6,9 +6,9 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "PT_ApplyEffects_", menuName = "FESGAS/Ability/Task/Apply Effects")]
-    public class ApplyEffectsProxyTask : AbstractAbilityProxyTaskScriptableObject
+    public class ApplyEffectsProxyTask : AbstractAbilityProxyTask
     {
-        public List<GameplayEffectScriptableObject> Effects;
+        public List<GameplayEffect> Effects;
         public int BetweenApplicationDelayMilliseconds;
         
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
@@ -18,7 +18,7 @@ namespace FESGameplayAbilitySystem
                 return;
             }
             
-            foreach (GameplayEffectScriptableObject effect in Effects)
+            foreach (GameplayEffect effect in Effects)
             {
                 target.ApplyGameplayEffect(target.GenerateEffectSpec(data.Spec, effect));
                 await UniTask.Delay(BetweenApplicationDelayMilliseconds, cancellationToken: token);

@@ -10,38 +10,38 @@ namespace FESGameplayAbilitySystem
         private ITagHandler System;
 
         // List of tag worker datas
-        private List<AbstractTagWorkerScriptableObject> TagWorkers;
+        private List<AbstractTagWorker> TagWorkers;
 
-        private Dictionary<ITag, int> TagWeights;
-        private Dictionary<AbstractTagWorkerScriptableObject, List<AbstractTagWorker>> ActiveWorkers;
+        private Dictionary<Tag, int> TagWeights;
+        private Dictionary<AbstractTagWorker, List<AbstractTagWorkerInstance>> ActiveWorkers;
 
-        public List<ITag> GetAppliedTags() => TagWeights.Keys.ToList();
+        public Tag[] GetAppliedTags() => TagWeights.Keys.ToArray();
 
         public TagCache(ITagHandler system)
         {
             System = system;
 
-            TagWorkers = new List<AbstractTagWorkerScriptableObject>();
-            TagWeights = new Dictionary<ITag, int>(new TagComparer());
-            ActiveWorkers = new Dictionary<AbstractTagWorkerScriptableObject, List<AbstractTagWorker>>();
+            TagWorkers = new List<AbstractTagWorker>();
+            TagWeights = new Dictionary<Tag, int>();
+            ActiveWorkers = new Dictionary<AbstractTagWorker, List<AbstractTagWorkerInstance>>();
         }
 
-        public TagCache(ITagHandler system, List<AbstractTagWorkerScriptableObject> workers)
+        public TagCache(ITagHandler system, List<AbstractTagWorker> workers)
         {
             System = system;
 
-            TagWeights = new Dictionary<ITag, int>(new TagComparer());
+            TagWeights = new Dictionary<Tag, int>();
             TagWorkers = workers;
 
-            ActiveWorkers = new Dictionary<AbstractTagWorkerScriptableObject, List<AbstractTagWorker>>();
+            ActiveWorkers = new Dictionary<AbstractTagWorker, List<AbstractTagWorkerInstance>>();
         }
         
-        public void AddTagWorker(AbstractTagWorkerScriptableObject worker)
+        public void AddTagWorker(AbstractTagWorker worker)
         {
             if (!TagWorkers.Contains(worker)) TagWorkers.Add(worker);
         }
 
-        public void RemoveTagWorker(AbstractTagWorkerScriptableObject worker)
+        public void RemoveTagWorker(AbstractTagWorker worker)
         {
             if (TagWorkers.Contains(worker)) TagWorkers.Remove(worker);
         }
@@ -49,35 +49,35 @@ namespace FESGameplayAbilitySystem
         private void HandleTagWorkers()
         {
             // Handle deactivating active workers if applicable
-            IEnumerable<AbstractTagWorkerScriptableObject> activeWorkers = ActiveWorkers.Keys;
-            foreach (AbstractTagWorkerScriptableObject workerData in activeWorkers)
+            IEnumerable<AbstractTagWorker> activeWorkers = ActiveWorkers.Keys;
+            foreach (AbstractTagWorker workerData in activeWorkers)
             {
                 if (workerData.ValidateWorkFor(System)) continue;
                 
-                foreach (AbstractTagWorker worker in ActiveWorkers[workerData]) worker.Resolve();
+                foreach (AbstractTagWorkerInstance worker in ActiveWorkers[workerData]) worker.Resolve();
                 ActiveWorkers.Remove(workerData);
             }
 
             // Handle activating new workers if applicable
-            foreach (AbstractTagWorkerScriptableObject workerData in TagWorkers)
+            foreach (AbstractTagWorker workerData in TagWorkers)
             {
                 if (!workerData.ValidateWorkFor(System)) continue;
 
                 if (ActiveWorkers.ContainsKey(workerData) && workerData.AllowMultipleInstances) ActiveWorkers[workerData].Add(workerData.Generate(System));
-                else ActiveWorkers[workerData] = new List<AbstractTagWorker>() { workerData.Generate(System) };
+                else ActiveWorkers[workerData] = new List<AbstractTagWorkerInstance>() { workerData.Generate(System) };
                 ActiveWorkers[workerData][^1].Initialize();
             }
         }
 
         public void TickTagWorkers()
         {
-            foreach (AbstractTagWorkerScriptableObject workerData in ActiveWorkers.Keys)
+            foreach (AbstractTagWorker workerData in ActiveWorkers.Keys)
             {
-                foreach (AbstractTagWorker worker in ActiveWorkers[workerData]) worker.Tick();
+                foreach (AbstractTagWorkerInstance worker in ActiveWorkers[workerData]) worker.Tick();
             }
         }
 
-        public void AddTag(ITag tag, bool noDuplicates = false, bool handle = true)
+        public void AddTag(Tag tag, bool noDuplicates = false, bool handle = true)
         {
             if (TagWeights.ContainsKey(tag))
             {
@@ -88,7 +88,7 @@ namespace FESGameplayAbilitySystem
             if (handle) HandleTagWorkers();
         }
 
-        public void AddTags(IEnumerable<ITag> tags, bool noDuplicates = false)
+        public void AddTags(IEnumerable<Tag> tags, bool noDuplicates = false)
         {
             foreach (var tag in tags)
             {
@@ -98,7 +98,7 @@ namespace FESGameplayAbilitySystem
             HandleTagWorkers();
         }
 
-        public void RemoveTag(ITag tag, bool handle = true)
+        public void RemoveTag(Tag tag, bool handle = true)
         {
             if (!TagWeights.ContainsKey(tag)) return;
                 
@@ -108,7 +108,7 @@ namespace FESGameplayAbilitySystem
             if (handle) HandleTagWorkers();
         }
 
-        public void RemoveTags(IEnumerable<ITag> tags)
+        public void RemoveTags(IEnumerable<Tag> tags)
         {
             foreach (var tag in tags)
             {
@@ -118,14 +118,14 @@ namespace FESGameplayAbilitySystem
             HandleTagWorkers();
         }
         
-        public int GetWeight(ITag tag) => TagWeights.TryGetValue(tag, out int weight) ? weight : 0;
+        public int GetWeight(Tag tag) => TagWeights.TryGetValue(tag, out int weight) ? weight : 0;
 
-        public bool HasTag(ITag tag) => TagWeights.ContainsKey(tag);
+        public bool HasTag(Tag tag) => TagWeights.ContainsKey(tag);
 
         public void LogWeights()
         {
             Debug.Log($"[ LOG-WEIGHTS ]");
-            foreach (ITag tag in TagWeights.Keys)
+            foreach (Tag tag in TagWeights.Keys)
             {
                 Debug.Log($"\t{tag} => {TagWeights[tag]}");
             }
@@ -143,11 +143,11 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public struct TagWorkerRequirementPacket
     {
-        public GameplayTagScriptableObject Tag;
+        public Tag Tag;
         public ERequireAvoidPolicy Policy;
         public int RequiredWeight;
 
-        public TagWorkerRequirementPacket(GameplayTagScriptableObject tag, ERequireAvoidPolicy policy, int requiredWeight)
+        public TagWorkerRequirementPacket(Tag tag, ERequireAvoidPolicy policy, int requiredWeight)
         {
             Tag = tag;
             Policy = policy;

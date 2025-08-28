@@ -2,20 +2,20 @@
 
 namespace FESGameplayAbilitySystem
 {
-    public class AttrCacheSimpleMagnitudeModifier : AbstractCachedAttributeMagnitudeModifier
+    public class AttrCacheSimpleMagnitudeModifier : AbstractCachedMagnitudeModifier
     {
         public AnimationCurve Scaling;
 
         public override void Initialize(IAttributeImpactDerivation spec)
         {
-            Gasify.Modifier.Init_Simple(Scaling);
+            
         }
         public override float Evaluate(IAttributeImpactDerivation spec)
         {
-            return Gasify.Modifier.Eval_Simple(Scaling, spec);
+            return Scaling.Evaluate(spec.GetEffectDerivation().GetRelativeLevel());
         }
 
-        public override void Regulate(IAttribute attribute, AttributeModificationRule rules)
+        public override void Regulate(Attribute attribute, AttributeModificationRule rules)
         {
             // Doesn't do anything
         }

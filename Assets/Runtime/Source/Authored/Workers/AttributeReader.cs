@@ -10,24 +10,17 @@ namespace FESGameplayAbilitySystem
 {
     public class AttributeReader : MonoBehaviour, IAttributeAssignable
     {
-        public AttributeSystemComponent Source;
-        public AttributeScriptableObject AttributeTarget;
-
         public TMP_Text CurrentText;
         public TMP_Text BaseText;
         public Slider ValueSlider;
 
-        private IAttribute attribute;
-
-        private void Awake()
-        {
-            AssignAttribute(AttributeTarget);
-            // attribute = AttributeTarget;
-        }
-
+        private AttributeSystemComponent source;
+        private Attribute attribute;
+        
         private void LateUpdate()
         {
-            if (!Source.TryGetAttributeValue(attribute, out AttributeValue attributeValue)) return;
+            if (!source) return;
+            if (!source.TryGetAttributeValue(attribute, out AttributeValue attributeValue)) return;
 
             CurrentText.text = attributeValue.CurrentValue.ToString(CultureInfo.InvariantCulture);
             BaseText.text = attributeValue.BaseValue.ToString("F2");
@@ -35,14 +28,19 @@ namespace FESGameplayAbilitySystem
             float targetValue = attributeValue.CurrentValue / attributeValue.BaseValue;
             ValueSlider.value = Mathf.Lerp(ValueSlider.value, targetValue, Time.deltaTime * 10f);
         }
-        public void AssignAttribute(IAttribute attr)
+        public void AssignAttribute(Attribute attr)
         {
             attribute = attr;
+        }
+        public void AssignSystem(AttributeSystemComponent asc)
+        {
+            source = asc;
         }
     }
 
     public interface IAttributeAssignable
     {
-        public void AssignAttribute(IAttribute attr);
+        public void AssignAttribute(Attribute attr);
+        public void AssignSystem(AttributeSystemComponent asc);
     }
 }

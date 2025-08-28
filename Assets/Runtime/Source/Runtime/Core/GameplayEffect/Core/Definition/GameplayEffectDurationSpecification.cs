@@ -14,13 +14,13 @@ namespace FESGameplayAbilitySystem
         [Space] 
         
         public float Duration;
-        public AbstractMagnitudeModifierScriptableObject DurationCalculation;
+        public AbstractMagnitudeModifier DurationCalculation;
         public EMagnitudeOperation DurationCalculationOperation;
 
         [Space] 
         
         public int Ticks;
-        public AbstractMagnitudeModifierScriptableObject TickCalculation;
+        public AbstractMagnitudeModifier TickCalculation;
         public EMagnitudeOperation TickCalculationOperation;
         public TickCalculationRounding Rounding;
         public EDefaultTickRate PresetTickRatePolicy;

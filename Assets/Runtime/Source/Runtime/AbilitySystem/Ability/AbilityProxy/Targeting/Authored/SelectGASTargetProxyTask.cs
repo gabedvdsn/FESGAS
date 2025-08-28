@@ -4,10 +4,8 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "PTTarget_SelectGAS", menuName = "FESGAS/Ability/Targeting/Select Target")]
-    public class SelectGASTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
+    public class SelectGASTargetProxyTask : AbstractTargetingProxyTask
     {
-
         public override async UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
             // wait for response from some cursor manager that receives mouse input and finds the selected gameobject that has a GASComponent
@@ -32,8 +30,11 @@ namespace FESGameplayAbilitySystem
             UnityEngine.Debug.Log($"Out of targeting");
         }
         
-        public override bool IsCriticalSection => true;
-        public override void WhenTargetingInvalid()
+        protected override bool ConnectInputHandler(AbilityDataPacket data)
+        {
+            return true;
+        }
+        protected override void DisconnectInputHandler(AbilityDataPacket data)
         {
             
         }

@@ -7,13 +7,13 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Attributes")]
         
-        public AttributeSetScriptableObject AttributeSet;
+        public AttributeSet AttributeSet;
         
         [Header("Attribute Change Events")]
         
-        [SerializeField] private List<AbstractAttributeChangeEventScriptableObject> AttributeChangeEvents;
+        [SerializeField] private List<AbstractAttributeChangeEvent> AttributeChangeEvents;
 
-        public override void Initialize(GASComponentBase system)
+        public override void Initialize(GASComponent system)
         {
             attributeSet = AttributeSet;
             attributeChangeEvents = AttributeChangeEvents;

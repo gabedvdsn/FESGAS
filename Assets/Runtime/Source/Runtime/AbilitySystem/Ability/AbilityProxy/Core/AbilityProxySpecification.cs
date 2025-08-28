@@ -16,7 +16,7 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Targeting Instructions")]
         
-        public AbstractTargetingProxyTaskScriptableObject TargetingProxy;
+        public AbstractTargetingProxyTask TargetingProxy;
         [Tooltip("Implicitly provides the casting system as a target.")]
         public bool UseImplicitTargeting = true;
         
@@ -34,7 +34,7 @@ namespace FESGameplayAbilitySystem
     public class AbilityProxyStage
     {
         public EAnyAllPolicy TaskPolicy;
-        public List<AbstractAbilityProxyTaskScriptableObject> Tasks;
+        public List<AbstractAbilityProxyTask> Tasks;
         
         [Space(5)]
         

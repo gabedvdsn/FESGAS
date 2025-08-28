@@ -6,9 +6,9 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "PT_ApplyRemoveEffects_", menuName = "FESGAS/Ability/Task/Apply->Remove")]
-    public class ApplyRemoveEffectsProxyTask : AbstractAbilityProxyTaskScriptableObject
+    public class ApplyRemoveEffectsProxyTask : AbstractAbilityProxyTask
     {
-        public List<GameplayEffectScriptableObject> Effects;
+        public List<GameplayEffect> Effects;
 
         public override void Prepare(AbilityDataPacket data)
         {
@@ -19,7 +19,7 @@ namespace FESGameplayAbilitySystem
 
             var gas = target.AsGAS();
             
-            foreach (GameplayEffectScriptableObject effect in Effects) target.ApplyGameplayEffect(gas.GenerateEffectSpec(data.Spec, effect));
+            foreach (GameplayEffect effect in Effects) target.ApplyGameplayEffect(gas.GenerateEffectSpec(data.Spec, effect));
         }
 
         public override UniTask Activate(AbilityDataPacket data, CancellationToken token)
@@ -34,7 +34,7 @@ namespace FESGameplayAbilitySystem
                 return;
             }
             var gas = target.AsGAS();
-            foreach (GameplayEffectScriptableObject effect in Effects) gas.RemoveGameplayEffect(effect);
+            foreach (GameplayEffect effect in Effects) gas.RemoveGameplayEffect(effect);
         }
         public override bool IsCriticalSection => false;
     }

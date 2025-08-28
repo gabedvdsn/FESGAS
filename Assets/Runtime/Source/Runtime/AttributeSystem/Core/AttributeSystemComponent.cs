@@ -8,19 +8,19 @@ namespace FESGameplayAbilitySystem
     public class AttributeSystemComponent : MonoBehaviour
     {
         protected IAttributeSet attributeSet;
-        protected List<AbstractAttributeChangeEventScriptableObject> attributeChangeEvents = new();
+        protected List<AbstractAttributeChangeEvent> attributeChangeEvents = new();
 
         private AttributeChangeMomentHandler PreChangeHandler;
         private AttributeChangeMomentHandler PostChangeHandler;
         
-        private Dictionary<IAttribute, CachedAttributeValue> AttributeCache;
+        private Dictionary<Attribute, CachedAttributeValue> AttributeCache;
         private AttributeModificationRule Rule;
         
-        private GASComponentBase Root;
+        private GASComponent Root;
         
         #region Initialization
         
-        public virtual void Initialize(GASComponentBase system)
+        public virtual void Initialize(GASComponent system)
         {
             Root = system;
 
@@ -37,7 +37,7 @@ namespace FESGameplayAbilitySystem
         
         private void InitializeCaches()
         {
-            AttributeCache = new Dictionary<IAttribute, CachedAttributeValue>();
+            AttributeCache = new Dictionary<Attribute, CachedAttributeValue>();
         }
 
         private void InitializeAttributeSets()
@@ -61,24 +61,24 @@ namespace FESGameplayAbilitySystem
         {
             PreChangeHandler = new AttributeChangeMomentHandler();
             PostChangeHandler = new AttributeChangeMomentHandler();
-            foreach (AbstractAttributeChangeEventScriptableObject changeEvent in attributeChangeEvents) changeEvent.RegisterWithHandler(PreChangeHandler, PostChangeHandler);
+            foreach (AbstractAttributeChangeEvent changeEvent in attributeChangeEvents) changeEvent.RegisterWithHandler(PreChangeHandler, PostChangeHandler);
         }
         
         #endregion
         
         #region Management
         
-        public bool ProvideChangeEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
+        public bool ProvideChangeEvent(AbstractAttributeChangeEvent changeEvent)
         {
             return changeEvent.RegisterWithHandler(PreChangeHandler, PostChangeHandler);
         }
 
-        public bool RescindChangeEvent(AbstractAttributeChangeEventScriptableObject changeEvent)
+        public bool RescindChangeEvent(AbstractAttributeChangeEvent changeEvent)
         {
             return changeEvent.DeRegisterFromHandler(PreChangeHandler, PostChangeHandler);
         }
 
-        public void ProvideAttribute(IAttribute attribute, DefaultAttributeValue defaultValue)
+        public void ProvideAttribute(Attribute attribute, DefaultAttributeValue defaultValue)
         {
             if (AttributeCache.ContainsKey(attribute)) return;
             
@@ -97,14 +97,14 @@ namespace FESGameplayAbilitySystem
         
         #region Helpers
         
-        public bool DefinesAttribute(IAttribute attribute) => AttributeCache.ContainsKey(attribute);
+        public bool DefinesAttribute(Attribute attribute) => AttributeCache.ContainsKey(attribute);
         
-        public bool TryGetAttributeValue(IAttribute attribute, out CachedAttributeValue attributeValue)
+        public bool TryGetAttributeValue(Attribute attribute, out CachedAttributeValue attributeValue)
         {
             return AttributeCache.TryGetValue(attribute, out attributeValue);
         }
 
-        public bool TryGetAttributeValue(IAttribute attribute, out AttributeValue attributeValue)
+        public bool TryGetAttributeValue(Attribute attribute, out AttributeValue attributeValue)
         {
             if (AttributeCache.TryGetValue(attribute, out var cachedValue))
             {
@@ -120,7 +120,7 @@ namespace FESGameplayAbilitySystem
         
         #region Attribute Modification
         
-        public void ModifyAttribute(IAttribute attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool runEvents = true)
+        public void ModifyAttribute(Attribute attribute, SourcedModifiedAttributeValue sourcedModifiedValue, bool runEvents = true)
         {
             if (!AttributeCache.ContainsKey(attribute)) return;
 
@@ -143,9 +143,9 @@ namespace FESGameplayAbilitySystem
             if (sourcedModifiedValue.BaseDerivation.GetSource().FindAbilitySystem(out var attr)) attr.ProvideFrameImpactDealt(impactData);
         }
 
-        public void RefreshAttributes(IAttribute contact)
+        public void RefreshAttributes(Attribute contact)
         {
-            AttributeCache[contact].Modifier.Initialize();
+            // AttributeCache[contact].Modifier.Initialize();
         }
 
         public void RemoveAttributeDerivation(IAttributeImpactDerivation derivation)

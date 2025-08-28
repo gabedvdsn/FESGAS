@@ -3,22 +3,21 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [Serializable]
     public class GASIdentityData
     {
         public int Level = 1;
-        public int MaxLevel = 15;
+        public int MaxLevel = 100;
 
-        public GameplayTagScriptableObject NameTag;
-        [HideInInspector] public GameplayTagScriptableObject Affiliation;
+        public Tag NameTag;
+        public Tag Affiliation;
 
         public float RelativeLevel => (Level - 1f) / (MaxLevel - 1);
 
-        private GASComponentBase System;
+        private GASComponent System;
 
-        public void Initialize(GASComponentBase system) => System = system;
+        public void Initialize(GASComponent system) => System = system;
 
-        public string DistinctName => NameTag ? NameTag.Name : System is null ? "AnonGAS" : $"AnonGAS-({System.gameObject.name})";
+        public string DistinctName => NameTag.GetName();
         
         public override string ToString()
         {

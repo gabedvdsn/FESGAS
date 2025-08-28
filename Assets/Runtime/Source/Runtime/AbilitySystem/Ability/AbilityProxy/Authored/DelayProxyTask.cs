@@ -5,7 +5,7 @@ using UnityEngine;
 namespace FESGameplayAbilitySystem
 {
     [CreateAssetMenu(fileName = "PT_Delay_", menuName = "FESGAS/Ability/Task/Delay")]
-    public class DelayProxyTask : AbstractAbilityProxyTaskScriptableObject
+    public class DelayProxyTask : AbstractAbilityProxyTask
     {
         public int DelayMilliseconds;
         

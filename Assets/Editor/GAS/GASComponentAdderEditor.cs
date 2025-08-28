@@ -31,33 +31,7 @@ namespace FESGameplayAbilitySystem
         [MenuItem("GAS/Add Components", true)]
         private static bool ValidateAddComprehensiveGAS()
         {
-            return Selection.activeGameObject != null;
-        }
-        
-        [MenuItem("GAS/Add Components (Manual)", false, 0)]
-        private static void AddManualGASComponents()
-        {
-            if (Selection.activeGameObject == null)
-            {
-                Debug.LogWarning($"Cannot add GAS components: No GameObject selected.");
-                return;
-            }
-
-            GameObject go = Selection.activeGameObject;
-
-            if (go.GetComponent<GASComponentManual>() is not null)
-            {
-                Debug.LogWarning($"GameObject ({go.name}) already contains GAS components.");
-                return;
-            }
-
-            Undo.AddComponent<GASComponentManual>(go);
-        }
-        
-        [MenuItem("GAS/Add Components (Manual)", true)]
-        private static bool ValidateAddManualGAS()
-        {
-            return Selection.activeGameObject != null;
+            return Selection.activeGameObject != null && !Selection.activeGameObject.GetComponent<GASComponent>();
         }
     }
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public class GameRoot : GASComponentBase, IEffectDerivation
+    public class GameRoot : GASComponent, IEffectOrigin
     {
         [Header("Game Root")]
         
@@ -46,7 +46,7 @@ namespace FESGameplayAbilitySystem
         {
             NativeDataPacket = AbilityDataPacket.GenerateFrom
             (
-                IEffectDerivation.GenerateSourceDerivation(this),
+                IEffectOrigin.GenerateSourceDerivation(this),
                 false
             );
             

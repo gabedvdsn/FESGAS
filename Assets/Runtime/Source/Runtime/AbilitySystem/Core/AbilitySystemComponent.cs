@@ -13,11 +13,11 @@ namespace FESGameplayAbilitySystem
         protected EAbilityActivationPolicy activationPolicy;
         public EAbilityActivationPolicy DefaultActivationPolicy => activationPolicy;
 
-        protected List<AbstractImpactWorkerScriptableObject> impactWorkers;
-        protected List<AbilityScriptableObject> startingAbilities;
+        protected List<AbstractImpactWorker> impactWorkers;
+        protected List<Ability> startingAbilities;
         protected bool allowDuplicateAbilities;
 
-        private GASComponentBase Root;
+        private GASComponent Root;
 
         private Dictionary<int, AbilitySpecContainer> AbilityCache = new();
 
@@ -147,9 +147,9 @@ namespace FESGameplayAbilitySystem
             remove => _onAbilityCastEnd -= value;
         }
 
-        private Action<AbilityDataPacket, AbstractAbilityProxyTaskScriptableObject> _onAbilityTaskActivate;
+        private Action<AbilityDataPacket, AbstractAbilityProxyTask> _onAbilityTaskActivate;
 
-        private event Action<AbilityDataPacket, AbstractAbilityProxyTaskScriptableObject> OnAbilityTaskActivate
+        private event Action<AbilityDataPacket, AbstractAbilityProxyTask> OnAbilityTaskActivate
         {
             add
             {
@@ -158,9 +158,9 @@ namespace FESGameplayAbilitySystem
             remove => _onAbilityTaskActivate -= value;
         }
 
-        private Action<AbilityDataPacket, AbstractAbilityProxyTaskScriptableObject> _onAbilityTaskEnd;
+        private Action<AbilityDataPacket, AbstractAbilityProxyTask> _onAbilityTaskEnd;
 
-        private event Action<AbilityDataPacket, AbstractAbilityProxyTaskScriptableObject> OnAbilityTaskEnd
+        private event Action<AbilityDataPacket, AbstractAbilityProxyTask> OnAbilityTaskEnd
         {
             add
             {
@@ -173,7 +173,7 @@ namespace FESGameplayAbilitySystem
 
         #endregion
 
-        public virtual void Initialize(GASComponentBase system)
+        public virtual void Initialize(GASComponent system)
         {
             Root = system;
             AbilityCache = new Dictionary<int, AbilitySpecContainer>();
@@ -181,7 +181,7 @@ namespace FESGameplayAbilitySystem
             
             if (ImpactWorkerCache is null) ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
 
-            foreach (AbilityScriptableObject ability in startingAbilities)
+            foreach (Ability ability in startingAbilities)
             {
                 GiveAbility(ability, ability.StartingLevel, out _);
             }
@@ -287,7 +287,7 @@ namespace FESGameplayAbilitySystem
             TryActivateAbility(req);
         }
 
-        private void HandleTags(IEnumerable<ITag> tags, bool flag)
+        private void HandleTags(IEnumerable<Tag> tags, bool flag)
         {
             if (flag) Root.TagCache.AddTags(tags);
             else Root.TagCache.RemoveTags(tags);

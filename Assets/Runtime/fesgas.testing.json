@@ -3,7 +3,7 @@
   {
     "ability_activation": { "enum": ["single_active", "single_queued_active", "no_restrictions"] },
     "any_all_policy": { "enum": ["any", "all"] },
-    "tag_determination": { "enum": ["generic", "asset", "context"]}
+    "tag_determination": { "enum": ["generic", "asset", "context", "requirement"]}
   },
   "mono_processes":
   {

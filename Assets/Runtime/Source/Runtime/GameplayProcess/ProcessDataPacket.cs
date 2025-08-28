@@ -24,7 +24,7 @@ namespace FESGameplayAbilitySystem
     /// </summary>
     public class ProcessDataPacket
     {
-        protected Dictionary<ITag, List<object>> Payload = new(new TagComparer());
+        protected Dictionary<Tag, List<object>> Payload = new();
 
         public IGameplayProcessHandler Handler;
 
@@ -102,7 +102,7 @@ namespace FESGameplayAbilitySystem
         
         #region Core
 
-        public void AddPayload<T>(ITag key, T value)
+        public void AddPayload<T>(Tag key, T value)
         {
             if (!Payload.ContainsKey(key))
             {
@@ -114,7 +114,7 @@ namespace FESGameplayAbilitySystem
             else Payload[key].Add(value);
         }
         
-        public bool TryGet<T>(ITag key, EProxyDataValueTarget target, out T value)
+        public bool TryGet<T>(Tag key, EProxyDataValueTarget target, out T value)
         {
             value = default;
             
@@ -136,7 +136,7 @@ namespace FESGameplayAbilitySystem
             return value is not null;
         }
 
-        public bool TryGetFirst<T>(ITag key, out T value)
+        public bool TryGetFirst<T>(Tag key, out T value)
         {
             value = default;
             if (!Payload.ContainsKey(key)) return false;
@@ -152,7 +152,7 @@ namespace FESGameplayAbilitySystem
             return false;
         }
         
-        public bool TryGet<T>(ITag key, out DataValue<T> dataValue)
+        public bool TryGet<T>(Tag key, out DataValue<T> dataValue)
         {
             if (!Payload.ContainsKey(key))
             {
@@ -170,12 +170,12 @@ namespace FESGameplayAbilitySystem
             return true;
         }
 
-        public bool Remove(ITag key)
+        public bool Remove(Tag key)
         {
             return Payload.Remove(key);
         }
 
-        public bool Remove<T>(ITag key, T obj)
+        public bool Remove<T>(Tag key, T obj)
         {
             if (!Payload.ContainsKey(key)) return false;
             int index = -1;
@@ -193,7 +193,7 @@ namespace FESGameplayAbilitySystem
             return true;
         }
         
-        public bool Contains<T>(T value, ITag key)
+        public bool Contains<T>(T value, Tag key)
         {
             if (!Payload.ContainsKey(key)) return false;
             

@@ -7,24 +7,24 @@ namespace FESGameplayAbilitySystem
     [Serializable]
     public class AvoidRequireTagGroup
     {
-        public List<GameplayTagScriptableObject> AvoidTags;
-        public List<GameplayTagScriptableObject> RequireTags;
+        public Tag[] AvoidTags;
+        public Tag[] RequireTags;
 
         private AvoidRequireTagGroup()
         {
-            AvoidTags = new List<GameplayTagScriptableObject>();
-            RequireTags = new List<GameplayTagScriptableObject>();
+            AvoidTags = Array.Empty<Tag>();
+            RequireTags = Array.Empty<Tag>();
         }
         
-        public AvoidRequireTagGroup(List<GameplayTagScriptableObject> avoidTags, List<GameplayTagScriptableObject> requireTags)
+        public AvoidRequireTagGroup(Tag[] avoidTags, Tag[] requireTags)
         {
             AvoidTags = avoidTags;
             RequireTags = requireTags;
         }
 
-        public bool Validate(List<ITag> appliedTags)
+        public bool Validate(Tag[] appliedTags)
         {
-            if (AvoidTags.Count == 0 && RequireTags.Count == 0) return true;
+            if (AvoidTags.Length == 0 && RequireTags.Length == 0) return true;
             return !AvoidTags.Any(appliedTags.Contains) && RequireTags.All(appliedTags.Contains);
         }
 

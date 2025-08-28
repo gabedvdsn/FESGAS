@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Attribute Impact")]
         
-        public AttributeScriptableObject AttributeTarget;
+        public Attribute AttributeTarget;
         public EEffectImpactTarget TargetImpact;
         public ECalculationOperation ImpactOperation;
 
@@ -25,7 +25,7 @@ namespace FESGameplayAbilitySystem
         [Space]
         
         public float Magnitude;
-        public AbstractMagnitudeModifierScriptableObject MagnitudeCalculation;
+        public AbstractMagnitudeModifier MagnitudeCalculation;
         public EMagnitudeOperation MagnitudeCalculationOperation;
 
         [Space] 
@@ -53,9 +53,9 @@ namespace FESGameplayAbilitySystem
             };
         }
 
-        public List<GameplayEffectScriptableObject> GetContainedEffects(EApplyTickRemove policy)
+        public IEnumerable<GameplayEffect> GetContainedEffects(EApplyTickRemove policy)
         {
-            return Packets.Where(packet => packet.Policy == policy).Select(p => p.ContainedEffect).ToList();
+            return Packets.Where(packet => packet.Policy == policy).Select(p => p.ContainedEffect);
         }
     }
     
@@ -63,7 +63,7 @@ namespace FESGameplayAbilitySystem
     public struct ContainedEffectPacket
     {
         public EApplyTickRemove Policy;
-        public GameplayEffectScriptableObject ContainedEffect;
+        public GameplayEffect ContainedEffect;
     }
 
     public enum EMagnitudeOperation

@@ -92,15 +92,15 @@ namespace FESGameplayAbilitySystem
         public Dictionary<IAttributeImpactDerivation, AttributeValue> DerivedValues = new();
         public AttributeValue Value;
         public AttributeOverflowData Overflow;
-        public AbstractCachedAttributeMagnitudeModifier Modifier;
+        public AbstractCachedMagnitudeModifier Modifier;
 
-        public CachedAttributeValue(AttributeOverflowData overflow, AbstractCachedAttributeMagnitudeModifier modifier)
+        public CachedAttributeValue(AttributeOverflowData overflow, AbstractCachedMagnitudeModifier modifier)
         {
             Overflow = overflow;
             Modifier = modifier;
         }
 
-        public CachedAttributeValue(IAttribute attribute, ISource source, DefaultAttributeValue defaultValue)
+        public CachedAttributeValue(Attribute attribute, ISource source, DefaultAttributeValue defaultValue)
         {
             Overflow = defaultValue.Overflow;
             Modifier = defaultValue.Modifier;
@@ -115,7 +115,7 @@ namespace FESGameplayAbilitySystem
 
         public void Add(IAttributeImpactDerivation derivation, AttributeValue attributeValue)
         {
-            if (derivation.RetainAttributeImpact())
+            if (derivation.AttributeRetention())
             {
                 if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] += attributeValue;
                 else DerivedValues[derivation] = attributeValue;
@@ -126,7 +126,7 @@ namespace FESGameplayAbilitySystem
 
         public void Add(IAttributeImpactDerivation derivation, ModifiedAttributeValue modifiedAttributeValue)
         {
-            if (derivation.RetainAttributeImpact())
+            if (derivation.AttributeRetention())
             {
                 if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] = DerivedValues[derivation].ApplyModified(modifiedAttributeValue);
                 else DerivedValues[derivation] = modifiedAttributeValue.ToAttributeValue();
@@ -196,7 +196,7 @@ namespace FESGameplayAbilitySystem
             Value += new AttributeValue(currDelta, baseDelta);
         }
 
-        public string FormattedString(AttributeScriptableObject attribute)
+        public string FormattedString(Attribute attribute)
         {
             string s = $"[ CACHED-{attribute} ]\n";
             foreach (IAttributeImpactDerivation derivation in DerivedValues.Keys)

@@ -8,11 +8,11 @@ namespace FESGameplayAbilitySystem
     {
         [Header("Effects")]
         
-        public List<GameplayEffectScriptableObject> Effects;
+        public List<GameplayEffect> Effects;
 
         protected void ApplyEffects(ITarget target)
         {
-            foreach (var effect in Effects) target.ApplyGameplayEffect(target.GenerateEffectSpec(Derivation, effect));
+            foreach (var effect in Effects) target.ApplyGameplayEffect(target.GenerateEffectSpec(Origin, effect));
         }
     }
 }

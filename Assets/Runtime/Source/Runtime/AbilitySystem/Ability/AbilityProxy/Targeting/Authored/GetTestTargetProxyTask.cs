@@ -4,12 +4,11 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "TestSelectTarget_", menuName = "FESGAS/Ability/Targeting/Select Target Test")]
-    public class GetTestTargetProxyTask : AbstractTargetingProxyTaskScriptableObject
+    public class GetTestTargetProxyTask : AbstractTargetingProxyTask
     {
         public override UniTask Activate(AbilityDataPacket data, CancellationToken token)
         {
-            var comps = GameObject.FindObjectsByType<GASComponentBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            var comps = Object.FindObjectsByType<GASComponent>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             if (!data.TryGet(Tags.PAYLOAD_TARGET, EProxyDataValueTarget.Primary, out ISource source))
             {
                 return UniTask.CompletedTask;
@@ -29,8 +28,11 @@ namespace FESGameplayAbilitySystem
             return UniTask.CompletedTask;
         }
         
-        public override bool IsCriticalSection => false;
-        public override void WhenTargetingInvalid()
+        protected override bool ConnectInputHandler(AbilityDataPacket data)
+        {
+            return true;
+        }
+        protected override void DisconnectInputHandler(AbilityDataPacket data)
         {
             
         }

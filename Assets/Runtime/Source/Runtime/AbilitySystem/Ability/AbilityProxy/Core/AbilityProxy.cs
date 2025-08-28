@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
 
 namespace FESGameplayAbilitySystem
 {
@@ -50,7 +49,7 @@ namespace FESGameplayAbilitySystem
             try
             {
                 // If there is a targeting task assigned...
-                if (Specification.TargetingProxy)
+                if (Specification.TargetingProxy is not null)
                 {
                     Specification.TargetingProxy.Prepare(implicitData);
                     await Specification.TargetingProxy.Activate(implicitData, token);
@@ -62,7 +61,7 @@ namespace FESGameplayAbilitySystem
             }
             finally
             {
-                Specification.TargetingProxy.Clean(implicitData);
+                Specification.TargetingProxy?.Clean(implicitData);
             }
         }
 
@@ -115,11 +114,11 @@ namespace FESGameplayAbilitySystem
             stageSources[stageIndex] = stageCts;
             var stageToken = stageCts.Token;
 
-            List<UniTask> tasks = stage.Tasks.Select(task => task.Activate(data, stageToken)).ToList();
+            var tasks = stage.Tasks.Select(task => task.Activate(data, stageToken)).ToArray();
             
             try
             {
-                if (tasks.Count > 0)
+                if (tasks.Length > 0)
                 {
                     switch (stage.TaskPolicy)
                     {
@@ -175,22 +174,6 @@ namespace FESGameplayAbilitySystem
                 default:
                     throw new ArgumentOutOfRangeException(nameof(injection), injection, null);
             }
-        }
-
-        public override string ToString()
-        {
-            string s = $"[ PROXY ]";
-            int stageIndex = 0;
-            foreach (AbilityProxyStage stage in Specification.Stages)
-            {
-                s += $"\n\t[ {stageIndex++} ] STAGE -> {stage.TaskPolicy}";
-                foreach (AbstractAbilityProxyTaskScriptableObject task in stage.Tasks)
-                {
-                    s += $"\n\t\t{task.name}";
-                }
-            }
-
-            return s;
         }
     }
     

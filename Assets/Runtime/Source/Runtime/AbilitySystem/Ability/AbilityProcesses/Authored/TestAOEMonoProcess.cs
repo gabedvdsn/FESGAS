@@ -16,7 +16,7 @@ namespace FESGameplayAbilitySystem
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!other.TryGetComponent(out GASComponentBase gas)) return;
+            if (!other.TryGetComponent(out GASComponent gas)) return;
             
             ApplyEffects(gas);
         }

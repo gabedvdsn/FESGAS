@@ -5,31 +5,27 @@ namespace FESGameplayAbilitySystem
 {
     public class GameplayEffectSpec : IAttributeImpactDerivation
     {
-        public IEffectBase Base;
+        public GameplayEffect Base;
         public float Level;
         public float RelativeLevel;
 
-        public IEffectDerivation Derivation;
+        public IEffectOrigin Origin;
         public ISource Source;
-        public GASComponentBase Target;
-
-        private List<AbstractEffectWorkerScriptableObject> Workers;
-
+        public GASComponent Target;
+        
         public Dictionary<IMagnitudeModifier, AttributeValue?> SourceCapturedAttributes;
 
-        public GameplayEffectSpec(IEffectBase GameplayEffect, IEffectDerivation derivation, GASComponentBase target)
+        public GameplayEffectSpec(GameplayEffect GameplayEffect, IEffectOrigin origin, GASComponent target)
         {
             Base = GameplayEffect;
-            Derivation = derivation;
+            Origin = origin;
             
-            Source = Derivation.GetOwner();
+            Source = Origin.GetOwner();
             Target = target;
 
-            Level = Derivation.GetLevel();
-            RelativeLevel = Derivation.GetRelativeLevel();
-
-            Workers = Base.GetEffectWorkers();
-
+            Level = Origin.GetLevel();
+            RelativeLevel = Origin.GetRelativeLevel();
+            
             SourceCapturedAttributes = new Dictionary<IMagnitudeModifier, AttributeValue?>();
         }
         
@@ -123,13 +119,13 @@ namespace FESGameplayAbilitySystem
             );
         }
 
-        public IAttribute GetAttribute()
+        public Attribute GetAttribute()
         {
             return Base.GetAttributeTarget();
         }
-        public IEffectDerivation GetEffectDerivation()
+        public IEffectOrigin GetEffectDerivation()
         {
-            return Derivation;
+            return Origin;
         }
         public ISource GetSource()
         {
@@ -143,7 +139,7 @@ namespace FESGameplayAbilitySystem
         {
             return Base.GetImpactType();
         }
-        public bool RetainAttributeImpact()
+        public Tag AttributeRetention()
         {
             return false;
         }
@@ -161,26 +157,25 @@ namespace FESGameplayAbilitySystem
             impactValue = default;
             return false;
         }
-        public List<ITag> GetContextTags()
+        public Tag[] GetContextTags()
         {
-            return Derivation.GetContextTags();
+            return Origin.GetContextTags();
         }
         public void RunEffectApplicationWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectApplication(this);
+            foreach (AbstractEffectWorker worker in Base.Workers) worker.OnEffectApplication(this);
         }
         public void RunEffectTickWorkers()
         {
             // Specs never run this method (because non-durational specs, i.e. without containers, are never ticked)
-            // foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectTick(this);
         }
         public void RunEffectRemovalWorkers()
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectRemoval(this);
+            foreach (AbstractEffectWorker worker in Base.Workers) worker.OnEffectRemoval(this);
         }
         public void RunEffectImpactWorkers(AbilityImpactData impactData)
         {
-            foreach (AbstractEffectWorkerScriptableObject worker in Workers) worker.OnEffectImpact(impactData);
+            foreach (AbstractEffectWorker worker in Base.Workers) worker.OnEffectImpact(impactData);
         }
         public Dictionary<IMagnitudeModifier, AttributeValue?> GetSourcedCapturedAttributes()
         {
