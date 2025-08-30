@@ -9,11 +9,9 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class GASComponent : LazyMonoProcess, ISource, ITagHandler
+    public class GASComponent : LazyMonoProcess, ISource, ITagHandler
     {
-        [Header("Gameplay Ability System")]
-        
-        public GASSystemData SystemData;
+        public GASData Data;
         
         public GASIdentityData Identity;
         
@@ -44,16 +42,25 @@ namespace FESGameplayAbilitySystem
             FinishedEffects = new List<AbstractGameplayEffectShelfContainer>();
 
             Relays = new Dictionary<int, ProcessRelay>();
+        }
+
+        public void Initialize(GASData data)
+        {
+            Data = data;
             
+            TagCache = new TagCache(this);
+            
+            Identity = Data.Identity;
             Identity.Initialize(this);
-            
-            PrepareSystem();
             
             AttributeSystem.Initialize(this);
             AbilitySystem.Initialize(this);
         }
 
-        protected abstract void PrepareSystem();
+        protected void PrepareSystem()
+        {
+            
+        }
         
         #region Process Parameters
         public override void WhenInitialize(ProcessRelay relay)
@@ -107,7 +114,7 @@ namespace FESGameplayAbilitySystem
         
         #region Effect Handling
         
-        public GameplayEffectSpec GenerateEffectSpec(IEffectOrigin origin, IEffectBase effect)
+        public GameplayEffectSpec GenerateEffectSpec(IEffectOrigin origin, GameplayEffect effect)
         {
             return effect.Generate(origin, this);
         }
@@ -147,7 +154,7 @@ namespace FESGameplayAbilitySystem
          /// <param name="origin"></param>
          /// <param name="GameplayEffect"></param>
          /// <returns></returns>
-        public bool ApplyGameplayEffect(IEffectOrigin origin, IEffectBase GameplayEffect)
+        public bool ApplyGameplayEffect(IEffectOrigin origin, GameplayEffect GameplayEffect)
         {
             GameplayEffectSpec spec = GenerateEffectSpec(origin, GameplayEffect);
             return ApplyGameplayEffect(spec);
@@ -167,14 +174,14 @@ namespace FESGameplayAbilitySystem
             return new DefaultTransformPacket(transform);
         }
 
-        public void RemoveGameplayEffect(IEffectBase effect)
+        public void RemoveGameplayEffect(GameplayEffect effect)
         {
-            RemoveGameplayEffect(effect.GetAssetTag());
+            RemoveGameplayEffect(effect.Tags.AssetTag);
         }
 
         public void RemoveGameplayEffect(Tag identifier)
         {
-            var toRemove = EffectShelf.Where(container => container.Spec.Base.GetAssetTag() == identifier);
+            var toRemove = EffectShelf.Where(container => container.Spec.Base.Tags.AssetTag == identifier);
             foreach (AbstractGameplayEffectShelfContainer container in toRemove)
             {
                 FinishedEffects.Add(container);
@@ -189,7 +196,7 @@ namespace FESGameplayAbilitySystem
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private void ApplyDurationalGameplayEffect(GameplayEffectSpec spec)
         {
-            if (!AttributeSystem.DefinesAttribute(spec.Base.GetAttributeTarget())) return;
+            if (!AttributeSystem.DefinesAttribute(spec.Base.ImpactSpecification.AttributeTarget)) return;
 
             if (TryHandleExistingDurationalGameplayEffect(spec)) return;
 
@@ -227,18 +234,18 @@ namespace FESGameplayAbilitySystem
         /// <param name="spec"></param>
         private void ApplyInstantGameplayEffect(GameplayEffectSpec spec)
         {
-            if (!AttributeSystem.TryGetAttributeValue(spec.Base.GetAttributeTarget(), out AttributeValue attributeValue)) return;
+            if (!AttributeSystem.TryGetAttributeValue(spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
 
             TagCache.AddTags(spec.Base.Tags.GrantedTags);
             spec.RunEffectApplicationWorkers();
             
             SourcedModifiedAttributeValue sourcedModifiedValue = spec.SourcedImpact(attributeValue);
-            AttributeSystem.ModifyAttribute(spec.Base.GetAttributeTarget(), sourcedModifiedValue);
+            AttributeSystem.ModifyAttribute(spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
             
             spec.RunEffectRemovalWorkers();
-            HandleGameplayEffects();
-            
             TagCache.RemoveTags(spec.Base.Tags.GrantedTags);
+            
+            HandleGameplayEffects();
         }
         
         /// <summary>
@@ -247,11 +254,11 @@ namespace FESGameplayAbilitySystem
         /// <param name="container"></param>
         private void ApplyInstantGameplayEffect(AbstractGameplayEffectShelfContainer container)
         {
-            if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.GetAttributeTarget(), out AttributeValue attributeValue)) return;
+            if (!AttributeSystem.TryGetAttributeValue(container.Spec.Base.ImpactSpecification.AttributeTarget, out AttributeValue attributeValue)) return;
             
             SourcedModifiedAttributeValue sourcedModifiedValue = container.Spec.SourcedImpact(container, attributeValue);
             
-            AttributeSystem.ModifyAttribute(container.Spec.Base.GetAttributeTarget(), sourcedModifiedValue);
+            AttributeSystem.ModifyAttribute(container.Spec.Base.ImpactSpecification.AttributeTarget, sourcedModifiedValue);
             
             container.RunEffectApplicationWorkers();
             
@@ -271,7 +278,7 @@ namespace FESGameplayAbilitySystem
                     container.Refresh();
                     return true;
                 case EEffectReApplicationPolicy.Extend:
-                    container.Extend(spec.Base.GetTotalDuration(spec));
+                    container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
                     return true;
                 case EEffectReApplicationPolicy.Append:
                     return false;
@@ -282,7 +289,7 @@ namespace FESGameplayAbilitySystem
                     container.Refresh();
                     return true;
                 case EEffectReApplicationPolicy.StackExtend:
-                    container.Extend(spec.Base.GetTotalDuration(spec));
+                    container.Extend(spec.Base.DurationSpecification.GetTotalDuration(spec));
                     return true;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -348,7 +355,7 @@ namespace FESGameplayAbilitySystem
                 container.RunEffectRemovalWorkers();
                 TagCache.RemoveTags(container.Spec.Base.Tags.GrantedTags);
                 
-                if (container.AttributeRetention()) AttributeSystem.RemoveAttributeDerivation(container);
+                if (container.AttributeRetention() != Tags.RETENTION_IGNORE) AttributeSystem.RemoveAttributeDerivation(container);
             }
             
             FinishedEffects.Clear();
@@ -368,7 +375,7 @@ namespace FESGameplayAbilitySystem
         /// <returns></returns>
         private bool ValidateEffectApplicationRequirements(GameplayEffectSpec spec)
         {
-            return GASHelper.ValidateAffiliationPolicy(spec.Base.GetAffiliationPolicy(), Identity.Affiliation, spec.Origin.GetAffiliation())
+            return GASHelper.ValidateAffiliationPolicy(spec.Base.ImpactSpecification.AffiliationPolicy, Identity.Affiliation, spec.Origin.GetAffiliation())
                 && spec.Base.ValidateApplicationRequirements(spec);
         }
         
@@ -396,9 +403,9 @@ namespace FESGameplayAbilitySystem
         
         #region Effect Helpers
 
-        public bool TryGetEffectContainer(IEffectBase effectBase, out AbstractGameplayEffectShelfContainer container)
+        public bool TryGetEffectContainer(GameplayEffect effect, out AbstractGameplayEffectShelfContainer container)
         {
-            foreach (AbstractGameplayEffectShelfContainer _container in EffectShelf.Where(_container => _container.Spec.Base == effectBase))
+            foreach (AbstractGameplayEffectShelfContainer _container in EffectShelf.Where(_container => _container.Spec.Base == effect))
             {
                 container = _container;
                 return true;
@@ -441,7 +448,7 @@ namespace FESGameplayAbilitySystem
         #region Derivation Source
         public Tag[] GetContextTags()
         {
-            return Array.Empty<Tag>();
+            return new[] { Tags.CONTEXT_GAS, Tags.CONTEXT_SOURCE };
         }
         public TagCache GetTagCache()
         {

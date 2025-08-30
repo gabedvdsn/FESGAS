@@ -13,31 +13,26 @@ namespace FESGameplayAbilitySystem
         public static GameRoot Instance;
         
         // Useful for backend systems like observers, audio, etc...
-        public List<AbstractCreateProcessProxyTask> CreateProcessTasks;
+        [HideInInspector] public List<AbstractCreateProcessProxyTask> CreateProcessTasks;
         private AbilityDataPacket NativeDataPacket;
         
         protected override void Awake()
         {
             if (Instance is not null && Instance != this)
             {
-                Debug.Log($"woah buddy");
                 Destroy(gameObject);
             }
 
             Instance = this;
             
             base.Awake();
+
+            Initialize(new GameRootData());
             
             // Self initialize when bootstrapper is null
             if (Bootstrapper.Instance is null) Initialize();
-        }
-        protected override void PrepareSystem()
-        {
-            TagCache = new TagCache(this);
-
-            var systemData = ISystemData.GenerateEmpty();
-            AttributeSystem.ProvidePrerequisiteData(systemData);
-            AbilitySystem.ProvidePrerequisiteData(systemData);
+            
+            
         }
 
         #region Control

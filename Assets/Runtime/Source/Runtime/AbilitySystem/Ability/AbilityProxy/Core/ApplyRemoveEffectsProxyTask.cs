@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    [CreateAssetMenu(fileName = "PT_ApplyRemoveEffects_", menuName = "FESGAS/Ability/Task/Apply->Remove")]
     public class ApplyRemoveEffectsProxyTask : AbstractAbilityProxyTask
     {
         public List<GameplayEffect> Effects;

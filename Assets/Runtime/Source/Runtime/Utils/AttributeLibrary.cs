@@ -7,18 +7,9 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public class AttributeLibrary : MonoBehaviour
+    public static class AttributeLibrary
     {
-        private static AttributeLibrary Instance;
-
-        [Header("Attribute Library")]
-        
-        [Tooltip("Compiles all Attributes within the Attribute Sets")]
-        public List<AttributeSet> AttributeSets;
-        [Tooltip("Compiles all Attributes, if they are not already present in an Attribute Set")]
-        public List<Attribute> Attributes;
-
-        private Dictionary<string, Attribute> Library;
+        private static Dictionary<string, Attribute> Library;
 
         /// <summary>
         /// REFACTOR THIS TO REFLECT YOUR ATTRIBUTE NAMING CONVENTION
@@ -41,38 +32,15 @@ namespace FESGameplayAbilitySystem
         
         #region Internal
         
-        private void Awake()
-        {
-            if (Instance is null) Instance = this;
-            else if (Instance != this) Destroy(gameObject);
-            
-            Compile();
-        }
-
-        private void Compile()
-        {
-            Library = new Dictionary<string, Attribute>();
-            
-            var uniqueSet = new HashSet<Attribute>();
-            
-            foreach (var unique in AttributeSets.SelectMany(set => set.GetUnique()))
-            {
-                uniqueSet.Add(unique);
-            }
-            foreach (var attr in Attributes) uniqueSet.Add(attr);
-            
-            foreach (var attr in uniqueSet) Library[RefactorByNamingConvention(attr.GetName())] = attr;
-        }  
-
         public static bool Contains(Attribute attribute) => Contains(attribute.GetName());
-        public static bool Contains(string attrName) => Instance.Library.ContainsKey(RefactorByNamingConvention(attrName));
+        public static bool Contains(string attrName) => Library.ContainsKey(RefactorByNamingConvention(attrName));
         
         public static bool Add(Attribute attribute)
         {
             string _name = RefactorByNamingConvention(attribute.GetName());
-            if (Instance.Library.ContainsKey(_name)) return false;
+            if (Library.ContainsKey(_name)) return false;
             
-            Instance.Library[_name] = attribute;
+            Library[_name] = attribute;
             return true;
         }
 
@@ -85,7 +53,7 @@ namespace FESGameplayAbilitySystem
                 return false;
             }
 
-            attribute = Instance.Library[_name];
+            attribute = Library[_name];
             return true;
         }
 

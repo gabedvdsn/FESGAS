@@ -5,8 +5,7 @@ using Object = UnityEngine.Object;
 
 namespace FESGameplayAbilitySystem
 {
-    [Serializable]
-    public struct AbilityTags
+    public class AbilityTags
     {
         [Header("Base")] 
         

@@ -1,0 +1,11 @@
+{
+	"name": "FESGAS.Gasify",
+	"references": [
+		"FESGAS.Runtime",
+		"UniTask",
+		"AYellowpaper.SerializedCollections"
+	],
+	"includePlatforms": [
+		"Editor"
+	]
+}

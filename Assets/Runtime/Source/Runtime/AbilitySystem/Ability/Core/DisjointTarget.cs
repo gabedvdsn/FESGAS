@@ -35,7 +35,7 @@ namespace FESGameplayAbilitySystem
         {
             return false;
         }
-        public GameplayEffectSpec GenerateEffectSpec(IEffectOrigin origin, IEffectBase GameplayEffect)
+        public GameplayEffectSpec GenerateEffectSpec(IEffectOrigin origin, GameplayEffect GameplayEffect)
         {
             return original.GenerateEffectSpec(origin, GameplayEffect);
         }

@@ -40,7 +40,7 @@ namespace FESGameplayAbilitySystem
             attributeValue = GASHelper.AlignToSign(attributeValue, WorkSignPolicy);
 
             SourcedModifiedAttributeValue sourcedModifier = new SourcedModifiedAttributeValue(
-                IAttributeImpactDerivation.GenerateSourceDerivation(impactData.SourcedModifier, WorkImpactType),
+                IAttributeImpactDerivation.GenerateSourceDerivation(impactData.SourcedModifier, Tags.RETENTION_IGNORE, WorkImpactType),
                 attributeValue.CurrentValue, attributeValue.BaseValue,
                 WorkerImpactWorkable
             );

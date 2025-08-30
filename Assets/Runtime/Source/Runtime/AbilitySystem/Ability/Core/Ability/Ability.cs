@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public class Ability : IAbilityData
+    public class Ability : IHasReadableDefinition
     {
         [Header("Ability")]
         
@@ -27,61 +27,28 @@ namespace FESGameplayAbilitySystem
         public GameplayEffect Cost;
         public GameplayEffect Cooldown;
 
-        public AbilityDefinition GetDefinition()
+        public AbilitySpec Generate(ISource owner, int level = 1)
         {
-            return Definition;
+            return new AbilitySpec(owner, this, level);
         }
-        public AbilityTags GetTags()
+
+        public string GetName()
         {
-            return Tags;
+            return Definition.Name;
         }
-        public AbilityProxySpecification GetProxy()
+        
+        public string GetDescription()
         {
-            return Proxy;
+            return Definition.Description;
         }
-        public int GetStartingLevel()
+        public Sprite GetPrimaryIcon()
         {
-            return StartingLevel;
-        }
-        public int GetMaxLevel()
-        {
-            return MaxLevel;
-        }
-        public bool GetIgnoreWhenLevelZero()
-        {
-            return IgnoreWhenLevelZero;
-        }
-        public GameplayEffect GetCost()
-        {
-            return Cost;
-        }
-        public GameplayEffect GetCooldown()
-        {
-            return Cooldown;
+            return Definition.NormalIcon;
         }
 
         public override string ToString()
         {
             return Tags.AssetTag.GetName();
-        }
-    }
-
-    public interface IAbilityData
-    {
-        public AbilityDefinition GetDefinition();
-        public AbilityTags GetTags();
-        public AbilityProxySpecification GetProxy();
-        
-        public int GetStartingLevel();
-        public int GetMaxLevel();
-        public bool GetIgnoreWhenLevelZero();
-        
-        public GameplayEffect GetCost();
-        public GameplayEffect GetCooldown();
-
-        public AbilitySpec Generate(GASComponent owner, int level)
-        {
-            return AbilitySpec.Generate(this, owner, level);
         }
     }
 }

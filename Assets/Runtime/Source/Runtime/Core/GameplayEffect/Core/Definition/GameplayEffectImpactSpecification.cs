@@ -6,33 +6,22 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    [Serializable]
     public class GameplayEffectImpactSpecification
     {
-        [Header("Attribute Impact")]
-        
         public Attribute AttributeTarget;
         public EEffectImpactTarget TargetImpact;
         public ECalculationOperation ImpactOperation;
-
-        [Space] 
         
         public EAffiliationPolicy AffiliationPolicy;
         public EImpactType ImpactType;
         public bool ReverseImpactOnRemoval;
         public EEffectReApplicationPolicy ReApplicationPolicy;
         
-        [Space]
-        
         public float Magnitude;
         public AbstractMagnitudeModifier MagnitudeCalculation;
         public EMagnitudeOperation MagnitudeCalculationOperation;
-
-        [Space] 
         
-        [Header("Contained Effects")] 
-        
-        public List<ContainedEffectPacket> Packets;
+        public ContainedEffectPacket[] Packets;
 
         public void ApplyImpactSpecifications(GameplayEffectSpec spec)
         {

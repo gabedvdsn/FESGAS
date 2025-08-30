@@ -16,14 +16,15 @@ namespace FESGameplayAbilitySystem
         public float Duration;
         public AbstractMagnitudeModifier DurationCalculation;
         public EMagnitudeOperation DurationCalculationOperation;
+        public Tag DeltaTimeSource = Tags.DELTA_TIME_DEFAULT;
 
         [Space] 
         
         public int Ticks;
         public AbstractMagnitudeModifier TickCalculation;
         public EMagnitudeOperation TickCalculationOperation;
-        public TickCalculationRounding Rounding;
-        public EDefaultTickRate PresetTickRatePolicy;
+        public ETickCalculationRounding Rounding;
+        public Tag PresetTickRatePolicy;
 
         public void ApplyDurationSpecifications(AbstractGameplayEffectShelfContainer container)
         {
@@ -75,8 +76,8 @@ namespace FESGameplayAbilitySystem
             };
             int numTicks = Rounding switch
             {
-                TickCalculationRounding.Floor => Mathf.FloorToInt(floatTicks),
-                TickCalculationRounding.Ceil => Mathf.CeilToInt(floatTicks),
+                ETickCalculationRounding.Floor => Mathf.FloorToInt(floatTicks),
+                ETickCalculationRounding.Ceil => Mathf.CeilToInt(floatTicks),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
@@ -94,18 +95,9 @@ namespace FESGameplayAbilitySystem
         Durational
     }
 
-    public enum TickCalculationRounding
+    public enum ETickCalculationRounding
     {
         Floor,
         Ceil
-    }
-
-    public enum EDefaultTickRate
-    {
-        None,
-        Slow,
-        Normal,
-        Fast,
-        VeryFast
     }
 }

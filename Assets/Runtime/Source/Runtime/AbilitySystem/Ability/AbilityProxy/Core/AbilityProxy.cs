@@ -79,13 +79,13 @@ namespace FESGameplayAbilitySystem
         private async UniTask ActivateNextStage(AbilityDataPacket data, CancellationToken token)
         {
             StageIndex += 1;
-            if (StageIndex < Specification.Stages.Count)
+            if (StageIndex < Specification.Stages.Length)
             {
                 try
                 {
                     nextStageSignal = new UniTaskCompletionSource();
 
-                    Specification.Stages[StageIndex].Tasks.ForEach(task => task.Prepare(data));
+                    foreach (var task in Specification.Stages[StageIndex].Tasks) task.Prepare(data);
 
                     ActivateStage(Specification.Stages[StageIndex], StageIndex, data, token).Forget();
                     await nextStageSignal.Task.AttachExternalCancellation(token);
@@ -96,7 +96,7 @@ namespace FESGameplayAbilitySystem
                 }
                 finally
                 {
-                    Specification.Stages[StageIndex].Tasks.ForEach(task => task.Clean(data));
+                    foreach (var task in Specification.Stages[StageIndex].Tasks) task.Clean(data);
                     if (Specification.Stages[StageIndex].ApplyUsageEffects && !appliedUsage && data.Spec is AbilitySpec spec)
                     {
                         spec.ApplyUsageEffects();

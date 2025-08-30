@@ -1,100 +1,162 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Linq;
+using PlasticGui.WorkspaceWindow.Topbar;
+using UnityEditor.Graphs;
 
 namespace FESGameplayAbilitySystem
 {
     public static class Tags
     {
-        /// <summary>
-        /// Tags channels are used to reserve tags for dedicated system wide use. Common applications are payload-related tags.
-        ///
-        /// To create your own tags, follow the template shown below. Adhering to the naming convention is suggested.
-        ///
-        ///     private const int _TAG_DESCRIPTION = -***_***_***;
-        ///     public static IntegerTag TAG_DESCRIPTION => ITag.Get(_TAG_DESCRIPTION);
-        ///
-        /// These persistent tags should be defined as negative numbers, as dynamically created tags are always positive.
-        /// 
-        /// </summary>
-        ///
+        private static Dictionary<string, int> Library;
+        private static HashSet<int> used;
 
-        #region Generating
+        private const int _NULL = -1;
+        public static Tag NULL => Tag.Generate(_NULL, "NULL");
 
+        public static void Initialize()
+        {
+            Library = new Dictionary<string, int>();
+            used = new HashSet<int>();
+
+            RegisterDefined("NULL", _NULL);
+            
+            RegisterDefined();
+        }
+
+        #region Registration
+        
         private static int nextFree = 0;
         private static int last = 0;
         private static string last_name = "";
-
-        public static Tag Create()
+        
+        public static void Register(IEnumerable<string> names)
         {
-            return Get(nextFree);
+            foreach (string name in names) Register(name);
         }
-
-        public static Tag Create(string name)
+        
+        public static void Register(string name)
         {
-            return Get(nextFree, name);
+            if (Library.ContainsKey(name)) return;
+            
+            Register(name, nextFree++);
         }
-
-        public static Tag Get(int key, string name = "")
+        
+        public static void Register(string name, int key)
         {
             int _key = key;
-            while (!TagIsAvailable(_key)) _key += 1;
-
+            while (used.Contains(_key)) _key += 1;
+            
             if (_key >= nextFree) nextFree = _key + 1;
             
             last = _key;
             last_name = name;
-            
-            return Tag.Generate(_key, name);
+
+            Library[name] = _key;
+            used.Add(_key);
         }
         
-        public static Tag GetUnsafe(int key, string name = "")
+        private static int c_nextFree = 0;
+        private static int c_last = 0;
+        private static string c_last_name = "";
+        
+        public static void RegisterDefined(IEnumerable<string> names)
         {
-            if (key >= nextFree) nextFree = key + 1;
+            foreach (string name in names) RegisterDefined(name);
+        }
+
+        private static void RegisterDefined(int key)
+        {
+            if (used.Contains(key)) return;
             
-            last = key;
-            last_name = name;
+            RegisterDefined($"DEF_{key}");
+        }
+        
+        private static void RegisterDefined(string name)
+        {
+            if (Library.ContainsKey(name)) return;
             
+            RegisterDefined(name, c_nextFree);   
+        }
+
+        private static void RegisterDefined(string name, int key)
+        {
+            int _key = key;
+            while (used.Contains(_key)) _key -= 1;
+            
+            if (_key <= c_nextFree) c_nextFree = _key - 1;
+            
+            c_last = _key;
+            c_last_name = name;
+
+            Library[name] = _key;
+            used.Add(_key);
+        }
+        
+        #endregion
+        
+        #region Open
+        
+        public static Tag Get(string name)
+        {
+            return Tag.Generate(Library[name], name);
+        }
+
+        public static bool TryGet(string name, out Tag tag)
+        {
+            if (Library.TryGetValue(name, out int key))
+            {
+                tag = Tag.Generate(key, name);
+                return true;
+            }
+
+            tag = default;
+            return false;
+        }
+
+        public static IEnumerable<Tag> All()
+        {
+            return Library.Keys.Select(name => Tag.Generate(Library[name], name));
+        }
+        
+        #endregion
+        
+        #region Closed
+
+        private static Tag Get(int key, string name = "")
+        {
             return Tag.Generate(key, name);
         }
 
-        public static Tag Last()
+        #region System Defined
+
+        private static void RegisterDefined()
         {
-            return Tag.Generate(last, last_name);
+            RegisterDefined(_AFFILIATION_ROOT);
+            
+            RegisterDefined(_PAYLOAD_GAS);
+            RegisterDefined(_PAYLOAD_TRANSFORM);
+            RegisterDefined(_PAYLOAD_POSITION);
+            RegisterDefined(_PAYLOAD_ROTATION);
+            RegisterDefined(_PAYLOAD_DERIVATION);
+            RegisterDefined(_PAYLOAD_AFFILIATION);
+            RegisterDefined(_PAYLOAD_SOURCE);
+            RegisterDefined(_PAYLOAD_TARGET);
+            RegisterDefined(_PAYLOAD_DATA);
+            
+            RegisterDefined(_STORE_DISJOINTABLE);
+            
+            RegisterDefined(_RETENTION_IGNORE);
+            RegisterDefined(_RETENTION_DECLARED);
+            RegisterDefined(_RETENTION_BONUS);
+            
+            RegisterDefined(_TICK_RATE_DEFAULT);
+            RegisterDefined(_DELTA_TIME_DEFAULT);
+            
+            RegisterDefined(_CONTEXT_GAS);
+            RegisterDefined(_CONTEXT_SOURCE);
+            
+            
         }
-        
-        #endregion
-        
-        #region Validation
-
-        private static HashSet<int> reservedChannels;
-        private static bool isInitialized = false;
-
-        public static void Initialize()
-        {
-            if (isInitialized) return;
-
-            var type = typeof(Tags);
-            var constFields = type.GetFields(BindingFlags.Static | BindingFlags.NonPublic);
-
-            foreach (var field in constFields)
-            {
-                if (!field.IsLiteral) continue;
-                if (field.FieldType != typeof(int)) continue;
-
-                reservedChannels.Add((int)field.GetRawConstantValue());
-            }
-
-            isInitialized = true;
-        }
-
-        public static bool TagIsAvailable(int tag)
-        {
-            if (!isInitialized) Initialize();
-            return !reservedChannels.Contains(tag);
-        }
-        
-        #endregion
         
         #region Affiliation Tags
         
@@ -102,25 +164,8 @@ namespace FESGameplayAbilitySystem
          * Affiliation tags are used to indicate affiliations between GAS components.
          */
         
-        #region User
-        
-        private const int _AFFILIATION_GREEN = -405_254_019;
-        public static Tag AFFILIATION_GREEN => GetUnsafe(_AFFILIATION_GREEN);
-        
-        private const int _AFFILIATION_RED = -405_254_020;
-        public static Tag AFFILIATION_RED => GetUnsafe(_AFFILIATION_RED);
-        
-        private const int _AFFILIATION_GRAY = -405_254_021;
-        public static Tag AFFILIATION_GRAY => GetUnsafe(_AFFILIATION_GRAY);
-        
-        #endregion
-        
-        #region Default
-        
-        private const int _AFFILIATION_ROOT = -405_254_018;
-        public static Tag AFFILIATION_ROOT => GetUnsafe(_AFFILIATION_ROOT);
-        
-        #endregion
+        private const int _AFFILIATION_ROOT = -100_000_000;
+        public static Tag AFFILIATION_ROOT => Get(_AFFILIATION_ROOT);
         
         #endregion
         
@@ -132,39 +177,89 @@ namespace FESGameplayAbilitySystem
         
         #region Ability Packets
         
-        private const int _PAYLOAD_GAS = -505_254_019;
-        public static Tag PAYLOAD_GAS => GetUnsafe(_PAYLOAD_GAS);
+        private const int _PAYLOAD_GAS = -200_000_000;
+        public static Tag PAYLOAD_GAS => Get(_PAYLOAD_GAS);
         
-        private const int _PAYLOAD_TRANSFORM = -505_254_020;
-        public static Tag PAYLOAD_TRANSFORM => GetUnsafe(_PAYLOAD_TRANSFORM);
+        private const int _PAYLOAD_TRANSFORM = -200_000_001;
+        public static Tag PAYLOAD_TRANSFORM => Get(_PAYLOAD_TRANSFORM);
         
-        private const int _PAYLOAD_POSITION = -505_254_021;
-        public static Tag PAYLOAD_POSITION => GetUnsafe(_PAYLOAD_POSITION);
+        private const int _PAYLOAD_POSITION = -200_000_002;
+        public static Tag PAYLOAD_POSITION => Get(_PAYLOAD_POSITION);
         
-        private const int _PAYLOAD_ROTATION = -505_254_022;
-        public static Tag PAYLOAD_ROTATION => GetUnsafe(_PAYLOAD_ROTATION);
+        private const int _PAYLOAD_ROTATION = -200_000_003;
+        public static Tag PAYLOAD_ROTATION => Get(_PAYLOAD_ROTATION);
         
-        private const int _PAYLOAD_DERIVATION = -505_254_023;
-        public static Tag PAYLOAD_DERIVATION => GetUnsafe(_PAYLOAD_DERIVATION);
+        private const int _PAYLOAD_DERIVATION = -200_000_004;
+        public static Tag PAYLOAD_DERIVATION => Get(_PAYLOAD_DERIVATION);
         
-        private const int _PAYLOAD_AFFILIATION = -505_254_024;
-        public static Tag PAYLOAD_AFFILIATION => GetUnsafe(_PAYLOAD_AFFILIATION);
+        private const int _PAYLOAD_AFFILIATION = -200_000_005;
+        public static Tag PAYLOAD_AFFILIATION => Get(_PAYLOAD_AFFILIATION);
         
-        private const int _PAYLOAD_SOURCE = -605_254_024;
-        public static Tag PAYLOAD_SOURCE => GetUnsafe(_PAYLOAD_SOURCE);
+        private const int _PAYLOAD_SOURCE = -200_000_006;
+        public static Tag PAYLOAD_SOURCE => Get(_PAYLOAD_SOURCE);
         
-        private const int _PAYLOAD_TARGET = -605_254_025;
-        public static Tag PAYLOAD_TARGET => GetUnsafe(_PAYLOAD_TARGET);
+        private const int _PAYLOAD_TARGET = -200_000_007;
+        public static Tag PAYLOAD_TARGET => Get(_PAYLOAD_TARGET);
         
-        private const int _PAYLOAD_DATA = -605_254_026;
-        public static Tag PAYLOAD_DATA => GetUnsafe(_PAYLOAD_DATA);
+        private const int _PAYLOAD_DATA = -200_000_008;
+        public static Tag PAYLOAD_DATA => Get(_PAYLOAD_DATA);
         
         #endregion
         
         #region GAS Store (Coffer)
         
-        private const int _STORE_DISJOINTABLE = -705_254_026;
-        public static Tag STORE_DISJOINTABLE => GetUnsafe(_STORE_DISJOINTABLE);
+        private const int _STORE_DISJOINTABLE = -200_100_000;
+        public static Tag STORE_DISJOINTABLE => Get(_STORE_DISJOINTABLE);
+        
+        #endregion
+        
+        #endregion
+        
+        #region Effect Tags
+        
+        #region Attribute Impact Retention
+        
+        /// <summary>
+        /// Empty
+        /// </summary>
+        private const int _RETENTION_IGNORE = -300_000_000;
+        public static Tag RETENTION_IGNORE => Get(_RETENTION_IGNORE);
+        
+        /// <summary>
+        /// Attribute retention level for low-level cached attribute values deriving from set & modifier declarations.
+        /// E.g. initial values, attribute backed values
+        /// </summary>
+        private const int _RETENTION_DECLARED = -300_000_001;
+        public static Tag RETENTION_DECLARED => Get(_RETENTION_DECLARED);
+        
+        /// <summary>
+        /// Attribute retention level for mid-level cached attribute values deriving from pseudo-permanent bonuses.
+        /// E.g. items
+        /// </summary>
+        private const int _RETENTION_BONUS = -300_000_002;
+        public static Tag RETENTION_BONUS => Get(_RETENTION_BONUS);
+        
+        #endregion
+        
+        #region Effect Timing
+
+        private const int _TICK_RATE_DEFAULT = -300_100_000;
+        public static Tag TICK_RATE_DEFAULT => Get(_TICK_RATE_DEFAULT);
+        private const int _DELTA_TIME_DEFAULT = -300_100_000;
+        public static Tag DELTA_TIME_DEFAULT => Get(_DELTA_TIME_DEFAULT);
+        
+        #endregion
+        
+        #endregion
+        
+        #region Context Tags
+        
+        private const int _CONTEXT_GAS = -400_000_000;
+        public static Tag CONTEXT_GAS => Get(_CONTEXT_GAS);
+        private const int _CONTEXT_SOURCE = -400_000_001;
+        public static Tag CONTEXT_SOURCE => Get(_CONTEXT_SOURCE); 
+        
+        #endregion
         
         #endregion
         

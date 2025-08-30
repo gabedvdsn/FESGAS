@@ -105,7 +105,7 @@ namespace FESGameplayAbilitySystem
             Overflow = defaultValue.Overflow;
             Modifier = defaultValue.Modifier;
             
-            Add(IAttributeImpactDerivation.GenerateSourceDerivation(source, attribute), defaultValue.ToAttributeValue());
+            Add(IAttributeImpactDerivation.GenerateSourceDerivation(source, attribute, Tags.RETENTION_DECLARED), defaultValue.ToAttributeValue());
         }
 
         public void Refresh()
@@ -115,7 +115,7 @@ namespace FESGameplayAbilitySystem
 
         public void Add(IAttributeImpactDerivation derivation, AttributeValue attributeValue)
         {
-            if (derivation.AttributeRetention())
+            if (derivation.AttributeRetention() != Tags.RETENTION_IGNORE)
             {
                 if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] += attributeValue;
                 else DerivedValues[derivation] = attributeValue;
@@ -126,7 +126,7 @@ namespace FESGameplayAbilitySystem
 
         public void Add(IAttributeImpactDerivation derivation, ModifiedAttributeValue modifiedAttributeValue)
         {
-            if (derivation.AttributeRetention())
+            if (derivation.AttributeRetention() != Tags.RETENTION_IGNORE)
             {
                 if (DerivedValues.ContainsKey(derivation)) DerivedValues[derivation] = DerivedValues[derivation].ApplyModified(modifiedAttributeValue);
                 else DerivedValues[derivation] = modifiedAttributeValue.ToAttributeValue();

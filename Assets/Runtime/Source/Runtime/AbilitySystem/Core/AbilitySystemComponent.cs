@@ -12,15 +12,11 @@ namespace FESGameplayAbilitySystem
     {
         protected EAbilityActivationPolicy activationPolicy;
         public EAbilityActivationPolicy DefaultActivationPolicy => activationPolicy;
-
-        protected List<AbstractImpactWorker> impactWorkers;
-        protected List<Ability> startingAbilities;
         protected bool allowDuplicateAbilities;
 
         private GASComponent Root;
 
         private Dictionary<int, AbilitySpecContainer> AbilityCache = new();
-
         private Dictionary<EAbilityActivationPolicy, HashSet<int>> ActiveCache = new()
         {
             { EAbilityActivationPolicy.NoRestrictions, new() },
@@ -42,10 +38,15 @@ namespace FESGameplayAbilitySystem
             return IsExecuting(policy) && ActiveCache[policy].Any(IsCritical);
         }
 
-        public bool IsCritical(int index) => AbilityCache[index].Spec.Base.GetProxy().Stages.Any(stage => stage.Tasks.Any(task => task.IsCriticalSection));
+        public bool IsCritical(int index) => AbilityCache[index].Spec.Base.Proxy.Stages.Any(stage => stage.Tasks.Any(task => task.IsCriticalSection));
         
         private Queue<AbilityActivationRequest> activationQueue = new();
 
+        public AbilityActivationRequest CreateActivationRequest(int index, EAbilityActivationPolicyExtended policy = EAbilityActivationPolicyExtended.UseLocal)
+        {
+            return new AbilityActivationRequest(policy.Translate(this), index);
+        }
+        
         public struct AbilityActivationRequest
         {
             public EAbilityActivationPolicy Policy;
@@ -57,9 +58,9 @@ namespace FESGameplayAbilitySystem
                 Index = index;
             }
 
-            public AbilityActivationRequest(IAbilityData ability, int index, AbilitySystemComponent asc = null)
+            public AbilityActivationRequest(Ability ability, int index, AbilitySystemComponent asc = null)
             {
-                Policy = ability.GetDefinition().ActivationPolicy.Translate(asc);
+                Policy = ability.Definition.ActivationPolicy.Translate(asc);
                 Index = index;
             }
         }
@@ -173,15 +174,19 @@ namespace FESGameplayAbilitySystem
 
         #endregion
 
-        public virtual void Initialize(GASComponent system)
+        public void Initialize(GASComponent system)
         {
             Root = system;
+
+            activationPolicy = Root.Data.ActivationPolicy;
+            allowDuplicateAbilities = Root.Data.AllowDuplicateAbilities;
+
+            ImpactWorkerCache = new ImpactWorkerCache(Root.Data.ImpactWorkers);
+            
             AbilityCache = new Dictionary<int, AbilitySpecContainer>();
             ActiveCache = new Dictionary<EAbilityActivationPolicy, HashSet<int>>();
             
-            if (ImpactWorkerCache is null) ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
-
-            foreach (Ability ability in startingAbilities)
+            foreach (Ability ability in Root.Data.StartingAbilities)
             {
                 GiveAbility(ability, ability.StartingLevel, out _);
             }
@@ -189,33 +194,23 @@ namespace FESGameplayAbilitySystem
             Enabled = true;
             Locked = false;
         }
-
-        public void ProvidePrerequisiteData(ISystemData systemData)
-        {
-            activationPolicy = systemData.GetActivationPolicy();
-            impactWorkers = systemData.GetImpactWorkers();
-            startingAbilities = systemData.GetStartingAbilities();
-            allowDuplicateAbilities = systemData.GetAllowDuplicateAbilities();
-
-            ImpactWorkerCache = new ImpactWorkerCache(impactWorkers);
-        }
-
+        
         public void SetAbilitiesLevel(int level)
         {
             foreach (var container in AbilityCache.Values)
             {
-                container.Spec.SetLevel(Mathf.Min(level, container.Spec.Base.GetMaxLevel()));
+                container.Spec.SetLevel(Mathf.Min(level, container.Spec.Base.MaxLevel));
             }
         }
 
         #region Ability Managing
         
-        public bool HasAbility(IAbilityData ability)
+        public bool HasAbility(Ability ability)
         {
             return AbilityCache.Values.Any(c => c.Spec.Base == ability);
         }
 
-        private bool TryGetAbilityContainer(IAbilityData ability, out AbilitySpecContainer container)
+        private bool TryGetAbilityContainer(Ability ability, out AbilitySpecContainer container)
         {
             foreach (var _container in AbilityCache.Values.Where(_container => _container.Spec.Base == ability))
             {
@@ -227,7 +222,7 @@ namespace FESGameplayAbilitySystem
             return false;
         }
 
-        public bool GiveAbility(IAbilityData ability, int level, out int abilityIndex)
+        public bool GiveAbility(Ability ability, int level, out int abilityIndex)
         {
             abilityIndex = -1;
             
@@ -240,24 +235,24 @@ namespace FESGameplayAbilitySystem
             AbilitySpecContainer container = new AbilitySpecContainer(ability.Generate(Root, level));
             AbilityCache[abilityIndex] = container;
 
-            HandleTags(ability.GetTags().PassivelyGrantedTags, true);
+            HandleTags(ability.Tags.PassivelyGrantedTags, true);
             InitializeNewAbility(abilityIndex, ability);
 
             return true;
         }
 
-        public bool RemoveAbility(IAbilityData ability)
+        public bool RemoveAbility(Ability ability)
         {
             if (!TryGetCacheIndexOf(ability, out int index)) return false;
             
             if (AbilityCache[index].IsClaiming) Inject(index, EAbilityInjection.INTERRUPT);
             
-            HandleTags(ability.GetTags().PassivelyGrantedTags, false);
+            HandleTags(ability.Tags.PassivelyGrantedTags, false);
 
             return AbilityCache.Remove(index);
         }
 
-        private bool TryGetCacheIndexOf(IAbilityData ability, out int cacheIndex)
+        private bool TryGetCacheIndexOf(Ability ability, out int cacheIndex)
         {
             cacheIndex = -1;
             foreach (int index in AbilityCache.Keys.Where(index => AbilityCache[index].Spec.Base == ability))
@@ -279,9 +274,9 @@ namespace FESGameplayAbilitySystem
             return -1;
         }
 
-        private void InitializeNewAbility(int abilityIndex, IAbilityData ability)
+        private void InitializeNewAbility(int abilityIndex, Ability ability)
         {
-            if (!ability.GetDefinition().ActivateImmediately) return;
+            if (!ability.Definition.ActivateImmediately) return;
             
             var req = new AbilityActivationRequest(ability, abilityIndex, this);
             TryActivateAbility(req);
@@ -303,7 +298,7 @@ namespace FESGameplayAbilitySystem
                    && !Locked
                    && AbilityCache.TryGetValue(index, out AbilitySpecContainer container)
                    && container.Spec.ValidateActivationRequirements()
-                   && (!container.Spec.Base.GetIgnoreWhenLevelZero() || container.Spec.Level > 0);
+                   && (!container.Spec.Base.IgnoreWhenLevelZero || container.Spec.Level > 0);
         }
 
         public bool TryActivateAbility(AbilityActivationRequest req)
@@ -314,7 +309,7 @@ namespace FESGameplayAbilitySystem
         
         private bool ProcessActivationRequest(int abilityIndex)
         {
-            var policy = AbilityCache[abilityIndex].Spec.Base.GetDefinition().ActivationPolicy.Translate(this);
+            var policy = AbilityCache[abilityIndex].Spec.Base.Definition.ActivationPolicy.Translate(this);
             
             return policy switch
             {
@@ -339,7 +334,7 @@ namespace FESGameplayAbilitySystem
         private bool ActivateAbility(AbilitySpecContainer container)
         {
             container.Spec.ApplyUsageEffects();
-            return container.ActivateAbility(AbilityDataPacket.GenerateFrom(container.Spec, container.Spec.Base.GetProxy().UseImplicitTargeting));
+            return container.ActivateAbility(AbilityDataPacket.GenerateFrom(container.Spec, container.Spec.Base.Proxy.UseImplicitTargeting));
         }
 
         private bool QueueAbilityActivation(int abilityIndex)
@@ -368,7 +363,7 @@ namespace FESGameplayAbilitySystem
             container.Inject(injection);
         }
         
-        public void Inject(IAbilityData ability, EAbilityInjection injection)
+        public void Inject(Ability ability, EAbilityInjection injection)
         {
             if (!TryGetAbilityContainer(ability, out var container)) return;
             if (!container.IsClaiming) return;
@@ -404,7 +399,7 @@ namespace FESGameplayAbilitySystem
 
             if (!TryGetCacheIndexOf(container.Spec.Base, out var index)) return false;
             
-            ActiveCache[AbilityCache[index].Spec.Base.GetDefinition().ActivationPolicy.Translate(this)].Add(index);
+            ActiveCache[AbilityCache[index].Spec.Base.Definition.ActivationPolicy.Translate(this)].Add(index);
             
             return true;
         }
@@ -415,7 +410,7 @@ namespace FESGameplayAbilitySystem
             
             if (!TryGetCacheIndexOf(container.Spec.Base, out var index)) return;
 
-            var policy = AbilityCache[index].Spec.Base.GetDefinition().ActivationPolicy.Translate(this);
+            var policy = AbilityCache[index].Spec.Base.Definition.ActivationPolicy.Translate(this);
             ActiveCache[policy].Remove(index);
 
             if (policy == EAbilityActivationPolicy.SingleActiveQueue && activationQueue.Count > 0) TryActivateAbility(activationQueue.Dequeue());
@@ -461,7 +456,7 @@ namespace FESGameplayAbilitySystem
                 Spec = spec;
                 IsActive = false;
 
-                Proxy = Spec.Base.GetProxy().GenerateProxy();
+                Proxy = Spec.Base.Proxy.GenerateProxy();
                 ResetTokens();
             }
 
@@ -522,7 +517,7 @@ namespace FESGameplayAbilitySystem
                 {
                     IsActive = true;
 
-                    Spec.Owner.GetTagCache().AddTags(Spec.Base.GetTags().ActiveGrantedTags);
+                    Spec.Owner.GetTagCache().AddTags(Spec.Base.Tags.ActiveGrantedTags);
 
                     await Proxy.Activate(cts.Token, data);
                 }
@@ -534,7 +529,7 @@ namespace FESGameplayAbilitySystem
                 finally
                 {
                     IsActive = false;
-                    Spec.Owner.GetTagCache().RemoveTags(Spec.Base.GetTags().ActiveGrantedTags);
+                    Spec.Owner.GetTagCache().RemoveTags(Spec.Base.Tags.ActiveGrantedTags);
                     
                     CleanAndRelease();
                 }

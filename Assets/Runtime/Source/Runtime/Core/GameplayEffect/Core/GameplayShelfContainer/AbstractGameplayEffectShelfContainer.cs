@@ -21,14 +21,14 @@ namespace FESGameplayAbilitySystem
         private AttributeValue TrackedImpact;
         private AttributeValue LastTrackedImpact;
 
-        private List<AbstractEffectWorker> Workers;
+        private AbstractEffectWorker[] Workers;
 
         protected AbstractGameplayEffectShelfContainer(GameplayEffectSpec spec, bool ongoing)
         {
             Spec = spec;
             Ongoing = ongoing;
 
-            Workers = spec.Base.GetEffectWorkers();
+            Workers = spec.Base.Workers;
             TrackedImpact = default;
 
             Valid = true;
@@ -64,7 +64,7 @@ namespace FESGameplayAbilitySystem
             {
                 AttributeValue negatedImpact = TrackedImpact.Negate();
                 Spec.Target.AttributeSystem.ModifyAttribute(
-                    Spec.Base.GetAttributeTarget(), 
+                    Spec.Base.ImpactSpecification.AttributeTarget, 
                     new SourcedModifiedAttributeValue(Spec, this, negatedImpact.CurrentValue, negatedImpact.BaseValue, false));
             }
             
@@ -76,7 +76,7 @@ namespace FESGameplayAbilitySystem
 
         public Attribute GetAttribute()
         {
-            return Spec.Base.GetAttributeTarget();
+            return Spec.Base.ImpactSpecification.AttributeTarget;
         }
         public IEffectOrigin GetEffectDerivation()
         {
@@ -96,7 +96,7 @@ namespace FESGameplayAbilitySystem
         }
         public Tag AttributeRetention()
         {
-            return false;
+            return Tags.RETENTION_IGNORE;
         }
         public void TrackImpact(AbilityImpactData impactData)
         {

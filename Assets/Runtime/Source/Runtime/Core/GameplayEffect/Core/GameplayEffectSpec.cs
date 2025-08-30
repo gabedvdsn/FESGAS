@@ -6,13 +6,11 @@ namespace FESGameplayAbilitySystem
     public class GameplayEffectSpec : IAttributeImpactDerivation
     {
         public GameplayEffect Base;
-        public float Level;
-        public float RelativeLevel;
 
         public IEffectOrigin Origin;
         public ISource Source;
         public GASComponent Target;
-        
+
         public Dictionary<IMagnitudeModifier, AttributeValue?> SourceCapturedAttributes;
 
         public GameplayEffectSpec(GameplayEffect GameplayEffect, IEffectOrigin origin, GASComponent target)
@@ -22,9 +20,6 @@ namespace FESGameplayAbilitySystem
             
             Source = Origin.GetOwner();
             Target = target;
-
-            Level = Origin.GetLevel();
-            RelativeLevel = Origin.GetRelativeLevel();
             
             SourceCapturedAttributes = new Dictionary<IMagnitudeModifier, AttributeValue?>();
         }
@@ -52,14 +47,14 @@ namespace FESGameplayAbilitySystem
         
         private AttributeValue AttributeImpact(AttributeValue attributeValue)
         {
-            float magnitude = Base.GetMagnitude(this);
+            float magnitude = Base.ImpactSpecification.GetMagnitude(this);
             float currValue = attributeValue.CurrentValue;
             float baseValue = attributeValue.BaseValue;
             
-            switch (Base.GetImpactOperation())
+            switch (Base.ImpactSpecification.ImpactOperation)
             {
                 case ECalculationOperation.Add:
-                    switch (Base.GetTargetImpact())
+                    switch (Base.ImpactSpecification.TargetImpact)
                     {
                         case EEffectImpactTarget.Current:
                             currValue += magnitude;
@@ -76,7 +71,7 @@ namespace FESGameplayAbilitySystem
                     }
                     break;
                 case ECalculationOperation.Multiply:
-                    switch (Base.GetTargetImpact())
+                    switch (Base.ImpactSpecification.TargetImpact)
                     {
                         case EEffectImpactTarget.Current:
                             currValue *= magnitude;
@@ -93,7 +88,7 @@ namespace FESGameplayAbilitySystem
                     }
                     break;
                 case ECalculationOperation.Override:
-                    switch (Base.GetTargetImpact())
+                    switch (Base.ImpactSpecification.TargetImpact)
                     {
                         case EEffectImpactTarget.Current:
                             currValue = magnitude;
@@ -121,7 +116,7 @@ namespace FESGameplayAbilitySystem
 
         public Attribute GetAttribute()
         {
-            return Base.GetAttributeTarget();
+            return Base.ImpactSpecification.AttributeTarget;
         }
         public IEffectOrigin GetEffectDerivation()
         {
@@ -137,11 +132,11 @@ namespace FESGameplayAbilitySystem
         }
         public EImpactType GetImpactType()
         {
-            return Base.GetImpactType();
+            return Base.ImpactSpecification.ImpactType;
         }
         public Tag AttributeRetention()
         {
-            return false;
+            return Tags.RETENTION_IGNORE;
         }
         public void TrackImpact(AbilityImpactData impactData)
         {
@@ -180,11 +175,6 @@ namespace FESGameplayAbilitySystem
         public Dictionary<IMagnitudeModifier, AttributeValue?> GetSourcedCapturedAttributes()
         {
             return SourceCapturedAttributes;
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
         }
     }
 }

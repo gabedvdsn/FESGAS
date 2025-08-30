@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
 
 namespace FESGameplayAbilitySystem
@@ -24,14 +25,14 @@ namespace FESGameplayAbilitySystem
         public void RunEffectImpactWorkers(AbilityImpactData impactData);
         public Dictionary<IMagnitudeModifier, AttributeValue?> GetSourcedCapturedAttributes();
         
-        public static SourceAttributeDerivation GenerateSourceDerivation(ISource source, Attribute attribute, EImpactType impactType = EImpactType.NotApplicable, bool retainImpact = true)
+        public static SourceAttributeDerivation GenerateSourceDerivation(ISource source, Attribute attribute, Tag retainImpact, EImpactType impactType = EImpactType.NotApplicable)
         {
             return new SourceAttributeDerivation(source, attribute, impactType, retainImpact);
         }
 
-        public static SourceAttributeDerivation GenerateSourceDerivation(SourcedModifiedAttributeValue sourceModifier, EImpactType impactType, bool retainImpact = true)
+        public static SourceAttributeDerivation GenerateSourceDerivation(SourcedModifiedAttributeValue sourceModifier, Tag retainImpact, EImpactType impactType)
         {
-            return GenerateSourceDerivation(sourceModifier.Derivation.GetSource(), sourceModifier.Derivation.GetAttribute(), impactType, retainImpact);
+            return GenerateSourceDerivation(sourceModifier.Derivation.GetSource(), sourceModifier.Derivation.GetAttribute(), retainImpact, impactType);
         }
     }
 
@@ -40,9 +41,9 @@ namespace FESGameplayAbilitySystem
         private ISource Source;
         public Attribute Attribute;
         private EImpactType ImpactType;
-        private bool RetainImpact;
+        private Tag RetainImpact;
 
-        public SourceAttributeDerivation(ISource source, Attribute attribute, EImpactType impactType, bool retainImpact = true)
+        public SourceAttributeDerivation(ISource source, Attribute attribute, EImpactType impactType, Tag retainImpact)
         {
             Source = source;
             Attribute = attribute;

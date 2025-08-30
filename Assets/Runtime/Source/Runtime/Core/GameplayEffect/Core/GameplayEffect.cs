@@ -6,12 +6,11 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public class GameplayEffect : IEffectBase
+    public class GameplayEffect : IHasReadableDefinition
     {
         [Header("Gameplay Effect")] 
         
         public GameplayEffectDefinition Definition;
-
         public GameplayEffectTags Tags;
 
         [Header("Specifications")] 
@@ -21,7 +20,7 @@ namespace FESGameplayAbilitySystem
         
         [Header("Effect Workers")]
         
-        public List<AbstractEffectWorker> Workers;
+        public AbstractEffectWorker[] Workers;
         
         [Header("Requirements")]
         
@@ -31,61 +30,12 @@ namespace FESGameplayAbilitySystem
         public GameplayEffectSpec Generate(IEffectOrigin origin, GASComponent target)
         {
             GameplayEffectSpec spec = new GameplayEffectSpec(this, origin, target);
-            ApplyImpactSpecification(spec);
-
-            IEffectBase effect = EffectBuilder.Prototype()
-                .SetAttributeTarget(ImpactSpecification.AttributeTarget)
-                .ProvideEmptyRequirements(true)
-                .TryToEffect(out var e) ? e : null;
+            ImpactSpecification.ApplyImpactSpecifications(spec);
             
             return spec;
         }
-        public Tag GetAssetTag()
-        {
-            return Tags.AssetTag;
-        }
-        public string GetReferenceName()
-        {
-            return Definition.Name;
-        }
-        public EAffiliationPolicy GetAffiliationPolicy()
-        {
-            return ImpactSpecification.AffiliationPolicy;
-        }
-        public void ApplyImpactSpecification(GameplayEffectSpec spec)
-        {
-            ImpactSpecification.ApplyImpactSpecifications(spec);
-        }
-        
         #region Effect Base
-        public Attribute GetAttributeTarget()
-        {
-            return ImpactSpecification.AttributeTarget;
-        }
-        public float GetMagnitude(GameplayEffectSpec spec)
-        {
-            return ImpactSpecification.GetMagnitude(spec);
-        }
-        public float GetTotalDuration(GameplayEffectSpec spec)
-        {
-            return DurationSpecification.GetTotalDuration(spec);
-        }
-        public ECalculationOperation GetImpactOperation()
-        {
-            return ImpactSpecification.ImpactOperation;
-        }
-        public EEffectImpactTarget GetTargetImpact()
-        {
-            return ImpactSpecification.TargetImpact;
-        }
-        public EImpactType GetImpactType()
-        {
-            return ImpactSpecification.ImpactType;
-        }
-        public List<AbstractEffectWorker> GetEffectWorkers()
-        {
-            return Workers;
-        }
+
         public bool ValidateApplicationRequirements(GameplayEffectSpec spec)
         {
             var targetTags = spec.Target.TagCache.GetAppliedTags();
@@ -111,17 +61,21 @@ namespace FESGameplayAbilitySystem
         }
         #endregion
 
-        private void OnValidate()
-        {
-            if (DurationSpecification.PresetTickRatePolicy != EDefaultTickRate.None)
-            {
-                DurationSpecification.Ticks = Mathf.FloorToInt(DurationSpecification.Duration * GASRateNormals.GetDefaultTickRate(DurationSpecification.PresetTickRatePolicy));
-            }
-        }
-
         public override string ToString()
         {
             return $"GE-{Definition.Name}";
+        }
+        public string GetName()
+        {
+            return Definition.Name;
+        }
+        public string GetDescription()
+        {
+            return Definition.Description;
+        }
+        public Sprite GetPrimaryIcon()
+        {
+            return Definition.Icon;
         }
     }
 
@@ -129,8 +83,7 @@ namespace FESGameplayAbilitySystem
     {
         public string Name;
         public string Description;
-        public bool Visible = true;
-        public bool UseDerivationIcon = true;
+        public Tag Visibility;
         public Sprite Icon;
     }
 

@@ -24,15 +24,12 @@ namespace FESGameplayAbilitySystem
         {
             Root = system;
 
+            attributeSet = Root.Data.AttributeSet;
+            attributeChangeEvents = Root.Data.AttributeChangeEvents;
+
             InitializeCaches();
             InitializePriorityChangeEvents();
             InitializeAttributeSets();
-        }
-
-        public void ProvidePrerequisiteData(ISystemData systemData)
-        {
-            attributeSet = systemData.GetAttributeSet();
-            attributeChangeEvents = systemData.GetAttributeChangeEvents();
         }
         
         private void InitializeCaches()
@@ -50,7 +47,7 @@ namespace FESGameplayAbilitySystem
             {
                 ModifyAttribute(attr,
                     new SourcedModifiedAttributeValue(
-                        IAttributeImpactDerivation.GenerateSourceDerivation(Root, attr),
+                        IAttributeImpactDerivation.GenerateSourceDerivation(Root, attr, Tags.RETENTION_BONUS),
                         0f, 0f,
                         false)
                 );

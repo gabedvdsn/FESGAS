@@ -1,0 +1,123 @@
+﻿{
+  "schemaVersion": "1.0.0",
+  "meta":
+  {
+    "name": "Testing",
+    "author": "Far Emerald Studio",
+    "timestamp": "2025-08-29T16:00:00Z"
+  },
+  "tags": [
+    {
+      "id": "ON_FIRE",
+      "name": "On Fire",
+      "classification": "generic"
+    },
+    {
+      "id": "BURNING",
+      "name": "Burning",
+      "parent": "ON_FIRE",
+      "classification": "generic"
+    },
+    {
+      "id": "BURNING",
+      "name": "Burning",
+      "parent": "ON_FIRE",
+      "classification": "channel",
+      "editorTags":[
+        {"noEdit": true}
+      ]
+    }
+  ],
+  "abilities": [
+    {
+      "id": "FIREBALL",
+      "definition":
+      {
+        "name": "Fireball",
+        "description": "A large ball of fire to be hurled at unsuspecting foes. Or suspecting ones, it really doesn't matter. What matters is they get burned.",
+        "ability_activation": "single_active",
+        "activate_immediately": 0
+      },
+      "tags":
+      {
+        "asset": "__SELF__",
+        "context_tags": [],
+        "passive": [],
+        "active": [],
+        "source_requirements":
+        {
+          "avoid": [],
+          "require": []
+        },
+        "target_requirements":
+        {
+          "avoid": [],
+          "require": []
+        }
+      },
+      "proxy":
+      {
+        "targeting": "SELECT_TARGET_SINGLE",
+        "use_implicit": 0,
+        "stages":
+        [
+          {
+            "any_all_policy": "all",
+            "tasks":
+            [
+              {
+                "spec": "SET_SOURCE_ANIMATION",
+                "data":
+                {
+                  "target": "MAGIC_CAST_DEFAULT"
+                }
+              }
+            ]
+          },
+          {
+            "any_all_policy": "all",
+            "tasks":
+            [
+              {
+                "spec": "CREATE_MONO_PROCESS",
+                "data":
+                {
+                  "processes":
+                  [
+                    "FIREBALL_DEFAULT_PREFAB"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }  
+  ],
+  "_abilities":
+  {
+    
+    "FIREBALL":
+    {
+      
+    }
+  },
+  "modifiers":
+  {
+
+  },
+  "effects":
+  {
+
+  },
+  "attributes": [
+    {
+      "id": "HEALTH",
+      "name": "Health",
+      "editorTags": [
+        {"noEdit":true}
+      ]
+    }
+  ]
+}
+

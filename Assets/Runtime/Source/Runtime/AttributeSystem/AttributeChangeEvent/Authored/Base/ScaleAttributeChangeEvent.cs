@@ -15,7 +15,7 @@ namespace FESGameplayAbilitySystem
             float proportion = change.Value.BaseValue / attributeCache[TargetAttribute].Value.BaseValue;
             float delta = proportion * attributeCache[TargetAttribute].Value.CurrentValue;
             
-            IAttributeImpactDerivation scaleDerivation = IAttributeImpactDerivation.GenerateSourceDerivation(change.Value, EImpactType.NotApplicable, false);
+            IAttributeImpactDerivation scaleDerivation = IAttributeImpactDerivation.GenerateSourceDerivation(change.Value, Tags.RETENTION_IGNORE, EImpactType.NotApplicable);
             SourcedModifiedAttributeValue scaleAmount = new SourcedModifiedAttributeValue(scaleDerivation, delta, 0f, false);
             if (system.FindAttributeSystem(out var attr)) attr.ModifyAttribute(TargetAttribute, scaleAmount, runEvents: false);
         }

@@ -22,7 +22,7 @@ namespace FESGameplayAbilitySystem
         
         [Header("Proxy Stages")]
         
-        public List<AbilityProxyStage> Stages;
+        public AbilityProxyStage[] Stages;
 
         public AbilityProxy GenerateProxy()
         {
@@ -34,7 +34,7 @@ namespace FESGameplayAbilitySystem
     public class AbilityProxyStage
     {
         public EAnyAllPolicy TaskPolicy;
-        public List<AbstractAbilityProxyTask> Tasks;
+        public AbstractAbilityProxyTask[] Tasks;
         
         [Space(5)]
         

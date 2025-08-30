@@ -17,10 +17,13 @@ namespace FESGameplayAbilitySystem.Demo
         public override void WhenInitialize(ProcessRelay relay)
         {
             base.WhenInitialize(relay);
+            
+            Tags.Register("AFFILIATION_GREEN");
+            Tags.Register("AFFILIATION_RED");
 
             var playerData = ProcessDataPacket.RootDefault();
             playerData.AddPayload(Tags.PAYLOAD_POSITION, PlayerPosition);
-            playerData.AddPayload(Tags.PAYLOAD_AFFILIATION, Tags.AFFILIATION_GREEN);
+            playerData.AddPayload(Tags.PAYLOAD_AFFILIATION, Tags.Get("AFFILIATION_GREEN"));
 
             ProcessControl.Instance.Register(PlayerPrefab, playerData, out var playerRelay);
             if (playerRelay.TryGetProcess(out GASComponent player))
@@ -31,7 +34,7 @@ namespace FESGameplayAbilitySystem.Demo
             
             var enemyData = ProcessDataPacket.RootDefault();
             enemyData.AddPayload(Tags.PAYLOAD_POSITION, EnemyPosition);
-            enemyData.AddPayload(Tags.PAYLOAD_AFFILIATION, Tags.AFFILIATION_RED);
+            enemyData.AddPayload(Tags.PAYLOAD_AFFILIATION, Tags.Get("AFFILIATION_RED"));
             
             ProcessControl.Instance.Register(EnemyPrefab, enemyData, out _);
         }
