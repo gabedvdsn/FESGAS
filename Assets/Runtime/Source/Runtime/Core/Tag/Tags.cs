@@ -215,6 +215,34 @@ namespace FESGameplayAbilitySystem
         
         #endregion
         
+        #region Ability Tags
+
+        #region Injections
+        
+        // Cancel the ability runtime entirely
+        private const int _INJECT_INTERRUPT = -300_000_000;
+        public static Tag INJECT_INTERRUPT => Get(_AFFILIATION_ROOT);
+        
+        // Cancel the active proxy stage runtime and moves to the next
+        private const int _INJECT_BREAK_STAGE = -300_000_001;
+        public static Tag INJECT_BREAK_STAGE => Get(_AFFILIATION_ROOT);
+        
+        // Same as BREAK_STAGE BUT the active proxy stage runtime CONTINUES until a STOP_MAINTAIN/_ALL injection, or the runtime reaches its natural conclusion
+        private const int _INJECT_MAINTAIN_STAGE = -300_000_002;
+        public static Tag INJECT_MAINTAIN_STAGE => Get(_AFFILIATION_ROOT);
+        
+        // Cancels the least recent maintained proxy stage runtime
+        private const int _INJECT_STOP_MAINTAIN = -300_000_003;
+        public static Tag INJECT_STOP_MAINTAIN => Get(_AFFILIATION_ROOT);
+        
+        // Cancels all maintained proxy stage runtimes
+        private const int _INJECT_STOP_MAINTAIN_ALL = -300_000_004;
+        public static Tag INJECT_STOP_MAINTAIN_ALL => Get(_AFFILIATION_ROOT);
+        
+        #endregion
+        
+        #endregion
+        
         #region Effect Tags
         
         #region Attribute Impact Retention
@@ -222,30 +250,30 @@ namespace FESGameplayAbilitySystem
         /// <summary>
         /// Empty
         /// </summary>
-        private const int _RETENTION_IGNORE = -300_000_000;
+        private const int _RETENTION_IGNORE = -400_000_000;
         public static Tag RETENTION_IGNORE => Get(_RETENTION_IGNORE);
         
         /// <summary>
         /// Attribute retention level for low-level cached attribute values deriving from set & modifier declarations.
         /// E.g. initial values, attribute backed values
         /// </summary>
-        private const int _RETENTION_DECLARED = -300_000_001;
+        private const int _RETENTION_DECLARED = -400_000_001;
         public static Tag RETENTION_DECLARED => Get(_RETENTION_DECLARED);
         
         /// <summary>
         /// Attribute retention level for mid-level cached attribute values deriving from pseudo-permanent bonuses.
         /// E.g. items
         /// </summary>
-        private const int _RETENTION_BONUS = -300_000_002;
+        private const int _RETENTION_BONUS = -400_000_002;
         public static Tag RETENTION_BONUS => Get(_RETENTION_BONUS);
         
         #endregion
         
         #region Effect Timing
 
-        private const int _TICK_RATE_DEFAULT = -300_100_000;
+        private const int _TICK_RATE_DEFAULT = -400_100_000;
         public static Tag TICK_RATE_DEFAULT => Get(_TICK_RATE_DEFAULT);
-        private const int _DELTA_TIME_DEFAULT = -300_100_000;
+        private const int _DELTA_TIME_DEFAULT = -400_100_000;
         public static Tag DELTA_TIME_DEFAULT => Get(_DELTA_TIME_DEFAULT);
         
         #endregion
@@ -254,9 +282,9 @@ namespace FESGameplayAbilitySystem
         
         #region Context Tags
         
-        private const int _CONTEXT_GAS = -400_000_000;
+        private const int _CONTEXT_GAS = -500_000_000;
         public static Tag CONTEXT_GAS => Get(_CONTEXT_GAS);
-        private const int _CONTEXT_SOURCE = -400_000_001;
+        private const int _CONTEXT_SOURCE = -500_000_001;
         public static Tag CONTEXT_SOURCE => Get(_CONTEXT_SOURCE); 
         
         #endregion

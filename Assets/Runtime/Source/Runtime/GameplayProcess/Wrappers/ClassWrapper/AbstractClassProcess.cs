@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public abstract class AbstractClassProcess : IGameplayProcess
+    public abstract class AbstractClassProcess
     {
         protected bool processActive;
         
@@ -15,7 +15,7 @@ namespace FESGameplayAbilitySystem
         /// </summary>
         /// <param name="timing">Step timing</param>
         /// <param name="relay">Process Relay</param>
-        public abstract void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay);
+        public abstract void WhenUpdate(EProcessStepTiming timing, ProcessRelay relay);
         
         /// <summary>
         /// Called via ProcessControl when the process is set to Waiting
@@ -62,7 +62,7 @@ namespace FESGameplayAbilitySystem
         public abstract bool IsInitialized();
 
         public string ProcessName => "AnonymousClassProcess";
-        public virtual EProcessUpdateTiming StepTiming => EProcessUpdateTiming.Update;
+        public virtual EProcessStepTiming StepTiming => EProcessStepTiming.Update;
         public virtual EProcessLifecycle Lifecycle => EProcessLifecycle.SelfTerminating;
         
         public virtual int StepPriority => 0;

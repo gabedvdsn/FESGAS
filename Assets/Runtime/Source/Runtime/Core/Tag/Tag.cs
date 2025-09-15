@@ -8,40 +8,42 @@ namespace FESGameplayAbilitySystem
     public readonly struct Tag : IHasReadableDefinition, IEquatable<Tag>
     {
         public readonly string Name;
-        public readonly int Parent;
         
         private readonly int key;
         
-        private Tag(int key, string name, Tag parent)
+        private Tag(int key, string name)
         {
             this.key = key;
             Name = name;
-            Parent = parent.key;
         }
-
+        
         public static Tag Generate(int key, string name)
         {
-            return Generate(key, name, Tags.NULL);
+            return new Tag(key, name);
         }
 
-        public static Tag Generate(int key, string name, Tag parent)
+        public static Tag Generate(string name)
         {
-            return new Tag(key, name, parent);
+            return Generate(name.GetHashCode(), name);
         }
         
         public static bool operator == (Tag a, Tag b)
         {
             return a.Equals(b);
         }
-        
+
         public static bool operator !=(Tag a, Tag b)
         {
             return !(a == b);
         }
-
-        public bool IsDescendentOf(Tag other)
+        
+        public static bool operator == (Tag a, int b)
         {
-            
+            return a.key == b;
+        }
+        public static bool operator !=(Tag a, int b)
+        {
+            return !(a == b);
         }
 
         #region Internal

@@ -10,7 +10,7 @@ namespace FESGameplayAbilitySystem
         [Header("Mono Gameplay Process")] 
         
         public EProcessLifecycle ProcessLifecycle;
-        public EProcessUpdateTiming ProcessTiming;
+        public EProcessStepTiming ProcessTiming;
         public EProcessStepPriorityMethod PriorityMethod = EProcessStepPriorityMethod.Manual;
         public int ProcessStepPriority;
         
@@ -108,6 +108,16 @@ namespace FESGameplayAbilitySystem
         /// <param name="token">Cancellation token</param>
         /// <returns></returns>
         public abstract UniTask RunProcess(ProcessRelay relay, CancellationToken token);
+
+        protected virtual void WhenDestroy()
+        {
+            
+        }
+
+        private void OnDestroy()
+        {
+            WhenDestroy();
+        }
 
         public override string ToString()
         {

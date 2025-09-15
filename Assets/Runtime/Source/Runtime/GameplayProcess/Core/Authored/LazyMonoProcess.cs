@@ -22,10 +22,5 @@ namespace FESGameplayAbilitySystem
             processActive = true;
             await UniTask.WaitWhile(() => processActive, cancellationToken: token);
         }
-
-        private void OnDestroy()
-        {
-            UnityEngine.Debug.Log($"Destoy {name}");
-        }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace FESGameplayAbilitySystem
 {
-    public class AttributeSet : IAttributeSet
+    public class AttributeSet
     {
         [Header("Attribute Set")]
         
@@ -18,19 +18,7 @@ namespace FESGameplayAbilitySystem
         
         public List<AttributeSet> SubSets;
         public EValueCollisionPolicy CollisionResolutionPolicy;
-
-        public List<AttributeSetElement> GetAttributes()
-        {
-            return Attributes;
-        }
-        public IEnumerable<IAttributeSet> GetSubSets()
-        {
-            return SubSets;
-        }
-        public EValueCollisionPolicy GetCollisionResolutionPolicy()
-        {
-            return CollisionResolutionPolicy;
-        }
+        
         public void Initialize(AttributeSystemComponent system)
         {
             AttributeSetMeta meta = new AttributeSetMeta(this);
@@ -129,15 +117,15 @@ namespace FESGameplayAbilitySystem
     {
         private Dictionary<Attribute, Dictionary<EAttributeElementCollisionPolicy, List<DefaultAttributeValue>>> matrix; 
 
-        public AttributeSetMeta(IAttributeSet attributeSet)
+        public AttributeSetMeta(AttributeSet attributeSet)
         {
             matrix = new Dictionary<Attribute, Dictionary<EAttributeElementCollisionPolicy, List<DefaultAttributeValue>>>();
             HandleAttributeSet(attributeSet);
         }
 
-        private void HandleAttributeSet(IAttributeSet attributeSet)
+        private void HandleAttributeSet(AttributeSet attributeSet)
         {
-            foreach (AttributeSetElement element in attributeSet.GetAttributes())
+            foreach (AttributeSetElement element in attributeSet.Attributes)
             {
                 if (!matrix.TryGetValue(element.Attribute, out var table))
                 {
@@ -151,16 +139,16 @@ namespace FESGameplayAbilitySystem
                 else matrix[element.Attribute][element.CollisionPolicy].Add(element.ToDefaultAttribute());
             }
             
-            foreach (IAttributeSet subSet in attributeSet.GetSubSets()) HandleAttributeSet(subSet);
+            foreach (AttributeSet subSet in attributeSet.SubSets) HandleAttributeSet(subSet);
         }
 
-        public void InitializeAttributeSystem(AttributeSystemComponent system, IAttributeSet attributeSet)
+        public void InitializeAttributeSystem(AttributeSystemComponent system, AttributeSet attributeSet)
         {
             foreach (Attribute attribute in matrix.Keys)
             {
                 if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseThis, out var defaults))
                 {
-                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.GetCollisionResolutionPolicy());
+                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.CollisionResolutionPolicy);
                 }
                 else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.Combine, out defaults))
                 {
@@ -171,7 +159,7 @@ namespace FESGameplayAbilitySystem
                 }
                 else if (matrix[attribute].TryGetValue(EAttributeElementCollisionPolicy.UseExisting, out defaults))
                 {
-                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.GetCollisionResolutionPolicy());
+                    InitializeAggregatePolicy(system, attribute, defaults, attributeSet.CollisionResolutionPolicy);
                 }
             }
         }
@@ -207,63 +195,6 @@ namespace FESGameplayAbilitySystem
                 default:
                     throw new ArgumentOutOfRangeException(nameof(resolution), resolution, null);
             }
-        }
-    }
-
-    public interface IAttributeSet
-    {
-        public List<AttributeSetElement> GetAttributes();
-        public IEnumerable<IAttributeSet> GetSubSets();
-        public EValueCollisionPolicy GetCollisionResolutionPolicy();
-        public void Initialize(AttributeSystemComponent system);
-        public HashSet<Attribute> GetUnique();
-
-        public static IAttributeSet GenerateEmpty()
-        {
-            return new CustomAttributeSet();
-        }
-    }
-
-    public class CustomAttributeSet : IAttributeSet
-    {
-        public List<AttributeSetElement> Attributes = new();
-        public List<IAttributeSet> SubSets = new();
-        public EValueCollisionPolicy CollisionResolutionPolicy = EValueCollisionPolicy.UseMaximum;
-
-        public List<AttributeSetElement> GetAttributes()
-        {
-            return Attributes;
-        }
-        public IEnumerable<IAttributeSet> GetSubSets()
-        {
-            return SubSets;
-        }
-        public EValueCollisionPolicy GetCollisionResolutionPolicy()
-        {
-            return CollisionResolutionPolicy;
-        }
-        public void Initialize(AttributeSystemComponent system)
-        {
-            AttributeSetMeta meta = new AttributeSetMeta(this);
-            meta.InitializeAttributeSystem(system, this);
-        }
-        public HashSet<Attribute> GetUnique()
-        {
-            var attributes = new HashSet<Attribute>();
-            foreach (var attr in Attributes)
-            {
-                attributes.Add(attr.Attribute);
-            }
-
-            foreach (var subSet in SubSets)
-            {
-                foreach (var unique in subSet.GetUnique())
-                {
-                    attributes.Add(unique);
-                }
-            }
-
-            return attributes;
         }
     }
 }

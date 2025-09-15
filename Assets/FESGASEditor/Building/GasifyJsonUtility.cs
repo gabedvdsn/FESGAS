@@ -6,27 +6,6 @@ using Unity.Plastic.Newtonsoft.Json.Linq;
 
 namespace FESGameplayAbilitySystem.Gasify
 {
-    public class FrameworkProject
-    {
-        public string Version;
-        public string MetaName;
-        public string MetaAuthor;
-
-        public List<AttributeData> Attributes = new();
-        public List<TagData> Tags = new();
-        public List<AbilityData> Abilities = new();
-        public List<ProxyTaskData> ProxyTasks = new();
-        public List<EffectData> Effects = new();
-        public List<GASData> GAS = new();
-        public List<AttributeSetData> AttributeSets = new();
-        public List<ModifierData> Modifiers = new();
-        public List<AttributeEventData> AttributeEvents = new();
-        public List<ImpactWorkerData> ImpactWorkers = new();
-        public List<EffectWorkerData> EffectWorkers = new();
-        public List<TagWorkerData> TagWorkers = new();
-        public List<ProcessInstantiatorData> ProcessInstantiators = new();
-    }
-    
     public static class GasifyJsonUtility
     {
         public const string CurrentSchema = "1.0.0";
@@ -46,15 +25,6 @@ namespace FESGameplayAbilitySystem.Gasify
         private const string effectWorkers = "effectWorkers";
         private const string tagWorkers = "tagWorkers";
         private const string processInstantiators = "processInstantiators";
-
-        #region Editor Tags
-        
-        private const string editorTags = "editorTags";
-
-        private const string et_noEdit = "noEdit";
-        private const string et_description = "description";
-        
-        #endregion
         
         #endregion
         
@@ -103,21 +73,21 @@ namespace FESGameplayAbilitySystem.Gasify
         /// </summary>
         /// <param name="node"></param>
         /// <param name="target"></param>
-        static void BuildEditorTagsInPlace(GasifyDataNode node, Dictionary<string, object> target)
+        static void BuildEditorTagsInPlace(GasifyDataNode node, Dictionary<Tag, object> target)
         {
             if (!node.hasEditorTags) return;
 
             object[] values = new object[node.editorTags.Count];
             int i = 0;
-            foreach (string flag in node.editorTags.Keys)
+            foreach (Tag flag in node.editorTags.Keys)
             {
-                values[i++] = new Dictionary<string, object>
+                values[i++] = new Dictionary<Tag, object>
                 {
                     [flag] = node.editorTags[flag]
                 };
             }
 
-            target[editorTags] = values;
+            target[EditorTagService.EDITOR_TAG] = values;
         }
         
         static List<Dictionary<string, object>> BuildAttributes(FrameworkProject p)
@@ -131,7 +101,7 @@ namespace FESGameplayAbilitySystem.Gasify
                     ["name"] = o.Name,
                     ["description"] = o.Description
                 };
-                BuildEditorTagsInPlace(o, data);
+                // BuildEditorTagsInPlace(o, data);
             }
             return list;
         }
@@ -144,67 +114,66 @@ namespace FESGameplayAbilitySystem.Gasify
                 var data = new Dictionary<string, object>
                 {
                     ["id"] = o.Id,
-                    ["name"] = o.Name,
-                    ["parent"] = o.Parent
+                    ["name"] = o.Name
                 };
-                BuildEditorTagsInPlace(o, data);
+                // BuildEditorTagsInPlace(o, data);
             }
             return list;
         }
         
         static List<Dictionary<string, object>> BuildAbilities(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildProxyTasks(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildEffects(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildGAS(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildAttributeSets(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildModifiers(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildAttributeEvents(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildImpactWorkers(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildEffectWorkers(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildTagWorkers(FrameworkProject p)
         {
-            
+            return null;
         }
         
         static List<Dictionary<string, object>> BuildProcessInstantiators(FrameworkProject p)
         {
-            
+            return null;
         }
         
         #endregion
@@ -310,7 +279,7 @@ namespace FESGameplayAbilitySystem.Gasify
                 {
                     Id = t.Value<string>("id"),
                     Name = t.Value<string>("name"),
-                    Parent = t.Value<string>("parent")
+                    // Parent = t.Value<string>("parent")
                 };
                 ParseEditorTags(data, t);
             }
@@ -483,7 +452,7 @@ namespace FESGameplayAbilitySystem.Gasify
 
         static void ParseEditorTags(GasifyDataNode node, JToken local)
         {
-            if (local[editorTags] is not JArray eTags) return;
+            /*if (local[editorTags] is not JArray eTags) return;
 
             foreach (var eTagToken in eTags)
             {
@@ -499,7 +468,7 @@ namespace FESGameplayAbilitySystem.Gasify
                         node.editorTags[et_description] = eTags.Value<string>();
                         break;
                 }
-            }
+            }*/
         }
         
         #endregion

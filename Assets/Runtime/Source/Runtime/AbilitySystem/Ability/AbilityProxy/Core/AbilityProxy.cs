@@ -149,45 +149,49 @@ namespace FESGameplayAbilitySystem
             }
         }
         
-        public void Inject(EAbilityInjection injection)
+        public void Inject(Tag injection, AbilityDataPacket implicitData)
         {
-            switch (injection)
+            bool _success = true;
+            if (injection == Tags.INJECT_INTERRUPT)
             {
-                case EAbilityInjection.INTERRUPT:  // Handled externally via the high-level cts token
-                    break;
-                case EAbilityInjection.BREAK_STAGE:
-                    if (StageIndex < 0 || stageSources[StageIndex] is null) break;
-                    stageSources[StageIndex].Cancel();
-                    break;
-                case EAbilityInjection.MAINTAIN_STAGE:
-                    maintainedStages += 1;
-                    nextStageSignal?.TrySetResult();
-                    break;
-                case EAbilityInjection.STOP_MAINTAIN:
-                    if (StageIndex < 0 || stageSources.Count == 0) break;
-                    stageSources[stageSources.Keys.ToArray()[0]]?.Cancel();
-                    break;
-                case EAbilityInjection.STOP_MAINTAIN_ALL:
-                    if (StageIndex < 0 || stageSources.Count == 0) break;
-                    foreach (int stageIndex in stageSources.Keys) stageSources[stageIndex]?.Cancel();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(injection), injection, null);
+                // Do nothing -- handled externally via the high-level cts token
+            }
+            else if (injection == Tags.INJECT_BREAK_STAGE)
+            {
+                if (StageIndex < 0 || stageSources[StageIndex] is null) _success = false;
+                else stageSources[StageIndex].Cancel();
+            }
+            else if (injection == Tags.INJECT_MAINTAIN_STAGE)
+            {
+                maintainedStages += 1;
+                nextStageSignal?.TrySetResult();
+            }
+            else if (injection == Tags.INJECT_STOP_MAINTAIN)
+            {
+                if (StageIndex < 0 || stageSources.Count == 0) _success = false;
+                else stageSources[stageSources.Keys.ToArray()[0]]?.Cancel();
+            }
+            else if (injection == Tags.INJECT_STOP_MAINTAIN_ALL)
+            {
+                if (StageIndex < 0 || stageSources.Count == 0) _success = false;
+                else foreach (int stageIndex in stageSources.Keys) stageSources[stageIndex]?.Cancel();
+            }
+
+            HandleInjectionCallback(
+                _success,
+                Specification.Stages[StageIndex].Tasks,
+                Specification.Stages[StageIndex]
+            );
+            
+            return;
+
+            void HandleInjectionCallback(bool success, AbstractAbilityProxyTask[] tasks, AbilityProxyStage stage)
+            {
+                if (implicitData.Spec.GetOwner().FindAbilitySystem(out var asc))
+                {
+                    asc.Callbacks.AbilityInjected(AbilityCallbackStatus.Generate(implicitData, tasks, stage, injection, success));
+                }
             }
         }
-    }
-    
-    public enum EAbilityInjection
-    {
-        // Cancel the ability runtime entirely
-        INTERRUPT,  
-        // Cancel the active proxy stage runtime and moves to the next
-        BREAK_STAGE,  
-        // Same as BREAK_STAGE BUT the active proxy stage runtime CONTINUES until a STOP_MAINTAIN/_ALL injection, or the runtime reaches its natural conclusion
-        MAINTAIN_STAGE,  
-        // Cancels the least recent maintained proxy stage runtime
-        STOP_MAINTAIN,  
-        // Cancels all maintained proxy stage runtimes
-        STOP_MAINTAIN_ALL  
     }
 }

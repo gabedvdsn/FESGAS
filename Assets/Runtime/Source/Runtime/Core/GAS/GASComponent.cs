@@ -414,6 +414,29 @@ namespace FESGameplayAbilitySystem
             container = null;
             return false;
         }
+
+        public GameplayEffectDuration GetLongestDurationFor(Tag lookForTag)
+        {
+            float longestDuration = float.MinValue;
+            float longestRemaining = float.MinValue;
+            foreach (AbstractGameplayEffectShelfContainer container in EffectShelf)
+            {
+                foreach (Tag specTag in container.Spec.Base.Tags.GrantedTags)
+                {
+                    if (specTag != lookForTag) continue;
+                    if (container.Spec.Base.DurationSpecification.DurationPolicy == EEffectDurationPolicy.Infinite)
+                    {
+                        return new GameplayEffectDuration(float.MaxValue, float.MaxValue, true);
+                    }
+
+                    if (!(container.TotalDuration > longestDuration)) continue;
+                    longestDuration = container.TotalDuration;
+                    longestRemaining = container.DurationRemaining;
+                }
+            }
+
+            return new GameplayEffectDuration(longestDuration, longestRemaining, longestDuration >= 0f);
+        }
         
         public GameplayEffectDuration GetLongestDurationFor(Tag[] lookForTags)
         {
@@ -426,7 +449,7 @@ namespace FESGameplayAbilitySystem
                     if (!lookForTags.Contains(specTag)) continue;
                     if (container.Spec.Base.DurationSpecification.DurationPolicy == EEffectDurationPolicy.Infinite)
                     {
-                        return new GameplayEffectDuration(float.MaxValue, float.MaxValue);
+                        return new GameplayEffectDuration(float.MaxValue, float.MaxValue, true);
                     }
 
                     if (!(container.TotalDuration > longestDuration)) continue;
@@ -435,7 +458,7 @@ namespace FESGameplayAbilitySystem
                 }
             }
 
-            return new GameplayEffectDuration(longestDuration, longestRemaining);
+            return new GameplayEffectDuration(longestDuration, longestRemaining, longestDuration >= 0f);
         }
         
         #endregion

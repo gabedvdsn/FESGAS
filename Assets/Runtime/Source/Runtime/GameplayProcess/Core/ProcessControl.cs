@@ -11,7 +11,7 @@ namespace FESGameplayAbilitySystem
         // Singleton instance
         public static ProcessControl Instance;
 
-        [Header("Process Control")] 
+        [Header("Process Control")]
         
         public EProcessControlState StartState = EProcessControlState.Ready;
         public new bool DontDestroyOnLoad = true;
@@ -24,7 +24,7 @@ namespace FESGameplayAbilitySystem
         public EProcessControlState State { get; private set; }
 
         private Dictionary<int, ProcessControlBlock> active = new();
-        private Dictionary<EProcessUpdateTiming, SortedDictionary<int, List<int>>> stepping;
+        private Dictionary<EProcessStepTiming, SortedDictionary<int, List<int>>> stepping;
         private HashSet<int> waiting = new();
 
         private ProcessAdjacencyTree MonoTree = new();
@@ -52,20 +52,20 @@ namespace FESGameplayAbilitySystem
 
         private void Update()
         {
-            Step(EProcessUpdateTiming.Update);
+            Step(EProcessStepTiming.Update);
         }
 
         private void LateUpdate()
         {
-            Step(EProcessUpdateTiming.LateUpdate);
+            Step(EProcessStepTiming.LateUpdate);
         }
 
         private void FixedUpdate()
         {
-            Step(EProcessUpdateTiming.FixedUpdate);
+            Step(EProcessStepTiming.FixedUpdate);
         }
 
-        private void Step(EProcessUpdateTiming timing)
+        private void Step(EProcessStepTiming timing)
         {
             if (State is EProcessControlState.Waiting or EProcessControlState.TerminatedImmediately) return;
             
@@ -93,8 +93,8 @@ namespace FESGameplayAbilitySystem
             await TerminateAllImmediately();
 
             active = new Dictionary<int, ProcessControlBlock>();
-            stepping = new Dictionary<EProcessUpdateTiming, SortedDictionary<int, List<int>>>();
-            foreach (EProcessUpdateTiming timing in Enum.GetValues(typeof(EProcessUpdateTiming)))
+            stepping = new Dictionary<EProcessStepTiming, SortedDictionary<int, List<int>>>();
+            foreach (EProcessStepTiming timing in Enum.GetValues(typeof(EProcessStepTiming)))
             {
                 stepping[timing] = new SortedDictionary<int, List<int>>();
             }
@@ -379,30 +379,30 @@ namespace FESGameplayAbilitySystem
 
             switch (timing)
             {
-                case EProcessUpdateTiming.None:
-                case EProcessUpdateTiming.Update:
-                case EProcessUpdateTiming.LateUpdate:
-                case EProcessUpdateTiming.FixedUpdate:
+                case EProcessStepTiming.None:
+                case EProcessStepTiming.Update:
+                case EProcessStepTiming.LateUpdate:
+                case EProcessStepTiming.FixedUpdate:
                     SetStepping(pcb, priority, timing);
                     break;
-                case EProcessUpdateTiming.UpdateAndLate:
-                    SetStepping(pcb, priority, EProcessUpdateTiming.Update);
-                    SetStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
+                case EProcessStepTiming.UpdateAndLate:
+                    SetStepping(pcb, priority, EProcessStepTiming.Update);
+                    SetStepping(pcb, priority, EProcessStepTiming.LateUpdate);
                     break;
-                case EProcessUpdateTiming.UpdateAndFixed:
-                    SetStepping(pcb, priority, EProcessUpdateTiming.Update);
-                    SetStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                case EProcessStepTiming.UpdateAndFixed:
+                    SetStepping(pcb, priority, EProcessStepTiming.Update);
+                    SetStepping(pcb, priority, EProcessStepTiming.FixedUpdate);
                     break;
-                case EProcessUpdateTiming.LateAndFixed:
-                    SetStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
-                    SetStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                case EProcessStepTiming.LateAndFixed:
+                    SetStepping(pcb, priority, EProcessStepTiming.LateUpdate);
+                    SetStepping(pcb, priority, EProcessStepTiming.FixedUpdate);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
         
-        private void SetStepping(ProcessControlBlock pcb, int priority, EProcessUpdateTiming timing)
+        private void SetStepping(ProcessControlBlock pcb, int priority, EProcessStepTiming timing)
         {
             if (!stepping[timing].ContainsKey(priority))
             {
@@ -421,23 +421,23 @@ namespace FESGameplayAbilitySystem
             switch (timing)
             {
 
-                case EProcessUpdateTiming.None:
-                case EProcessUpdateTiming.Update:
-                case EProcessUpdateTiming.LateUpdate:
-                case EProcessUpdateTiming.FixedUpdate:
+                case EProcessStepTiming.None:
+                case EProcessStepTiming.Update:
+                case EProcessStepTiming.LateUpdate:
+                case EProcessStepTiming.FixedUpdate:
                     RemoveStepping(pcb, priority, timing);
                     break;
-                case EProcessUpdateTiming.UpdateAndLate:
-                    RemoveStepping(pcb, priority, EProcessUpdateTiming.Update);
-                    RemoveStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
+                case EProcessStepTiming.UpdateAndLate:
+                    RemoveStepping(pcb, priority, EProcessStepTiming.Update);
+                    RemoveStepping(pcb, priority, EProcessStepTiming.LateUpdate);
                     break;
-                case EProcessUpdateTiming.UpdateAndFixed:
-                    RemoveStepping(pcb, priority, EProcessUpdateTiming.Update);
-                    RemoveStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                case EProcessStepTiming.UpdateAndFixed:
+                    RemoveStepping(pcb, priority, EProcessStepTiming.Update);
+                    RemoveStepping(pcb, priority, EProcessStepTiming.FixedUpdate);
                     break;
-                case EProcessUpdateTiming.LateAndFixed:
-                    RemoveStepping(pcb, priority, EProcessUpdateTiming.LateUpdate);
-                    RemoveStepping(pcb, priority, EProcessUpdateTiming.FixedUpdate);
+                case EProcessStepTiming.LateAndFixed:
+                    RemoveStepping(pcb, priority, EProcessStepTiming.LateUpdate);
+                    RemoveStepping(pcb, priority, EProcessStepTiming.FixedUpdate);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -445,7 +445,7 @@ namespace FESGameplayAbilitySystem
             
         }
 
-        private void RemoveStepping(ProcessControlBlock pcb, int priority, EProcessUpdateTiming timing)
+        private void RemoveStepping(ProcessControlBlock pcb, int priority, EProcessStepTiming timing)
         {
             int stepIndex = pcb.StepIndex(timing);
             if (stepIndex < 0) return;
@@ -468,23 +468,23 @@ namespace FESGameplayAbilitySystem
         {
             switch (pcb.Process.StepTiming)
             {
-                case EProcessUpdateTiming.None:
-                case EProcessUpdateTiming.Update:
-                case EProcessUpdateTiming.LateUpdate:
-                case EProcessUpdateTiming.FixedUpdate:
+                case EProcessStepTiming.None:
+                case EProcessStepTiming.Update:
+                case EProcessStepTiming.LateUpdate:
+                case EProcessStepTiming.FixedUpdate:
                     pcb.SetStepIndex(pcb.Process.StepTiming, -1);
                     break;
-                case EProcessUpdateTiming.UpdateAndLate:
-                    pcb.SetStepIndex(EProcessUpdateTiming.Update, -1);
-                    pcb.SetStepIndex(EProcessUpdateTiming.LateUpdate, -1);
+                case EProcessStepTiming.UpdateAndLate:
+                    pcb.SetStepIndex(EProcessStepTiming.Update, -1);
+                    pcb.SetStepIndex(EProcessStepTiming.LateUpdate, -1);
                     break;
-                case EProcessUpdateTiming.UpdateAndFixed:
-                    pcb.SetStepIndex(EProcessUpdateTiming.Update, -1);
-                    pcb.SetStepIndex(EProcessUpdateTiming.FixedUpdate, -1);
+                case EProcessStepTiming.UpdateAndFixed:
+                    pcb.SetStepIndex(EProcessStepTiming.Update, -1);
+                    pcb.SetStepIndex(EProcessStepTiming.FixedUpdate, -1);
                     break;
-                case EProcessUpdateTiming.LateAndFixed:
-                    pcb.SetStepIndex(EProcessUpdateTiming.LateUpdate, -1);
-                    pcb.SetStepIndex(EProcessUpdateTiming.FixedUpdate, -1);
+                case EProcessStepTiming.LateAndFixed:
+                    pcb.SetStepIndex(EProcessStepTiming.LateUpdate, -1);
+                    pcb.SetStepIndex(EProcessStepTiming.FixedUpdate, -1);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

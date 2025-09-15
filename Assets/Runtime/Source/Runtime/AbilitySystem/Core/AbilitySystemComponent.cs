@@ -26,6 +26,8 @@ namespace FESGameplayAbilitySystem
 
         private ImpactWorkerCache ImpactWorkerCache;
 
+        public AbilitySystemCallbacks Callbacks = new();
+
         public bool IsExecuting() => ActiveCache.Keys.Any(IsExecuting);
         public bool IsExecuting(EAbilityActivationPolicy policy) => ActiveCache[policy].Count > 0;
         
@@ -76,7 +78,7 @@ namespace FESGameplayAbilitySystem
                 if (!value)
                 {
                     activationQueue.Clear();
-                    InjectAll(EAbilityInjection.INTERRUPT);
+                    InjectAll(Tags.INJECT_INTERRUPT);
                 }
 
                 _enabled = value;
@@ -90,89 +92,6 @@ namespace FESGameplayAbilitySystem
             get => _locked;
             set => _locked = value;
         }
-
-        #region Callbacks
-
-        private Action<AbilityDataPacket> _onAbilityCast;
-
-        private event Action<AbilityDataPacket> OnAbilityCast
-        {
-            add
-            {
-                if (Array.IndexOf(_onAbilityCast.GetInvocationList(), value) == -1) _onAbilityCast += value;
-            }
-            remove => _onAbilityCast -= value;
-        }
-
-        private Action<AbilityDataPacket> _onAbilityTargetStart;
-
-        private event Action<AbilityDataPacket> OnAbilityTargetStart
-        {
-            add
-            {
-                if (Array.IndexOf(_onAbilityTargetStart.GetInvocationList(), value) == -1) _onAbilityTargetStart += value;
-            }
-            remove => _onAbilityTargetStart -= value;
-        }
-
-        private Action<AbilityDataPacket> _onAbilityTargetEnd;
-
-        private event Action<AbilityDataPacket> OnAbilityTargetEnd
-        {
-            add
-            {
-                if (Array.IndexOf(_onAbilityTargetEnd.GetInvocationList(), value) == -1) _onAbilityTargetEnd += value;
-            }
-            remove => _onAbilityTargetEnd -= value;
-        }
-
-        private Action<AbilityDataPacket> _onAbilityCastStart;
-
-        private event Action<AbilityDataPacket> OnAbilityCastStart
-        {
-            add
-            {
-                if (Array.IndexOf(_onAbilityCastStart.GetInvocationList(), value) == -1) _onAbilityCastStart += value;
-            }
-            remove => _onAbilityCastStart -= value;
-        }
-
-        private Action<AbilityDataPacket> _onAbilityCastEnd;
-
-        private event Action<AbilityDataPacket> OnAbilityCastEnd
-        {
-            add
-            {
-                if (Array.IndexOf(_onAbilityCastEnd.GetInvocationList(), value) == -1) _onAbilityCastEnd += value;
-            }
-            remove => _onAbilityCastEnd -= value;
-        }
-
-        private Action<AbilityDataPacket, AbstractAbilityProxyTask> _onAbilityTaskActivate;
-
-        private event Action<AbilityDataPacket, AbstractAbilityProxyTask> OnAbilityTaskActivate
-        {
-            add
-            {
-                if (Array.IndexOf(_onAbilityTaskActivate.GetInvocationList(), value) == -1) _onAbilityTaskActivate += value;
-            }
-            remove => _onAbilityTaskActivate -= value;
-        }
-
-        private Action<AbilityDataPacket, AbstractAbilityProxyTask> _onAbilityTaskEnd;
-
-        private event Action<AbilityDataPacket, AbstractAbilityProxyTask> OnAbilityTaskEnd
-        {
-            add
-            {
-                if (Array.IndexOf(_onAbilityTaskEnd.GetInvocationList(), value) == -1) _onAbilityTaskEnd += value;
-            }
-            remove => _onAbilityTaskEnd -= value;
-        }
-
-        private Action<AbilityDataPacket> _onAbilityEnd;
-
-        #endregion
 
         public void Initialize(GASComponent system)
         {
@@ -245,7 +164,7 @@ namespace FESGameplayAbilitySystem
         {
             if (!TryGetCacheIndexOf(ability, out int index)) return false;
             
-            if (AbilityCache[index].IsClaiming) Inject(index, EAbilityInjection.INTERRUPT);
+            if (AbilityCache[index].IsClaiming) Inject(index, Tags.INJECT_INTERRUPT);
             
             HandleTags(ability.Tags.PassivelyGrantedTags, false);
 
@@ -334,7 +253,8 @@ namespace FESGameplayAbilitySystem
         private bool ActivateAbility(AbilitySpecContainer container)
         {
             container.Spec.ApplyUsageEffects();
-            return container.ActivateAbility(AbilityDataPacket.GenerateFrom(container.Spec, container.Spec.Base.Proxy.UseImplicitTargeting));
+            var data = AbilityDataPacket.GenerateFrom(container.Spec, container.Spec.Base.Proxy.UseImplicitTargeting);
+            return container.ActivateAbility(data);
         }
 
         private bool QueueAbilityActivation(int abilityIndex)
@@ -350,20 +270,20 @@ namespace FESGameplayAbilitySystem
 
             foreach (var policy in ActiveCache.Keys)
             {
-                foreach (int index in ActiveCache[policy]) AbilityCache[index].Inject(EAbilityInjection.INTERRUPT);
+                foreach (int index in ActiveCache[policy]) AbilityCache[index].Inject(Tags.INJECT_INTERRUPT);
                 ActiveCache[policy].Clear();
             }
 
             AbilityCache.Clear();
         }
 
-        public void Inject(int index, EAbilityInjection injection)
+        public void Inject(int index, Tag injection)
         {
             if (!AbilityCache.TryGetValue(index, out var container) || !container.IsClaiming) return;
             container.Inject(injection);
         }
         
-        public void Inject(Ability ability, EAbilityInjection injection)
+        public void Inject(Ability ability, Tag injection)
         {
             if (!TryGetAbilityContainer(ability, out var container)) return;
             if (!container.IsClaiming) return;
@@ -371,16 +291,16 @@ namespace FESGameplayAbilitySystem
             container.Inject(injection);
         }
         
-        public void Inject(EAbilityActivationPolicy policy, EAbilityInjection injection)
+        public void Inject(EAbilityActivationPolicy policy, Tag injection)
         {
             foreach (int index in ActiveCache[policy])
             {
-                if (!AbilityCache[index].IsClaiming) ReleaseClaim(AbilityCache[index]);
+                if (!AbilityCache[index].IsClaiming) ReleaseClaim(AbilityCache[index], null);
                 AbilityCache[index].Inject(injection);
             }
         }
 
-        public void InjectAll(EAbilityInjection injection)
+        public void InjectAll(Tag injection)
         {
             foreach (var policy in ActiveCache.Keys)
             {
@@ -392,24 +312,27 @@ namespace FESGameplayAbilitySystem
         /// The ability container claims runtime over the ASC
         /// </summary>
         /// <param name="container">The claiming container</param>
+        /// <param name="data"></param>
         /// <returns>Whether or not the ASC was successfully claimed</returns>
-        private bool ClaimActive(AbilitySpecContainer container)
+        private bool ClaimActive(AbilitySpecContainer container, AbilityDataPacket data)
         {
-            Debug.Log($"[ ABIL-{Root.Identity.DistinctName}-CLAIM ] {container} ");
-
             if (!TryGetCacheIndexOf(container.Spec.Base, out var index)) return false;
+            
+            TimeUtility.StartTimer(container.Spec.Base.Tags.AssetTag);
+            Callbacks.AbilityActivated(AbilityCallbackStatus.Generate(data, null, null, Tags.NULL, false));
             
             ActiveCache[AbilityCache[index].Spec.Base.Definition.ActivationPolicy.Translate(this)].Add(index);
             
             return true;
         }
 
-        private void ReleaseClaim(AbilitySpecContainer container)
+        private void ReleaseClaim(AbilitySpecContainer container, AbilityDataPacket data)
         {
-            Debug.Log($"[ ABIL-{Root.Identity.DistinctName}-RELEASE ] {container} ");
-            
             if (!TryGetCacheIndexOf(container.Spec.Base, out var index)) return;
 
+            Callbacks.AbilityEnded(AbilityCallbackStatus.Generate(data, null, null, Tags.NULL, false));
+            TimeUtility.End(container.Spec.Base.Tags.AssetTag, out _);
+            
             var policy = AbilityCache[index].Spec.Base.Definition.ActivationPolicy.Translate(this);
             ActiveCache[policy].Remove(index);
 
@@ -447,6 +370,8 @@ namespace FESGameplayAbilitySystem
             public bool IsTargeting { get; private set; }
             public bool IsClaiming => IsTargeting || IsActive;
 
+            private AbilityDataPacket activeData;
+            
             private AbilityProxy Proxy;
             private CancellationTokenSource cts;
             private CancellationTokenSource targetingCts;
@@ -463,13 +388,14 @@ namespace FESGameplayAbilitySystem
             public bool ActivateAbility(AbilityDataPacket implicitData)
             {
                 if (IsClaiming) return false; // Prevent reactivation mid-use
-                if (!Spec.Owner.AsData().AbilitySystem.ClaimActive(this)) return false;
-                
-                implicitData.AddPayload(Tags.PAYLOAD_DERIVATION, Spec);
+                if (!Spec.Owner.AsData().AbilitySystem.ClaimActive(this, implicitData)) return false;
+
+                activeData = implicitData;
+                activeData.AddPayload(Tags.PAYLOAD_DERIVATION, Spec);
 
                 Reset();
 
-                AwaitAbility(implicitData).Forget();
+                AwaitAbility().Forget();
 
                 return true;
             }
@@ -482,13 +408,13 @@ namespace FESGameplayAbilitySystem
                 ResetTokens();
             }
 
-            private async UniTaskVoid AwaitAbility(AbilityDataPacket data)
+            private async UniTaskVoid AwaitAbility()
             {
                 bool targetingCancelled = false;
                 try
                 {
                     IsTargeting = true;
-                    await Proxy.ActivateTargetingTask(targetingCts.Token, data);
+                    await Proxy.ActivateTargetingTask(targetingCts.Token, activeData);
                 }
                 catch (OperationCanceledException)
                 {
@@ -499,7 +425,7 @@ namespace FESGameplayAbilitySystem
                 {
                     IsTargeting = false;
                     
-                    if (data.TryGetFirstTarget(out var target) && !Spec.ValidateActivationRequirements(target))
+                    if (activeData.TryGetFirstTarget(out var target) && !Spec.ValidateActivationRequirements(target))
                     {
                         // Do invalid target feedback here
                         targetingCancelled = true;
@@ -519,7 +445,7 @@ namespace FESGameplayAbilitySystem
 
                     Spec.Owner.GetTagCache().AddTags(Spec.Base.Tags.ActiveGrantedTags);
 
-                    await Proxy.Activate(cts.Token, data);
+                    await Proxy.Activate(cts.Token, activeData);
                 }
                 catch (OperationCanceledException)
                 {
@@ -535,16 +461,13 @@ namespace FESGameplayAbilitySystem
                 }
             }
 
-            public void Inject(EAbilityInjection injection)
+            public void Inject(Tag injection)
             {
                 if (!IsClaiming) return;
 
-                Proxy.Inject(injection);
+                Proxy.Inject(injection, activeData);
 
-                if (injection == EAbilityInjection.INTERRUPT)
-                {
-                    cts?.Cancel();
-                }
+                if (injection == Tags.INJECT_INTERRUPT) cts?.Cancel();
             }
 
             public void CleanAndRelease()
@@ -554,7 +477,9 @@ namespace FESGameplayAbilitySystem
                 CleanTargetingToken();
                 CleanActivationToken();
 
-                Spec.Owner.AsData().AbilitySystem.ReleaseClaim(this);
+                Spec.Owner.AsData().AbilitySystem.ReleaseClaim(this, activeData);
+
+                activeData = null;
             }
 
             private void CleanTargetingToken()
@@ -624,6 +549,116 @@ namespace FESGameplayAbilitySystem
             {
                 activeContainers.Add(container);
             }
+        }
+    }
+    
+    public class AbilitySystemCallbacks
+    {
+        /*
+         * On ability activate (any/specific)
+         * On ability end (any/specific)
+         * On ability (any/all) injection (any/specific)
+         * On ability (any/all) task activate (any/specific)
+         * On ability (any/all) task deactivate (any/specific)
+         *
+         * Ability status packet
+         * - Ability
+         * - Task
+         * - Stage
+         * - Injection
+         */
+        
+        public delegate void AbilitySystemCallbackDelegate(AbilityCallbackStatus status);
+
+        #region On Ability Activate
+        private AbilitySystemCallbackDelegate _onAbilityActivate;
+        public event AbilitySystemCallbackDelegate OnAbilityActivate
+        {
+            add
+            {
+                if (Array.IndexOf(_onAbilityActivate.GetInvocationList(), value) == -1) _onAbilityActivate += value;
+            }
+            remove => _onAbilityActivate -= value;
+        }
+        public void AbilityActivated(AbilityCallbackStatus status) => _onAbilityActivate?.Invoke(status);
+        #endregion
+        
+        #region On Ability End
+        private AbilitySystemCallbackDelegate _onAbilityEnd;
+        public event AbilitySystemCallbackDelegate OnAbilityEnd
+        {
+            add
+            {
+                if (Array.IndexOf(_onAbilityEnd.GetInvocationList(), value) == -1) _onAbilityEnd += value;
+            }
+            remove => _onAbilityEnd -= value;
+        }
+        public void AbilityEnded(AbilityCallbackStatus status) => _onAbilityEnd?.Invoke(status);
+        #endregion
+        
+        #region On Ability Injection
+        private AbilitySystemCallbackDelegate _onAbilityInjection;
+        public event AbilitySystemCallbackDelegate OnAbilityInjection
+        {
+            add
+            {
+                if (Array.IndexOf(_onAbilityInjection.GetInvocationList(), value) == -1) _onAbilityInjection += value;
+            }
+            remove => _onAbilityInjection -= value;
+        }
+        public void AbilityInjected(AbilityCallbackStatus status) => _onAbilityInjection?.Invoke(status);
+        #endregion
+        
+        #region On Task Activate
+        private AbilitySystemCallbackDelegate _onAbilityTaskActivate;
+        public event AbilitySystemCallbackDelegate OnAbilityTaskActivate
+        {
+            add
+            {
+                if (Array.IndexOf(_onAbilityTaskActivate.GetInvocationList(), value) == -1) _onAbilityTaskActivate += value;
+            }
+            remove => _onAbilityTaskActivate -= value;
+        }
+        public void AbilityTaskActivated(AbilityCallbackStatus status) => _onAbilityTaskActivate?.Invoke(status);
+        #endregion
+        
+        #region On Task End
+        private AbilitySystemCallbackDelegate _onAbilityTaskEnd;
+        public event AbilitySystemCallbackDelegate OnAbilityTaskEnd
+        {
+            add
+            {
+                if (Array.IndexOf(_onAbilityTaskEnd.GetInvocationList(), value) == -1) _onAbilityTaskEnd += value;
+            }
+            remove => _onAbilityTaskEnd -= value;
+        }
+        public void AbilityTaskEnded(AbilityCallbackStatus status) => _onAbilityTaskEnd?.Invoke(status);
+        #endregion
+    }
+
+    public struct AbilityCallbackStatus
+    {
+        public AbilityDataPacket Data;
+        public AbstractAbilityProxyTask[] Tasks;
+        public AbilityProxyStage Stage;
+        public Tag Injection;
+        public bool InjectionSuccessful;
+
+        public AbilitySpec Ability => Data.Spec as AbilitySpec;
+        public float TimeElapsed => TimeUtility.Get(Ability.Base.Tags.AssetTag, out float time) ? time : -1f;
+
+        private AbilityCallbackStatus(AbilityDataPacket data, AbstractAbilityProxyTask[] tasks, AbilityProxyStage stage, Tag injection, bool injectionSuccessful)
+        {
+            Data = data;
+            Tasks = tasks;
+            Stage = stage;
+            Injection = injection;
+            InjectionSuccessful = injectionSuccessful;
+        }
+
+        public static AbilityCallbackStatus Generate(AbilityDataPacket data, AbstractAbilityProxyTask[] tasks, AbilityProxyStage stage, Tag injection, bool injectionSuccessful)
+        {
+            return new AbilityCallbackStatus(data, tasks, stage, injection, injectionSuccessful);
         }
     }
 

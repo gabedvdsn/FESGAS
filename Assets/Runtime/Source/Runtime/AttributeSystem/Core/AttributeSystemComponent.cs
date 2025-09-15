@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -7,7 +8,7 @@ namespace FESGameplayAbilitySystem
 {
     public class AttributeSystemComponent : MonoBehaviour
     {
-        protected IAttributeSet attributeSet;
+        protected AttributeSet attributeSet;
         protected List<AbstractAttributeChangeEvent> attributeChangeEvents = new();
 
         private AttributeChangeMomentHandler PreChangeHandler;
@@ -15,6 +16,7 @@ namespace FESGameplayAbilitySystem
         
         private Dictionary<Attribute, CachedAttributeValue> AttributeCache;
         private AttributeModificationRule Rule;
+        public AttributeSystemCallbacks Callbacks;
         
         private GASComponent Root;
         
@@ -137,6 +139,8 @@ namespace FESGameplayAbilitySystem
 
             // Relay impact to source
             var impactData = AbilityImpactData.Generate(Root, attribute, sourcedModifiedValue, change.Value.ToAttributeValue());
+            
+            Callbacks.AttributeImpacted(impactData);
             if (sourcedModifiedValue.BaseDerivation.GetSource().FindAbilitySystem(out var attr)) attr.ProvideFrameImpactDealt(impactData);
         }
 
@@ -162,5 +166,59 @@ namespace FESGameplayAbilitySystem
 
         #endregion
         
+    }
+    
+    public class AttributeSystemCallbacks
+    {
+        public delegate void AttributeDelegate(Attribute attribute);
+        public delegate void AttributeImpactDelegate(AbilityImpactData data);
+        
+        #region Callbacks
+
+        public void AttributeRegister(Attribute attribute) => _onAttributeRegister?.Invoke(attribute);
+        private AttributeDelegate _onAttributeRegister;
+        public event AttributeDelegate OnAttributeRegister
+        {
+            add
+            {
+                if (Array.IndexOf(_onAttributeRegister.GetInvocationList(), value) == -1) _onAttributeRegister += value;
+            }
+            remove => _onAttributeRegister -= value;
+        }
+
+        public void AttributeUnregister(Attribute attribute) => _onAttributeUnregister?.Invoke(attribute);
+        private AttributeDelegate _onAttributeUnregister;
+        public event AttributeDelegate OnAttributeUnregister
+        {
+            add
+            {
+                if (Array.IndexOf(_onAttributeUnregister.GetInvocationList(), value) == -1) _onAttributeUnregister += value;
+            }
+            remove => _onAttributeUnregister -= value;
+        }
+        
+        public void AttributeChanged(AbilityImpactData data) => _onAttributeChanged?.Invoke(data);
+        private AttributeImpactDelegate _onAttributeChanged;
+        public event AttributeImpactDelegate OnAttributeChanged
+        {
+            add
+            {
+                if (Array.IndexOf(_onAttributeChanged.GetInvocationList(), value) == -1) _onAttributeChanged += value;
+            }
+            remove => _onAttributeChanged -= value;
+        }
+        
+        public void AttributeImpacted(AbilityImpactData data) => _onAttributeImpacted?.Invoke(data);
+        private AttributeImpactDelegate _onAttributeImpacted;
+        public event AttributeImpactDelegate OnAttributeImpacted
+        {
+            add
+            {
+                if (Array.IndexOf(_onAttributeImpacted.GetInvocationList(), value) == -1) _onAttributeImpacted += value;
+            }
+            remove => _onAttributeImpacted -= value;
+        }
+
+        #endregion
     }
 }

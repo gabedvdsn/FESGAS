@@ -46,7 +46,7 @@ namespace FESGameplayAbilitySystem
             activeMono.WhenInitialize(relay);
         }
 
-        public override void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay)
+        public override void WhenUpdate(EProcessStepTiming timing, ProcessRelay relay)
         {
             activeMono.WhenUpdate(relay);
         }
@@ -104,7 +104,7 @@ namespace FESGameplayAbilitySystem
         public override EProcessStepPriorityMethod PriorityMethod => activeMono.PriorityMethod;
 
         public override int StepPriority => activeMono.ProcessStepPriority;
-        public override EProcessUpdateTiming StepTiming => activeMono.ProcessTiming;
+        public override EProcessStepTiming StepTiming => activeMono.ProcessTiming;
         public override EProcessLifecycle Lifecycle => activeMono.ProcessLifecycle;
         public override string ToString() => ProcessName;
     }

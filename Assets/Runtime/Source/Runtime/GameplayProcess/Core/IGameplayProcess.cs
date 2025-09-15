@@ -6,26 +6,7 @@ using UnityEngine;
 
 namespace FESGameplayAbilitySystem
 {
-    public interface IGameplayProcess
-    {
-        public void WhenInitialize(ProcessRelay relay);  // Called once when the process is first moved to Ready state
-        
-        public void WhenUpdate(EProcessUpdateTiming timing, ProcessRelay relay);  // Called whenever the PCB is updated
-        public void WhenWait(ProcessRelay relay);  // Called whenever the process is set to Wait state
-        public void WhenTerminate(ProcessRelay relay);  // Called whenever the process is terminated
-
-        public UniTask RunProcess(ProcessRelay relay, CancellationToken token);
-
-        public bool TryGetProcess<T>(out T process);
-
-        public bool IsInitialized();
-        public string ProcessName { get; }
-        public int StepPriority { get; }
-        public EProcessUpdateTiming StepTiming { get; }
-        public EProcessLifecycle Lifecycle { get; }
-    }
-
-    public enum EProcessUpdateTiming
+    public enum EProcessStepTiming
     {
         None = 0,
         Update = 1,

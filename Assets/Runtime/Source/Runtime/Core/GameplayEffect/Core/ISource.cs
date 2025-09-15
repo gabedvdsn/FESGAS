@@ -12,6 +12,7 @@ namespace FESGameplayAbilitySystem
         public int GetMaxLevel();
         public void SetLevel(int level);
         public string GetName();
+        public GameplayEffectDuration GetLongestDurationFor(Tag lookForTag);
         public GameplayEffectDuration GetLongestDurationFor(Tag[] lookForTags);
     }
     

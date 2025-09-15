@@ -19,8 +19,8 @@ namespace FESGameplayAbilitySystem
         public ProcessRelay Relay => Process?.Relay;
 
         public readonly int CacheIndex;
-        private Dictionary<EProcessUpdateTiming, int> StepIndices;
-        public int StepIndex(EProcessUpdateTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
+        private Dictionary<EProcessStepTiming, int> StepIndices;
+        public int StepIndex(EProcessStepTiming timing) => StepIndices.ContainsKey(timing) ? StepIndices[timing] : -1;
         
         public EProcessState State { get; private set; }
         public EProcessState queuedState { get; private set; }
@@ -77,7 +77,7 @@ namespace FESGameplayAbilitySystem
         protected ProcessControlBlock(int cacheIndex, AbstractProcessWrapper process, IGameplayProcessHandler handler)
         {
             CacheIndex = cacheIndex;
-            StepIndices = new Dictionary<EProcessUpdateTiming, int>();
+            StepIndices = new Dictionary<EProcessStepTiming, int>();
             
             Process = process;
             Handler = handler;
@@ -192,7 +192,7 @@ namespace FESGameplayAbilitySystem
             cts?.Cancel();
         }
 
-        public void Step(EProcessUpdateTiming timing)
+        public void Step(EProcessStepTiming timing)
         {
             Process.WhenUpdate(timing, Process.Relay);
             
@@ -226,7 +226,7 @@ namespace FESGameplayAbilitySystem
             if (set) SetQueuedState();
         }
         
-        public void SetStepIndex(EProcessUpdateTiming timing, int stepIndex)
+        public void SetStepIndex(EProcessStepTiming timing, int stepIndex)
         {
             StepIndices[timing] = stepIndex;
         }
@@ -244,7 +244,7 @@ namespace FESGameplayAbilitySystem
         }
 
         public int CacheIndex => pcb.CacheIndex;
-        public IGameplayProcess Process => pcb.Process;
+        public AbstractProcessWrapper Process => pcb.Process;
         public IGameplayProcessHandler Handler => pcb.Handler;
         public EProcessState State => pcb.State;
         public EProcessState QueuedState => pcb.queuedState;

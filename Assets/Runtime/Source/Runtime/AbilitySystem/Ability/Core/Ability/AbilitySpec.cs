@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FESGameplayAbilitySystem
 {
-    public class AbilitySpec : IEffectOrigin
+    public class AbilitySpec : IEffectOrigin, ITagReadable
     {
         public ISource Owner;
         public Ability Base;
@@ -76,6 +76,22 @@ namespace FESGameplayAbilitySystem
         public override string ToString()
         {
             return Base.ToString();
+        }
+        public ITagReadableReport Read()
+        {
+            return new AbilityReport(this, Owner.GetLongestDurationFor(Base.Tags.AssetTag));
+        }
+    }
+
+    public struct AbilityReport : ITagReadableReport
+    {
+        public AbilitySpec Spec;
+        public GameplayEffectDuration Cooldown;
+
+        public AbilityReport(AbilitySpec spec, GameplayEffectDuration cooldown)
+        {
+            Spec = spec;
+            Cooldown = cooldown;
         }
     }
 }
