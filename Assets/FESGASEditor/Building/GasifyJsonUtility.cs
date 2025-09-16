@@ -87,7 +87,7 @@ namespace FESGameplayAbilitySystem.Gasify
                 };
             }
 
-            target[EditorTagService.EDITOR_TAG] = values;
+            target[EditorTagService.EDITOR_TAGS] = values;
         }
         
         static List<Dictionary<string, object>> BuildAttributes(FrameworkProject p)
